@@ -1,0 +1,18 @@
+package:
+  name: linter
+  dependencies:
+    - aff
+    - console
+    - debug
+    - effect
+    - language-cst-parser
+    - node-glob-basic
+    - prelude
+  test:
+    main: Test.Main
+    dependencies:
+      - spec
+workspace:
+  packageSet:
+    registry: 53.2.0
+  extraPackages: {}

@@ -1,0 +1,19 @@
+{
+  "name": "purescript-linter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "purescript": "^0.15.15",
+    "spago": "^0.93.35"
+  },
+  "dependencies": {
+    "debug": "^4.3.5",
+    "purs-tidy": "^0.11.0"
+  }
+}
