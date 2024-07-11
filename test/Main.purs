@@ -8,6 +8,7 @@ import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Linter (runLintProducer)
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
+import Linter.RecordFormatting as RecordFormatting
 import Linter.UnnecessarParenthesis as UnnecessarParenthesis
 import Linter.UnnecessaryDo as UnnecessaryDo
 import Linter.UsePunning as UsePunning
@@ -25,6 +26,7 @@ main = launchAff_ $ runSpec [ consoleReporter ] do
   describe "Linters" do
     for_
       [ NoDuplicateTypeclassConstraints.linter
+      , RecordFormatting.linter
       , UnnecessaryDo.linter
       , UnnecessarParenthesis.linter
       , UsePunning.linter
