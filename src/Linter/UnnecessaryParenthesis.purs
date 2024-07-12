@@ -5,6 +5,7 @@ import Prelude
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
+
 import Linter (expressionLintProducer)
 import Linter as Linter
 import PureScript.CST.Expr as Expr
@@ -28,11 +29,13 @@ linter =
           , "x = f $ g 10"
           , "x = (mempty :: Person)"
           , "x = ($)"
+          , "x = _ $ 10"
           ]
       }
   , lintProducer: expressionLintProducer $ case _ of
       ExprParens (Wrapped { open, value }) ->
         guard (Expr.isTerminal value) $ pure { message: "Unnecessary parenthesis around a terminal expression.", sourceRange: open.range }
+      ExprOp (ExprSection _) _ -> []
       ExprOp _ ne ->
         let
           { last: Tuple (QualifiedName { token, name: (Operator operator) }) expression } = NonEmptyArray.unsnoc ne

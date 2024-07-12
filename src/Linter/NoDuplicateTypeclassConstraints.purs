@@ -26,16 +26,19 @@ linter =
           [ "f :: forall a. Ord a => Ord a => a -> a -> Boolean"
           , "f :: forall a. Ord a => Ord b => Ord a => a -> a -> Boolean"
           , "f :: forall a b. Coercible a b => Coercible a b => a -> Boolean"
+          , "f :: forall a. Ord a => Ord a => Blarg a -> Blarg a"
           ]
       , good:
           [ "f :: forall a. Ord a => a -> a -> Boolean"
           , "f :: forall a b. Ord a => Ord b => a -> Boolean"
           , "f :: forall a b c. Coercible a b => Coercible b c => a -> Boolean"
+          , "f :: forall a. Blarg a -> Blarg a"
+          , "f :: forall a. Ord a => Blarg a -> Blarg a"
           ]
       }
   , lintProducer: declarationLintProducer $ case _ of
-      DeclSignature (Labeled { value: (CST.TypeForall _token _variableNames _token' (CST.TypeConstrained left _ right)) }) ->
-        (foldMapType constraints left <> foldMapType constraints right)
+      DeclSignature (Labeled { value: (CST.TypeForall _token _variableNames _token' type') }) ->
+        (foldMapType constraints type')
           # indexedBy (\{ typeConstructorName, typeVariableNames } -> { typeConstructorName, typeVariableNames })
           # Map.toUnfoldable
           >>= \(Tuple { typeConstructorName, typeVariableNames } (NonEmpty head rest)) ->
@@ -59,7 +62,10 @@ type TypeClassConstraintMapping =
 constraints :: TypeClassConstraintMapping
 constraints = (mempty :: TypeClassConstraintMapping)
   { onType = case _ of
-      CST.TypeApp (CST.TypeConstructor (QualifiedName { token: { range }, name: Proper typeConstructorName })) ne ->
+      CST.TypeConstrained
+        (CST.TypeApp (CST.TypeConstructor (QualifiedName { token: { range }, name: Proper typeConstructorName })) ne)
+        _tokFatArrow
+        _rightType ->
         NonEmptyArray.toArray ne <#> _typeVar # sequence # maybe [] \typeVariableNames -> [ { typeConstructorRange: range, typeConstructorName, typeVariableNames } ]
       _ -> []
   }
