@@ -7,6 +7,7 @@ import Data.Traversable (for_)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Linter (runLintProducer)
+import Linter.ArrayFormatting as ArrayFormatting
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.RecordFormatting as RecordFormatting
 import Linter.UnnecessarParenthesis as UnnecessarParenthesis
@@ -25,7 +26,8 @@ main :: Effect Unit
 main = launchAff_ $ runSpec [ consoleReporter ] do
   describe "Linters" do
     for_
-      [ NoDuplicateTypeclassConstraints.linter
+      [ ArrayFormatting.linter
+      , NoDuplicateTypeclassConstraints.linter
       , RecordFormatting.linter
       , UnnecessaryDo.linter
       , UnnecessarParenthesis.linter
