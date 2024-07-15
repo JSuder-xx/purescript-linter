@@ -4,6 +4,7 @@ workspace:
       path: ./
       dependencies:
         - aff
+        - ansi
         - console
         - debug
         - effect

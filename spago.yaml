@@ -2,6 +2,7 @@ package:
   name: linter
   dependencies:
     - aff
+    - ansi
     - console
     - debug
     - effect

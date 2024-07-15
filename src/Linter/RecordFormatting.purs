@@ -2,17 +2,13 @@ module Linter.RecordFormatting (linter) where
 
 import Prelude
 
-import Data.Array as Array
-import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..))
-import Data.Monoid (guard)
-import Data.Tuple (Tuple(..), snd)
-import Linter (expressionLintProducer)
+import Linter (LintResults, expressionLintProducer)
 import Linter as Linter
+import Linter.Delimited as Delimited
 import PureScript.CST.Range (class RangeOf, rangeOf)
-import PureScript.CST.SourcePos (columnDifference)
-import PureScript.CST.SourceRange (noSpaceBetween, rangeOfRecordLabeled, spaceBetween)
-import PureScript.CST.Types (Expr(..), Name(..), RecordLabeled(..), Separated(..), SourceToken, Wrapped(..), SourceRange)
+import PureScript.CST.SourceRange (newLineIndent, noSpaceBetween, rangeOfRecordLabeled, spaceBetween)
+import PureScript.CST.Types (Expr(..), Name(..), RecordLabeled(..))
 
 linter :: Linter.Linter
 linter =
@@ -32,6 +28,17 @@ linter =
           , "x = { x: 1,y: 1 }"
           , "x = { x: 1, y: 1, z:3 }"
           , "x = { x: 1, y: 1,z: 3 }"
+          , """
+x = 
+  { a: 1
+  , b: 2 }
+"""
+          , """
+x = 
+  { a: 1
+  ,b: 2 
+  }
+"""
           ]
       , good:
           [ "x = {}"
@@ -39,52 +46,39 @@ linter =
           , "x = { y }"
           , "x = { x: 1, y: 2 }"
           , "x = { x: 1, y: 2, z: 3 }"
+          , """
+x = 
+  { a: 1
+  }
+"""
+          , """
+x = 
+  { a: 1
+  , b: 2
+  }
+"""
           ]
       }
   , lintProducer: expressionLintProducer $ case _ of
-      ExprRecord (Wrapped { open: { range: openRange }, close: { range: closeRange }, value: Nothing }) ->
-        guard ((closeRange.start `columnDifference` openRange.start) > 1) $ pure { message: "An empty record should be {}", sourceRange: openRange }
-      ExprRecord (Wrapped { open: { range: openRange }, close: { range: closeRange }, value: Just (Separated { head, tail }) }) ->
-        let
-          rangeHead = rangeOfRecordLabeled head
-        in
-          case Array.unsnoc tail of
-            Nothing ->
-              guard (not $ (openRange `spaceBetween` rangeHead) && (rangeHead `spaceBetween` closeRange)) [ { message: "Missing space between surrounding {} and contents.", sourceRange: openRange } ]
-                <> guard (not $ recordLabeledProperlySpaced head) [ { message: "Incorrect spacing in field assignment. Should be `field: value`.", sourceRange: rangeHead } ]
-            Just { last: Tuple _ lastExpr } ->
-              let
-                rangeLast = rangeOfRecordLabeled lastExpr
-                allLabeledRecords = Array.cons head $ snd <$> tail
-              in
-                guard (not $ (openRange `spaceBetween` rangeHead) && (rangeLast `spaceBetween` closeRange))
-                  [ { message: "Missing space between surrounding {} and contents.", sourceRange: openRange } ]
-                  <>
-                    ( Array.find (not <<< recordLabeledProperlySpaced) allLabeledRecords
-                        # foldMap \failed -> [ { message: "Incorrect spacing in field assignment. Should be `field: value`.", sourceRange: rangeOfRecordLabeled failed } ]
-                    )
-                  <>
-                    ( let
-                        step :: { failed :: Array SourceRange, lastExprRange :: SourceRange } -> Tuple SourceToken (RecordLabeled (Expr Void)) -> { failed :: Array SourceRange, lastExprRange :: SourceRange }
-                        step { failed, lastExprRange } (Tuple { range: delimitterRange } expr) =
-                          let
-                            thisExprRange = rangeOfRecordLabeled expr
-                          in
-                            { failed:
-                                if (lastExprRange `noSpaceBetween` delimitterRange) && (delimitterRange `spaceBetween` thisExprRange) then
-                                  failed
-                                else
-                                  Array.snoc failed lastExprRange
-                            , lastExprRange: thisExprRange
-                            }
-                      in
-                        (Array.foldl step { failed: [], lastExprRange: rangeHead } tail).failed <#> { message: "Incorrect spacing between the comma and preceding expression", sourceRange: _ }
-                    )
-
+      ExprRecord x -> Delimited.lint config x
       _ -> []
   }
-
-recordLabeledProperlySpaced :: forall e. RangeOf e => RecordLabeled (Expr e) -> Boolean
-recordLabeledProperlySpaced (RecordPun _) = true
-recordLabeledProperlySpaced (RecordField (Name { token: { range: nameRange } }) { range: colonRange } expr) =
-  nameRange `noSpaceBetween` colonRange && colonRange `spaceBetween` (rangeOf expr)
+  where
+  config =
+    { name: "Record"
+    , itemName: "Field"
+    , openToken: "{"
+    , closeToken: "}"
+    , innerRange: rangeOfRecordLabeled
+    , validateInner: recordLabelIncorrectlySpaced
+    }
+    where
+    recordLabelIncorrectlySpaced :: forall e. RangeOf e => RecordLabeled (Expr e) -> Maybe LintResults
+    recordLabelIncorrectlySpaced (RecordPun _) = Nothing
+    recordLabelIncorrectlySpaced (RecordField (Name { token: { range: nameRange } }) { range: colonRange } expr) =
+      let
+        exprRange = rangeOf expr
+      in
+        if (not $ nameRange `noSpaceBetween` colonRange) then Just [ { message: "Expecting no space between the field label and the `:`", sourceRange: nameRange } ]
+        else if (colonRange `spaceBetween` exprRange) || nameRange `newLineIndent` exprRange then Nothing
+        else Just [ { message: "Expecting the field expression to either follow the `:` with a single space OR to be on the next line indented", sourceRange: exprRange } ]
