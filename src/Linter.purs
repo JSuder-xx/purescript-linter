@@ -10,7 +10,7 @@ module Linter
   ) where
 
 import Prelude
-
+import PureScript.CST.Fold (OnModule, OnPureScript)
 import PureScript.CST.Traversal (foldMapModule)
 import PureScript.CST.Types as CST
 
@@ -18,13 +18,7 @@ type LintResult = { message :: String, sourceRange :: CST.SourceRange }
 type LintResults = Array LintResult
 type OnKind f = f Void -> LintResults
 
-type LintProducer =
-  { onModule :: OnKind CST.Module
-  , onDecl :: OnKind CST.Declaration
-  , onBinder :: OnKind CST.Binder
-  , onExpr :: OnKind CST.Expr
-  , onType :: OnKind CST.Type
-  }
+type LintProducer = OnModule LintResults
 
 type Linter =
   { name :: String
@@ -36,10 +30,10 @@ type Linter =
   }
 
 runLintProducer :: LintProducer -> CST.Module Void -> LintResults
-runLintProducer { onModule, onExpr, onType, onBinder, onDecl } = onModule <> foldMapModule { onExpr, onType, onBinder, onDecl }
+runLintProducer { onModule, onPureScript } = onModule <> foldMapModule onPureScript
 
 expressionLintProducer :: OnKind CST.Expr -> LintProducer
-expressionLintProducer onExpr = (mempty :: LintProducer) { onExpr = onExpr }
+expressionLintProducer onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onExpr = onExpr } }
 
 declarationLintProducer :: OnKind CST.Declaration -> LintProducer
-declarationLintProducer onDecl = (mempty :: LintProducer) { onDecl = onDecl }
+declarationLintProducer onDecl = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onDecl = onDecl } }

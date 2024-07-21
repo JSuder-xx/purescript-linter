@@ -12,6 +12,7 @@ import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.RecordFormatting as RecordFormatting
 import Linter.UnnecessarParenthesis as UnnecessarParenthesis
 import Linter.UnnecessaryDo as UnnecessaryDo
+import Linter.UseAnonymous as UseAnonymous
 import Linter.UsePunning as UsePunning
 import PureScript.CST (RecoveredParserResult(..), parseModule)
 import Test.Spec (describe, it)
@@ -32,6 +33,9 @@ main = launchAff_ $ runSpec [ consoleReporter ] do
       , RecordFormatting.linter
       , UnnecessaryDo.linter
       , UnnecessarParenthesis.linter
+      , UseAnonymous.forOperations
+      , UseAnonymous.forRecordUpdates
+      , UseAnonymous.forRecordCreation
       , UsePunning.linter
       ]
       \linter -> describe linter.name do

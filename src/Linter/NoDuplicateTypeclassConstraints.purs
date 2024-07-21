@@ -14,6 +14,7 @@ import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..))
 import Linter (declarationLintProducer)
 import Linter as Linter
+import PureScript.CST.Fold (OnPureScript)
 import PureScript.CST.Traversal (foldMapType)
 import PureScript.CST.Types (Declaration(..), Ident(..), Labeled(..), Name(..), Proper(..), QualifiedName(..))
 import PureScript.CST.Types as CST
@@ -50,14 +51,9 @@ linter =
       _ -> []
   }
 
-type OnKind f = f Void -> Array { typeConstructorRange :: CST.SourceRange, typeConstructorName :: String, typeVariableNames :: Array String }
+type ClassConstraints = Array { typeConstructorRange :: CST.SourceRange, typeConstructorName :: String, typeVariableNames :: Array String }
 
-type TypeClassConstraintMapping =
-  { onDecl :: OnKind CST.Declaration
-  , onBinder :: OnKind CST.Binder
-  , onExpr :: OnKind CST.Expr
-  , onType :: OnKind CST.Type
-  }
+type TypeClassConstraintMapping = OnPureScript ClassConstraints
 
 constraints :: TypeClassConstraintMapping
 constraints = (mempty :: TypeClassConstraintMapping)
