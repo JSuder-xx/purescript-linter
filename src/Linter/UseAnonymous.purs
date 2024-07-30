@@ -3,7 +3,6 @@ module Linter.UseAnonymous (forOperations, forRecordUpdates, forRecordCreation) 
 import Prelude
 
 import Data.Array as Array
-
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (foldMap)
 import Data.Map.Extra (keyCountLookup)
@@ -14,12 +13,12 @@ import Data.Tuple (Tuple(..))
 import Linter (expressionLintProducer)
 import Linter as Linter
 import PureScript.CST.Binder as Binder
-import PureScript.CST.Expr (exprIdent, mkIdentifierCount)
+import PureScript.CST.Expr (exprIdent)
 import PureScript.CST.Expr as Expr
 import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
-import PureScript.CST.Traversal (foldMapExpr)
+
 import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
 
 forOperations :: Linter.Linter
@@ -33,6 +32,7 @@ forOperations =
       , good:
           [ "x = (_ < 10)"
           , "x = filter (_ < 10) [ 1, 2, 3 ]"
+          , "x = \\a' -> guard (a' `op` to) $> a'"
           ]
       }
   , lintProducer: expressionLintProducer $ case _ of
@@ -46,10 +46,15 @@ forOperations =
                       case restArguments, NonEmptyArray.toArray opExpresions of
                         [], [ Tuple _ rightExpr ] ->
                           let
+                            identifierCount = keyCountLookup $ Expr.fetchIdentifiers body
                             leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
                             rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
                           in
-                            guard (leftIdent' == Just firstArgument.name || rightIdent' == Just firstArgument.name) [ { message: "Lambda can be replaced with _.", sourceRange: rangeOf lambda } ]
+                            guard
+                              ( (identifierCount firstArgument.name) == 1
+                                  && (leftIdent' == Just firstArgument.name || rightIdent' == Just firstArgument.name)
+                              )
+                              [ { message: "Lambda can be replaced with _.", sourceRange: rangeOf lambda } ]
                         _, _ -> []
                     _ -> []
               )
@@ -70,6 +75,8 @@ forRecordUpdates =
       , good:
           [ "x = _ { x = 10}"
           , "x = \\a -> y { a = a + 2 }"
+          , "x = \\a -> y { a = f a }"
+          , "x = \\a -> y { a = a f }"
           , "x = \\a b -> y { a = a + 2, b = b + 3 }"
           , "x = \\s -> s { x = 10, y = s.y + 1 }"
           , "x = y { a = _ }"
@@ -86,7 +93,7 @@ forRecordUpdates =
                     ExprRecordUpdate expr (Wrapped { value }) ->
                       let
                         identifierCountInUpdates = keyCountLookup $ QualifiedName.name <$> (recordUpdateToQualifiedIdent =<< Separated.values value)
-                        identifierCount = mkIdentifierCount foldMapExpr body
+                        identifierCount = keyCountLookup $ Expr.fetchIdentifiers body
                         allArguments = _.name <$> Array.cons firstArgument restArguments
                       in
                         ( Expr.exprIdent expr
@@ -95,8 +102,6 @@ forRecordUpdates =
                                 guard (Array.null restArguments && exprIdent == firstArgument.name && identifierCount exprIdent == 1)
                                   [ { message: "Can be re-written like `_ { a = 1, b = 2 }`", sourceRange: rangeOf lambda } ]
                         )
-                          -- x { y = _, z = _ }
-                          -- If we have any last arguments where there are found exactly once 
                           <>
                             ( allArguments
                                 # Array.reverse
@@ -115,6 +120,7 @@ forRecordCreation =
   { name: "UseAnonymous.ForRecordCreation"
   , examples:
       { bad:
+
           [ "x = \\a -> { a: a }"
           , "x = \\a b -> { a: a, b: b }"
           , "x = \\a -> { a, b: 10 }"
@@ -125,7 +131,10 @@ forRecordCreation =
           , "x = { a: _, b: 10 }"
           , "x = { a: _, b: _ }"
           , "x = \\(Flurp x) -> { b: x, a: _ }"
+          , "x = \\test -> { isParallelizable: isAllParallelizable test }"
+          , "x = \\test2 -> { isParallelizable: isAllParallelizable test2, test2 }"
           ]
+
       }
   , lintProducer: expressionLintProducer $ case _ of
       lambda@(ExprLambda { binders, body }) ->
@@ -136,13 +145,13 @@ forRecordCreation =
                   case body of
                     ExprRecord (Wrapped { value: Just value }) ->
                       let
-
                         allArguments = _.name <$> Array.cons firstArgument restArguments
+                        identifierCount = keyCountLookup $ Expr.fetchIdentifiers body
                         identifierCountInCreate = keyCountLookup $ (recordLabeledToIdent =<< Separated.values value)
                       in
                         allArguments
                           # Array.reverse
-                          # Array.takeWhile (identifierCountInCreate >>> eq 1)
+                          # Array.takeWhile (\arg -> ((identifierCount arg) <= 1) && (identifierCountInCreate arg) == 1)
                           # Array.uncons
                           # foldMap \{ head, tail } -> [ { message: "The last arguments to the lambda " <> (Array.intercalate ", " $ (un Ident <$> Array.cons head tail)) <> " occur exactly once in a record creation.", sourceRange: rangeOf lambda } ]
 

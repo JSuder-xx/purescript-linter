@@ -15,6 +15,7 @@ import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.RecordFormatting as RecordFormatting
 import Linter.UnnecessarParenthesis as UnnecessarParenthesis
 import Linter.UnnecessaryDo as UnnecessaryDo
+import Linter.UseAnonymous as UseAnonymous
 import Linter.UsePunning as UsePunning
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
@@ -39,6 +40,9 @@ combined =
     <> RecordFormatting.linter.lintProducer
     <> UnnecessarParenthesis.linter.lintProducer
     <> UnnecessaryDo.linter.lintProducer
+    <> UseAnonymous.forOperations.lintProducer
+    <> UseAnonymous.forRecordUpdates.lintProducer
+    <> UseAnonymous.forRecordCreation.lintProducer
     <> UsePunning.linter.lintProducer
 
 runLinter :: String -> Reporter Effect -> Effect Unit
