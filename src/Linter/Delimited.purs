@@ -8,7 +8,7 @@ import Data.Monoid (guard)
 import Data.Tuple (Tuple(..), snd)
 import Linter (LintResults)
 import PureScript.CST.SourcePos (columnDifference)
-import PureScript.CST.SourceRange (aligned, noSpaceBetween, spaceBetween)
+import PureScript.CST.SourceRange (leftAligned, noSpaceBetween, spaceBetween)
 import PureScript.CST.Types (Delimited, Separated(..), SourceRange, Wrapped(..), SourceToken)
 
 lint :: forall inner. { name :: String, itemName :: String, openToken :: String, closeToken :: String, innerRange :: inner -> SourceRange, validateInner :: inner -> Maybe LintResults } -> Delimited inner -> LintResults
@@ -61,7 +61,7 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
     case Array.unsnoc tail of
       Nothing ->
         guard (not $ (openRange `spaceBetween` rangeHead)) [ { message: "Missing space between " <> openToken <> " and the first " <> itemName, sourceRange: rangeHead } ]
-          <> guard (not $ (openRange `aligned` closeRange)) [ { message: "The closing " <> closeToken <> " should align with the opening " <> openToken, sourceRange: closeRange } ]
+          <> guard (not $ (openRange `leftAligned` closeRange)) [ { message: "The closing " <> closeToken <> " should align with the opening " <> openToken, sourceRange: closeRange } ]
           <> (validateInner head # fromMaybe [])
       Just { last: Tuple _ lastExpr } ->
         let

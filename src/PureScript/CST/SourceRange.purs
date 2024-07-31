@@ -12,8 +12,11 @@ sameLine = eq `on` _.start.line
 spaceBetween :: SourceRange -> SourceRange -> Boolean
 spaceBetween first second = first.end.column + 1 == second.start.column
 
-aligned :: SourceRange -> SourceRange -> Boolean
-aligned first second = first.start.column == second.start.column
+leftAligned :: SourceRange -> SourceRange -> Boolean
+leftAligned first second = first.start.column == second.start.column
+
+isAbove :: SourceRange -> SourceRange -> Boolean
+isAbove first second = first.end.line < second.start.line
 
 newLineIndent :: SourceRange -> SourceRange -> Boolean
 newLineIndent first second = first.end.line < second.start.line && first.start.column < second.start.column

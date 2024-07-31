@@ -7,7 +7,9 @@ import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (fold)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Tuple (Tuple(..), snd)
+import Data.Newtype (un)
+import Data.Tuple (Tuple(..), fst, snd)
+import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (AppSpine(..), DoStatement(..), Expr(..), Guarded(..), GuardedExpr(..), Ident(..), IntValue(..), LetBinding(..), Name(..), Operator(..), PatternGuard(..), Proper(..), QualifiedName(..), RecordLabeled(..), RecordUpdate(..), Where(..), Wrapped(..))
 
@@ -129,13 +131,16 @@ label expr = case expr of
         ]
     }
   ExprOp expr' ops ->
-    { name: "ExprOp"
-    , description: ""
-    , childKinds:
-        [ Tuple "MainExpr" [ expr' ]
-        , Tuple "Ops" (snd <$> NonEmptyArray.toArray ops)
-        ]
-    }
+    let
+      opsArray = NonEmptyArray.toArray ops
+    in
+      { name: "ExprOp"
+      , description: intercalate ", " $ (un Operator <<< QualifiedName.name <<< fst) <$> opsArray
+      , childKinds:
+          [ Tuple "MainExpr" [ expr' ]
+          , Tuple "Ops" $ snd <$> opsArray
+          ]
+      }
   ExprOpName (QualifiedName { name: Operator operator }) -> leaf "ExprOpName" operator
   ExprNegate _ expr' -> singleChildExpr "ExprNegate" expr'
   ExprRecordAccessor { expr: expr' } -> singleChildExpr "ExprRecordAccessor" expr'

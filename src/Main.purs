@@ -2,6 +2,7 @@ module Main where
 
 import Prelude
 
+import Data.Array (foldMap)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Set as Set
 import Data.Traversable (for)
@@ -10,7 +11,7 @@ import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
 import Linter (LintResult, LintResults, LintProducer, runLintProducer)
 import Linter.ArrayFormatting as ArrayFormatting
-import Linter.CompactLetBinding as CompactLetBinding
+import Linter.LetBinding as LetBinding
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.RecordFormatting as RecordFormatting
 import Linter.UnnecessarParenthesis as UnnecessarParenthesis
@@ -33,17 +34,18 @@ main = runLinter "**/*.purs" $ Console.reporter { hideSuccess: true }
 
 -- Eventually which linters to include will be configured via JSON 
 combined :: LintProducer
-combined =
-  ArrayFormatting.linter.lintProducer
-    <> CompactLetBinding.linter.lintProducer
-    <> NoDuplicateTypeclassConstraints.linter.lintProducer
-    <> RecordFormatting.linter.lintProducer
-    <> UnnecessarParenthesis.linter.lintProducer
-    <> UnnecessaryDo.linter.lintProducer
-    <> UseAnonymous.forOperations.lintProducer
-    <> UseAnonymous.forRecordUpdates.lintProducer
-    <> UseAnonymous.forRecordCreation.lintProducer
-    <> UsePunning.linter.lintProducer
+combined = foldMap _.lintProducer
+  [ ArrayFormatting.linter
+  , LetBinding.compact
+  , NoDuplicateTypeclassConstraints.linter
+  , RecordFormatting.linter
+  , UnnecessarParenthesis.linter
+  , UnnecessaryDo.linter
+  , UseAnonymous.forOperations
+  , UseAnonymous.forRecordUpdates
+  , UseAnonymous.forRecordCreation
+  , UsePunning.linter
+  ]
 
 runLinter :: String -> Reporter Effect -> Effect Unit
 runLinter src reporter = launchAff_ do

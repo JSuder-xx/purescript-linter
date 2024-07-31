@@ -5,13 +5,14 @@ import Prelude
 import Data.Traversable (for_)
 import Linter (runLintProducer)
 import Linter.ArrayFormatting as ArrayFormatting
-import Linter.CompactLetBinding as CompactLetBinding
+import Linter.LetBinding as LetBinding
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.RecordFormatting as RecordFormatting
 import Linter.UnnecessarParenthesis as UnnecessarParenthesis
 import Linter.UnnecessaryDo as UnnecessaryDo
 import Linter.UseAnonymous as UseAnonymous
 import Linter.UsePunning as UsePunning
+import Linter.WhereClause as WhereClause
 import Test.Common (assertCode)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
@@ -20,7 +21,7 @@ linters :: Spec Unit
 linters = describe "Linters" do
   for_
     [ ArrayFormatting.linter
-    , CompactLetBinding.linter
+    , LetBinding.compact
     , NoDuplicateTypeclassConstraints.linter
     , RecordFormatting.linter
     , UnnecessaryDo.linter
@@ -29,6 +30,7 @@ linters = describe "Linters" do
     , UseAnonymous.forRecordUpdates
     , UseAnonymous.forRecordCreation
     , UsePunning.linter
+    , WhereClause.leftAlignedWhere
     ]
     \linter -> describe linter.name do
       describe "Examples of Failing Code" do

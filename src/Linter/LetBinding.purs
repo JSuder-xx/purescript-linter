@@ -1,4 +1,4 @@
-module Linter.CompactLetBinding (linter) where
+module Linter.LetBinding (compact) where
 
 import Prelude
 
@@ -13,8 +13,8 @@ import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (sameLine)
 import PureScript.CST.Types (DoStatement(..), Expr(..))
 
-linter :: Linter.Linter
-linter =
+compact :: Linter.Linter
+compact =
   { name: "CompactLetBinding"
   , examples:
       { bad:
