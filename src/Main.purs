@@ -18,6 +18,7 @@ import Linter.UnnecessarParenthesis as UnnecessarParenthesis
 import Linter.UnnecessaryDo as UnnecessaryDo
 import Linter.UseAnonymous as UseAnonymous
 import Linter.UsePunning as UsePunning
+import Linter.WhereClause as WhereClause
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readFile)
@@ -32,7 +33,7 @@ import Reporter.Console as Console
 main :: Effect Unit
 main = runLinter "**/*.purs" $ Console.reporter { hideSuccess: true }
 
--- Eventually which linters to include will be configured via JSON 
+-- Eventually which linters to include will be configured via JSON
 combined :: LintProducer
 combined = foldMap _.lintProducer
   [ ArrayFormatting.linter
@@ -45,6 +46,7 @@ combined = foldMap _.lintProducer
   , UseAnonymous.forRecordUpdates
   , UseAnonymous.forRecordCreation
   , UsePunning.linter
+  , WhereClause.leftAlignedWhere
   ]
 
 runLinter :: String -> Reporter Effect -> Effect Unit

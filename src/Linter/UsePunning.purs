@@ -21,6 +21,7 @@ linter =
       , good:
           [ "x = { a: 10, b: false }"
           , "x = { a: 10 }"
+          , "x = { a: SomeModule.a }"
           ]
       }
   , lintProducer: expressionLintProducer $ case _ of
@@ -30,6 +31,6 @@ linter =
   }
 
 couldBePun :: forall e. RecordLabeled (Expr e) -> Array LintResult
-couldBePun (RecordField (Name { name: Label name }) { range } (ExprIdent (QualifiedName { name: Ident (identifierName) }))) =
+couldBePun (RecordField (Name { name: Label name }) { range } (ExprIdent (QualifiedName { module: Nothing, name: Ident (identifierName) }))) =
   guard (name == identifierName) $ pure { message: "Use punning", sourceRange: range }
 couldBePun _ = []

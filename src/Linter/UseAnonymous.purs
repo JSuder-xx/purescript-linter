@@ -31,6 +31,7 @@ forOperations =
           ]
       , good:
           [ "x = (_ < 10)"
+          , "x = \\s -> M.s < 10"
           , "x = filter (_ < 10) [ 1, 2, 3 ]"
           , "x = \\a' -> guard (a' `op` to) $> a'"
           ]
@@ -46,7 +47,7 @@ forOperations =
                       case restArguments, NonEmptyArray.toArray opExpresions of
                         [], [ Tuple _ rightExpr ] ->
                           let
-                            identifierCount = keyCountLookup $ Expr.fetchIdentifiers body
+                            identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
                             leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
                             rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
                           in
@@ -93,7 +94,7 @@ forRecordUpdates =
                     ExprRecordUpdate expr (Wrapped { value }) ->
                       let
                         identifierCountInUpdates = keyCountLookup $ QualifiedName.name <$> (recordUpdateToQualifiedIdent =<< Separated.values value)
-                        identifierCount = keyCountLookup $ Expr.fetchIdentifiers body
+                        identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
                         allArguments = _.name <$> Array.cons firstArgument restArguments
                       in
                         ( Expr.exprIdent expr
@@ -146,7 +147,7 @@ forRecordCreation =
                     ExprRecord (Wrapped { value: Just value }) ->
                       let
                         allArguments = _.name <$> Array.cons firstArgument restArguments
-                        identifierCount = keyCountLookup $ Expr.fetchIdentifiers body
+                        identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
                         identifierCountInCreate = keyCountLookup $ (recordLabeledToIdent =<< Separated.values value)
                       in
                         allArguments

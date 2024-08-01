@@ -51,7 +51,7 @@ x =
                     <#> rangeOf
                     # Array.find (\bindingRange -> not (whereTokenRange `leftAligned` bindingRange))
                 )
-                  # foldMap (\badBindingRange -> [ { message: "The `where` needs to be below the expression", sourceRange: badBindingRange } ])
+                  # foldMap (\badBindingRange -> [ { message: "The bindings under `where` should be left aligned with the `where`.", sourceRange: badBindingRange } ])
               )
 
       _ -> []

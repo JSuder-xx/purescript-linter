@@ -19,7 +19,7 @@ reporter { hideSuccess } =
       if not $ Array.null lintResults then do
         log $ styled bold filePath
         for_ lintResults \{ message, sourceRange } ->
-          log $ styled red $ "  ✗ " <> message <> " " <> (styled (cyan <> underline) $ filePath <> ":" <> show (sourceRange.start.line + 1) <> ":" <> show (sourceRange.start.column + 1))
+          log $ styled red $ "  ✗ " <> (styled (cyan <> underline) $ filePath <> ":" <> show (sourceRange.start.line + 1) <> ":" <> show (sourceRange.start.column + 1)) <> " - " <> message
       else if not hideSuccess then log $ styled (bold <> green) $ "✓︎ " <> filePath
       else pure unit
 

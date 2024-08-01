@@ -39,7 +39,7 @@ x =
           """
           , """
 x = do
-  let 
+  let
     x = 1
     y :: Int
     y = 2
@@ -55,8 +55,17 @@ x =
           , """
 x =
   let x :: Int
-      x = 1 
+      x = 1
       y = 2 in
+  x + 2
+          """
+          , """
+x fruit =
+  let x :: Int
+      x = 1
+      y = case fruit of
+        Apple _ -> 1
+        Banana _ -> 2 in
   x + 2
           """
           , """
@@ -84,8 +93,6 @@ x = do
           lastRange = rangeOf $ NonEmptyArray.last let'.bindings
         in
           guard (not $ let'.keyword.range `sameLine` headRange) [ { message: "The first binding must be on the same line as the `let` keyword ex. `let x = 1`", sourceRange: headRange } ]
-            <> guard (not $ let'.in.range `sameLine` lastRange) [ { message: "The `in` keyword should follow the last binding on the same line", sourceRange: let'.in.range } ]
-
+            <> guard (lastRange.end.line /= let'.in.range.start.line) [ { message: "The `in` keyword should follow the last binding on the same line", sourceRange: let'.in.range } ]
       _ -> []
   }
-

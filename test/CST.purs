@@ -25,7 +25,7 @@ cst :: Spec Unit
 cst =
   describe "PureScript.CST" do
     describe "Expr" do
-      describe "fetchIdentifiers" do
+      describe "allUnqualifiedIdentifiers" do
         let
           expectNames descr code names =
             it descr $ assertCode code
@@ -33,7 +33,7 @@ cst =
                   >>> Array.head
                   >>> maybe
                     (fail "No value expressions found")
-                    (Expr.fetchIdentifiers >>> Array.sort >>> map (un Ident) >>> shouldEqual names)
+                    (Expr.allUnqualifiedIdentifiers >>> Array.sort >>> map (un Ident) >>> shouldEqual names)
 
         expectNames "Simple Function Call" "x = a b" [ "a", "b" ]
 

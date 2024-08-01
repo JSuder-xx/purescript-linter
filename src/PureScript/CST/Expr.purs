@@ -35,17 +35,17 @@ exprIdent = case _ of
 -- | 
 -- | 1. Attempted to use the traversal functions but this yielded surprising and inconsistent results. 
 -- | 2. There counts implicit identifiers from record puns.
-fetchIdentifiers :: Expr Void -> Array Ident
-fetchIdentifiers = case _ of
+allUnqualifiedIdentifiers :: Expr Void -> Array Ident
+allUnqualifiedIdentifiers = case _ of
   ExprIdent (QualifiedName { module: Nothing, name }) -> [ name ]
   ExprRecord (Wrapped { value: Just exprs }) ->
     Separated.values exprs
       >>=
         case _ of
-          RecordField _ _ expr' -> fetchIdentifiers expr'
+          RecordField _ _ expr' -> allUnqualifiedIdentifiers expr'
           RecordPun (Name { name }) -> [ name ]
 
-  expr -> label expr # _.childKinds >>= snd >>= fetchIdentifiers
+  expr -> label expr # _.childKinds >>= snd >>= allUnqualifiedIdentifiers
 
 appTerm ∷ AppSpine Expr Void → Maybe (Expr Void)
 appTerm = case _ of
