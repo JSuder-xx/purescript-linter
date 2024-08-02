@@ -15,7 +15,7 @@ import PureScript.CST.SourceRange (isAbove, leftAligned)
 import PureScript.CST.Types (Declaration(..), Guarded(..), Where(..))
 
 leftAlignedWhere :: Linter.Linter
-leftAlignedWhere =
+leftAlignedWhere = Linter.mkWithNoConfig
   { name: "WhereClauseLeftAligned"
   , examples:
       { bad:

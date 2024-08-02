@@ -10,7 +10,7 @@ import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Types (Expr(..))
 
 linter :: Linter.Linter
-linter =
+linter = Linter.mkWithNoConfig
   { name: "ArrayFormatting"
   , examples:
       { bad:

@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Traversable (for_)
 import Linter (runLintProducer)
+import Linter as Linter
 import Linter.ArrayFormatting as ArrayFormatting
 import Linter.LetBinding as LetBinding
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
@@ -32,11 +33,12 @@ linters = describe "Linters" do
     , UsePunning.linter
     , WhereClause.leftAlignedWhere
     ]
-    \linter -> describe linter.name do
+    \linter -> describe (Linter.name linter) do
+      let examples = Linter.examples linter
       describe "Examples of Failing Code" do
-        for_ linter.examples.bad \code ->
-          it code $ assertCode code \m -> (runLintProducer linter.lintProducer m) `shouldNotEqual` []
+        for_ examples.bad \code ->
+          it code $ assertCode code \m -> (runLintProducer (Linter.defaultLintProducer linter) m) `shouldNotEqual` []
       describe "Examples of Passing Code" do
-        for_ linter.examples.good \code ->
-          it code $ assertCode code \m -> (runLintProducer linter.lintProducer m) `shouldEqual` []
+        for_ examples.good \code ->
+          it code $ assertCode code \m -> (runLintProducer (Linter.defaultLintProducer linter) m) `shouldEqual` []
 

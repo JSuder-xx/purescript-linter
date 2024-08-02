@@ -11,7 +11,7 @@ import PureScript.CST.SourceRange (newLineIndent, noSpaceBetween, rangeOfRecordL
 import PureScript.CST.Types (Expr(..), Name(..), RecordLabeled(..))
 
 linter :: Linter.Linter
-linter =
+linter = Linter.mkWithNoConfig
   { name: "RecordFormatting"
   , examples:
       { bad:

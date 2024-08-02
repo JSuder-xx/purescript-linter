@@ -12,8 +12,8 @@ import Linter as Linter
 import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
 
 linter :: Linter.Linter
-linter =
-  { name: "UnnecessaryDo"
+linter = Linter.mkWithNoConfig
+  { name: "NoUnnecessaryDo"
   , examples:
       { bad:
           [ "x = do\n  pure 10"

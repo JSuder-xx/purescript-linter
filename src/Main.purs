@@ -2,14 +2,18 @@ module Main where
 
 import Prelude
 
-import Data.Array (foldMap)
+import AppConfig (AppConfig)
+import AppConfig as AppConfig
+import Data.Argonaut (parseJson, printJsonDecodeError)
 import Data.Array.NonEmpty as NonEmptyArray
+import Data.Either (either)
 import Data.Set as Set
-import Data.Traversable (for)
+import Data.Traversable (for, for_, intercalate)
 import Effect (Effect)
-import Effect.Aff (launchAff_)
+import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
-import Linter (LintResult, LintResults, LintProducer, runLintProducer)
+import Effect.Console (error)
+import Linter (LintProducer, LintResult, LintResults, Linter, runLintProducer)
 import Linter.ArrayFormatting as ArrayFormatting
 import Linter.LetBinding as LetBinding
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
@@ -31,11 +35,43 @@ import Reporter (Reporter)
 import Reporter.Console as Console
 
 main :: Effect Unit
-main = runLinter "**/*.purs" $ Console.reporter { hideSuccess: true }
+main = launchAff_ do
+  configFile <- filePathToContents "lint.config.json"
+  configFile
+    # (parseJson >=> AppConfig.decode knownLinters)
+    # either
+        (liftEffect <<< error <<< printJsonDecodeError)
+        \appConfig -> runLinter appConfig $ Console.reporter { hideSuccess: appConfig.hideSuccess }
 
--- Eventually which linters to include will be configured via JSON
-combined :: LintProducer
-combined = foldMap _.lintProducer
+filePathToContents :: String -> Aff String
+filePathToContents = (liftEffect <<< Buffer.toString UTF8) <=< readFile
+
+runLinter :: AppConfig -> Reporter Effect -> Aff Unit
+runLinter { ruleSets } reporter = do
+  for_ ruleSets \ruleSet -> do
+    filePaths <- Set.toUnfoldable <$> expandGlobsCwd ruleSet.globs
+    if filePaths == [] then
+      liftEffect $ reporter.error $ "No Files found with globs: " <> (intercalate ", " ruleSet.globs)
+    else do
+      files <- for filePaths \filePath -> do
+        content <- filePathToContents filePath
+        let fileResults = { filePath, lintResults: lintModule ruleSet.linter $ parseModule content }
+        liftEffect $ reporter.fileResults fileResults
+        pure fileResults
+      liftEffect $ reporter.report files
+
+  where
+  lintModule :: LintProducer -> RecoveredParserResult CST.Module -> LintResults
+  lintModule producer = case _ of
+    ParseSucceeded m -> runLintProducer producer m
+    ParseSucceededWithErrors _ positionedErrors -> positionedErrorToLintResult <$> NonEmptyArray.toArray positionedErrors
+    ParseFailed positionedError -> [ positionedErrorToLintResult positionedError ]
+
+  positionedErrorToLintResult :: PositionedError -> LintResult
+  positionedErrorToLintResult { error, position } = { message: printParseError error, sourceRange: { start: position, end: position } }
+
+knownLinters :: Array Linter
+knownLinters =
   [ ArrayFormatting.linter
   , LetBinding.compact
   , NoDuplicateTypeclassConstraints.linter
@@ -48,26 +84,3 @@ combined = foldMap _.lintProducer
   , UsePunning.linter
   , WhereClause.leftAlignedWhere
   ]
-
-runLinter :: String -> Reporter Effect -> Effect Unit
-runLinter src reporter = launchAff_ do
-  filePaths <- Set.toUnfoldable <$> expandGlobsCwd [ src ]
-  if filePaths == [] then
-    liftEffect $ reporter.error $ "No Files found with src : " <> src
-  else do
-    files <- for filePaths \filePath -> do
-      content <- (liftEffect <<< Buffer.toString UTF8) =<< readFile filePath
-      let fileResults = { filePath, lintResults: lintModule $ parseModule content }
-      liftEffect $ reporter.fileResults fileResults
-      pure fileResults
-    liftEffect $ reporter.report files
-
-  where
-  lintModule :: RecoveredParserResult CST.Module -> LintResults
-  lintModule = case _ of
-    ParseSucceeded m -> runLintProducer combined m
-    ParseSucceededWithErrors _ positionedErrors -> positionedErrorToLintResult <$> NonEmptyArray.toArray positionedErrors
-    ParseFailed positionedError -> [ positionedErrorToLintResult positionedError ]
-
-  positionedErrorToLintResult :: PositionedError -> LintResult
-  positionedErrorToLintResult { error, position } = { message: printParseError error, sourceRange: { start: position, end: position } }

@@ -3,19 +3,16 @@ module Linter.LetBinding (compact) where
 import Prelude
 
 import Data.Array.NonEmpty as NonEmptyArray
-
 import Data.Monoid (guard)
-
 import Linter (expressionLintProducer)
 import Linter as Linter
 import PureScript.CST.Range (rangeOf)
-
 import PureScript.CST.SourceRange (sameLine)
 import PureScript.CST.Types (DoStatement(..), Expr(..))
 
 compact :: Linter.Linter
-compact =
-  { name: "CompactLetBinding"
+compact = Linter.mkWithNoConfig
+  { name: "LetBinding-VerticalCompact"
   , examples:
       { bad:
           [ """

@@ -12,8 +12,8 @@ import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(..))
 
 linter :: Linter.Linter
-linter =
-  { name: "UnnecessaryParenthesis"
+linter = Linter.mkWithNoConfig
+  { name: "NoUnnecessaryParenthesis"
   , examples:
       { bad:
           [ "x = (1)"

@@ -1,0 +1,23 @@
+{
+  "hideSuccess": false,
+  "ruleSets": [
+    {
+      "globs": [
+        "**/*.purs"
+      ],
+      "rules": {
+        "ArrayFormatting": null,
+        "LetBinding-VerticalCompact": null,
+        "NoDuplicateTypeclassConstraints": null,
+        "RecordFormatting": null,
+        "NoUnnecessaryDo": null,
+        "NoUnnecessaryParenthesis": null,
+        "UseAnonymous-ForOperations": null,
+        "UseAnonymous-ForRecordUpdates": null,
+        "UseAnonymous-ForRecordCreation": null,
+        "UsePunning": null,
+        "WhereClauseLeftAligned": null
+      }
+    }
+  ]
+}

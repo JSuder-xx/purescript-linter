@@ -11,7 +11,7 @@ import Linter as Linter
 import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), QualifiedName(..), RecordLabeled(..), Separated(..), Wrapped(..))
 
 linter :: Linter.Linter
-linter =
+linter = Linter.mkWithNoConfig
   { name: "UsePunning"
   , examples:
       { bad:

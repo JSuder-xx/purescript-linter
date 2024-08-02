@@ -20,8 +20,8 @@ import PureScript.CST.Types (Declaration(..), Ident(..), Labeled(..), Name(..), 
 import PureScript.CST.Types as CST
 
 linter :: Linter.Linter
-linter =
-  { name: "No duplicate typeclass constraints"
+linter = Linter.mkWithNoConfig
+  { name: "NoDuplicateTypeclassConstraints"
   , examples:
       { bad:
           [ "f :: forall a. Ord a => Ord a => a -> a -> Boolean"

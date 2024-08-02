@@ -22,8 +22,8 @@ import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
 
 forOperations :: Linter.Linter
-forOperations =
-  { name: "UseAnonymous.ForOperations"
+forOperations = Linter.mkWithNoConfig
+  { name: "UseAnonymous-ForOperations"
   , examples:
       { bad:
           [ "x = \\s -> s < 10"
@@ -64,8 +64,8 @@ forOperations =
   }
 
 forRecordUpdates :: Linter.Linter
-forRecordUpdates =
-  { name: "UseAnonymous.ForRecordUpdates"
+forRecordUpdates = Linter.mkWithNoConfig
+  { name: "UseAnonymous-ForRecordUpdates"
   , examples:
       { bad:
           [ "x = \\s -> s { x = 10 }"
@@ -117,8 +117,8 @@ forRecordUpdates =
   }
 
 forRecordCreation :: Linter.Linter
-forRecordCreation =
-  { name: "UseAnonymous.ForRecordCreation"
+forRecordCreation = Linter.mkWithNoConfig
+  { name: "UseAnonymous-ForRecordCreation"
   , examples:
       { bad:
 
