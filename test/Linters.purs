@@ -5,6 +5,7 @@ import Prelude
 import Data.Traversable (for_)
 import Linter (runLintProducer)
 import Linter as Linter
+import Linter.AlignedParenthesis as AlignedParenthesis
 import Linter.ArrayFormatting as ArrayFormatting
 import Linter.LetBinding as LetBinding
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
@@ -21,7 +22,8 @@ import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
 linters :: Spec Unit
 linters = describe "Linters" do
   for_
-    [ ArrayFormatting.linter
+    [ AlignedParenthesis.linter
+    , ArrayFormatting.linter
     , LetBinding.compact
     , NoDuplicateTypeclassConstraints.linter
     , RecordFormatting.linter

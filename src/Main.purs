@@ -14,6 +14,7 @@ import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Console (error)
 import Linter (LintProducer, LintResult, LintResults, Linter, runLintProducer)
+import Linter.AlignedParenthesis as AlignedParenthesis
 import Linter.ArrayFormatting as ArrayFormatting
 import Linter.LetBinding as LetBinding
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
@@ -72,7 +73,8 @@ runLinter { ruleSets } reporter = do
 
 knownLinters :: Array Linter
 knownLinters =
-  [ ArrayFormatting.linter
+  [ AlignedParenthesis.linter
+  , ArrayFormatting.linter
   , LetBinding.compact
   , NoDuplicateTypeclassConstraints.linter
   , RecordFormatting.linter

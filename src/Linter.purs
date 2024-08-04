@@ -14,6 +14,7 @@ module Linter
   , mkWithNoConfig
   , name
   , runLintProducer
+  , typeLintProducer
   ) where
 
 import Prelude
@@ -79,3 +80,6 @@ expressionLintProducer onExpr = { onModule: mempty, onPureScript: (mempty :: OnP
 
 declarationLintProducer :: OnKind CST.Declaration -> LintProducer
 declarationLintProducer onDecl = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onDecl = onDecl } }
+
+typeLintProducer :: OnKind CST.Type -> LintProducer
+typeLintProducer onType = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onType = onType } }

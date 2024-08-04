@@ -1,11 +1,12 @@
 {
-  "hideSuccess": false,
+  "hideSuccess": true,
   "ruleSets": [
     {
       "globs": [
         "**/*.purs"
       ],
       "rules": {
+        "AlignedParenthesis": null,
         "ArrayFormatting": null,
         "LetBinding-VerticalCompact": null,
         "NoDuplicateTypeclassConstraints": null,

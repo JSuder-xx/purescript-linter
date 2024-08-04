@@ -47,6 +47,11 @@ allUnqualifiedIdentifiers = case _ of
 
   expr -> label expr # _.childKinds >>= snd >>= allUnqualifiedIdentifiers
 
+allParenthesis :: Expr Void -> Array (Wrapped (Expr Void))
+allParenthesis = case _ of
+  ExprParens x -> [ x ]
+  expr -> label expr # _.childKinds >>= snd >>= allParenthesis
+
 appTerm ∷ AppSpine Expr Void → Maybe (Expr Void)
 appTerm = case _ of
   AppType _ _ -> Nothing
