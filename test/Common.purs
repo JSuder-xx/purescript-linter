@@ -8,12 +8,12 @@ import PureScript.CST (RecoveredParserResult(..), parseModule)
 import PureScript.CST.Types (Module)
 import Test.Spec.Assertions (fail)
 
-prefix :: String
-prefix = "module X where\n\n"
+simpleModulePrefix :: String
+simpleModulePrefix = "module X where\n\n"
 
-assertCode :: forall m10. MonadThrow Error m10 => String -> (Module Void -> m10 Unit) -> m10 Unit
+assertCode :: forall m. MonadThrow Error m => String -> (Module Void -> m Unit) -> m Unit
 assertCode code test =
-  case (parseModule $ prefix <> code) of
+  case (parseModule code) of
     ParseSucceeded m -> test m
     ParseSucceededWithErrors _ _ -> fail "Failed to parse"
     ParseFailed _ -> fail "Failed to parse"

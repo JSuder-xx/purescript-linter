@@ -12,6 +12,7 @@ module Linter
   , examples
   , expressionLintProducer
   , mkWithNoConfig
+  , moduleLintProducer
   , name
   , runLintProducer
   , typeLintProducer
@@ -80,6 +81,9 @@ expressionLintProducer onExpr = { onModule: mempty, onPureScript: (mempty :: OnP
 
 declarationLintProducer :: OnKind CST.Declaration -> LintProducer
 declarationLintProducer onDecl = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onDecl = onDecl } }
+
+moduleLintProducer :: OnKind CST.Module -> LintProducer
+moduleLintProducer onModule = { onModule, onPureScript: (mempty :: OnPureScript LintResults) }
 
 typeLintProducer :: OnKind CST.Type -> LintProducer
 typeLintProducer onType = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onType = onType } }

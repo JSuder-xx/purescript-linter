@@ -12,7 +12,7 @@
   "scripts": {
     "test": "npx spago test",
     "build": "npm run compile",
-    "compile": "spago bundle --outfile dist/index.js --bundle-type module --platform node",
+    "compile": "spago bundle --outfile dist/index.js --minify --bundle-type module --platform node",
     "compile-self": "node index.js -c \"src/**/*.purs\" \".spago/p/**/src/**/*.purs\""
   },
   "author": "John Suder (https://github.com/JSuder-xx)",

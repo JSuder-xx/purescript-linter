@@ -6,9 +6,8 @@ import Data.Array as Array
 import Data.Maybe (maybe)
 import Data.Newtype (un)
 import PureScript.CST.Expr as Expr
-
 import PureScript.CST.Types (Declaration(..), Expr, Ident(..), Module(..), ModuleBody(..))
-import Test.Common (assertCode)
+import Test.Common (assertCode, simpleModulePrefix)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail, shouldEqual)
 
@@ -28,7 +27,7 @@ cst =
       describe "allUnqualifiedIdentifiers" do
         let
           expectNames descr code names =
-            it descr $ assertCode code
+            it descr $ assertCode (simpleModulePrefix <> code)
               $ declaredValueExpressions
                   >>> Array.head
                   >>> maybe
