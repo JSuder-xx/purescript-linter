@@ -16,7 +16,9 @@ import Effect.Console (error)
 import Linter (LintProducer, LintResult, LintResults, Linter, runLintProducer)
 import Linter.AlignedParenthesis as AlignedParenthesis
 import Linter.ArrayFormatting as ArrayFormatting
+import Linter.IfThenElse as IfThenElse
 import Linter.LetBinding as LetBinding
+import Linter.ModuleExports as ModuleExports
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.RecordFormatting as RecordFormatting
 import Linter.UnnecessarParenthesis as UnnecessarParenthesis
@@ -75,7 +77,9 @@ knownLinters :: Array Linter
 knownLinters =
   [ AlignedParenthesis.linter
   , ArrayFormatting.linter
+  , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
+  , ModuleExports.exportsRequired
   , NoDuplicateTypeclassConstraints.linter
   , RecordFormatting.linter
   , UnnecessarParenthesis.linter
@@ -84,5 +88,5 @@ knownLinters =
   , UseAnonymous.forRecordUpdates
   , UseAnonymous.forRecordCreation
   , UsePunning.linter
-  , WhereClause.leftAlignedWhere
+  , WhereClause.whereLeftAligned
   ]

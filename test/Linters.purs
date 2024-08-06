@@ -7,6 +7,7 @@ import Linter (runLintProducer)
 import Linter as Linter
 import Linter.AlignedParenthesis as AlignedParenthesis
 import Linter.ArrayFormatting as ArrayFormatting
+import Linter.IfThenElse as IfThenElse
 import Linter.LetBinding as LetBinding
 import Linter.ModuleExports as ModuleExports
 import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
@@ -25,6 +26,7 @@ linters = describe "Linters" do
   for_
     [ AlignedParenthesis.linter
     , ArrayFormatting.linter
+    , IfThenElse.ifThenElseLeftAligned
     , LetBinding.compact
     , NoDuplicateTypeclassConstraints.linter
     , RecordFormatting.linter
@@ -34,7 +36,7 @@ linters = describe "Linters" do
     , UseAnonymous.forRecordUpdates
     , UseAnonymous.forRecordCreation
     , UsePunning.linter
-    , WhereClause.leftAlignedWhere
+    , WhereClause.whereLeftAligned
     ]
     $ testLinterWithCode (simpleModulePrefix <> _)
 
