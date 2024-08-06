@@ -1,19 +1,35 @@
 {
   "name": "purescript-linter",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A Linter for the PureScript language.",
+  "keywords": [
+    "purescript",
+    "linter",
+    "static analysis"
+  ],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx spago test",
+    "build": "npm run compile",
+    "compile": "spago bundle --outfile dist/index.js --bundle-type module --platform node",
+    "compile-self": "node index.js -c \"src/**/*.purs\" \".spago/p/**/src/**/*.purs\""
   },
-  "author": "",
-  "license": "ISC",
+  "author": "John Suder (https://github.com/JSuder-xx)",
+  "license": "MIT",
   "devDependencies": {
+    "debug": "^4.3.5",
+    "esbuild": "0.23.0",
     "purescript": "^0.15.15",
+    "purs-tidy": "^0.11.0",
     "spago": "^0.93.35"
   },
-  "dependencies": {
-    "debug": "^4.3.5",
-    "purs-tidy": "^0.11.0"
+  "repository": "JSuder-xx/purescript-linter",
+  "files": [
+    "dist/*",
+    "index.js"
+  ],
+  "bin": {
+    "purescript-linter": "index.js"
   }
 }
