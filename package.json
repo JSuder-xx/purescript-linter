@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "JSuder-xx/purescript-linter"
+    "url": "git+https://github.com/JSuder-xx/purescript-linter.git"
   },
   "files": [
     "dist/*",
