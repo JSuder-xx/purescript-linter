@@ -24,7 +24,10 @@
     "purs-tidy": "^0.11.0",
     "spago": "^0.93.35"
   },
-  "repository": "JSuder-xx/purescript-linter",
+  "repository": {
+    "type": "git",
+    "url": "JSuder-xx/purescript-linter"
+  },
   "files": [
     "dist/*",
     "index.js"
