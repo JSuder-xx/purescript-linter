@@ -40,6 +40,12 @@ type X = (
   x :: Int
   )
           """
+          , """
+type X r = ( x :: Int
+  , y :: Int
+  | r
+  )
+          """
           ]
       , good:
           [ """
@@ -68,6 +74,13 @@ x =
 type X = 
   ( x :: Int
   , y :: Int
+  )
+          """
+          , """
+type X r = 
+  ( x :: Int
+  , y :: Int
+  | r
   )
           """
           ]
