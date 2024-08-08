@@ -1,4 +1,4 @@
-module Linter.UseAnonymous (forOperations, forRecordUpdates, forRecordCreation) where
+module Rule.UseAnonymous (forOperations, forRecordUpdates, forRecordCreation) where
 
 import Prelude
 
@@ -10,8 +10,8 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Newtype (un, unwrap)
 import Data.Tuple (Tuple(..))
-import Linter (expressionLintProducer)
-import Linter as Linter
+import Rule (expressionLintProducer)
+import Rule as Rule
 import PureScript.CST.Binder as Binder
 import PureScript.CST.Expr (exprIdent)
 import PureScript.CST.Expr as Expr
@@ -21,8 +21,8 @@ import PureScript.CST.Separated as Separated
 
 import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
 
-forOperations :: Linter.Linter
-forOperations = Linter.mkWithNoConfig
+forOperations :: Rule.Rule
+forOperations = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForOperations"
   , examples:
       { bad:
@@ -63,8 +63,8 @@ forOperations = Linter.mkWithNoConfig
       _ -> []
   }
 
-forRecordUpdates :: Linter.Linter
-forRecordUpdates = Linter.mkWithNoConfig
+forRecordUpdates :: Rule.Rule
+forRecordUpdates = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordUpdates"
   , examples:
       { bad:
@@ -116,8 +116,8 @@ forRecordUpdates = Linter.mkWithNoConfig
       _ -> []
   }
 
-forRecordCreation :: Linter.Linter
-forRecordCreation = Linter.mkWithNoConfig
+forRecordCreation :: Rule.Rule
+forRecordCreation = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordCreation"
   , examples:
       { bad:

@@ -14,8 +14,8 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import Linter (LintProducer, Linter)
-import Linter as Linter
+import Rule (LintProducer, Rule)
+import Rule as Rule
 
 type AppConfig =
   { hideSuccess :: Boolean
@@ -24,27 +24,27 @@ type AppConfig =
 
 type RuleSet =
   { globs :: Array String
-  , linter :: LintProducer
+  , lintProducer :: LintProducer
   }
 
-decode :: Array Linter -> Json -> Either JsonDecodeError AppConfig
-decode knownLinters = decodeJObject >=> \object -> do
+decode :: Array Rule -> Json -> Either JsonDecodeError AppConfig
+decode knownRules = decodeJObject >=> \object -> do
   hideSuccess <- fromMaybe true <$> object .:! "hideSuccess"
   ruleSetsRaw :: Array (Object Json) <- object .: "ruleSets"
   ruleSets <- traverse decodeRuleSet ruleSetsRaw
   pure { hideSuccess, ruleSets }
   where
-  linterMap = knownLinters <#> lift2 Tuple Linter.name identity # Map.fromFoldable
+  ruleMap = knownRules <#> lift2 Tuple Rule.name identity # Map.fromFoldable
 
   decodeRuleSet :: Object Json -> Either JsonDecodeError RuleSet
   decodeRuleSet object = do
     globs <- object .: "globs"
     rules <- object .: "rules"
-    linter <- Object.foldM foldRule mempty rules
-    pure { globs, linter }
+    lintProducer <- Object.foldM foldRule mempty rules
+    pure { globs, lintProducer }
 
   foldRule :: LintProducer -> String -> Json -> Either JsonDecodeError LintProducer
   foldRule accProducer ruleName ruleConfigJson = do
-    linter <- note (Named ("Rule Named:" <> ruleName) MissingValue) $ Map.lookup ruleName linterMap
-    lintProducer <- Linter.decodeLintProducer ruleConfigJson linter
+    rule <- note (Named ("Rule Named:" <> ruleName) MissingValue) $ Map.lookup ruleName ruleMap
+    lintProducer <- Rule.decodeLintProducer ruleConfigJson rule
     pure $ lintProducer <> accProducer

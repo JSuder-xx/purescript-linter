@@ -1,4 +1,4 @@
-module Linter.UsePunning (linter) where
+module Rule.UsePunning (rule) where
 
 import Prelude
 
@@ -6,12 +6,13 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (snd)
-import Linter (LintResult, expressionLintProducer)
-import Linter as Linter
+import Rule (LintResult, expressionLintProducer)
+import Rule as Rule
 import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), QualifiedName(..), RecordLabeled(..), Separated(..), Wrapped(..))
 
-linter :: Linter.Linter
-linter = Linter.mkWithNoConfig
+rule :: Rule.Rule
+
+rule = Rule.mkWithNoConfig
   { name: "UsePunning"
   , examples:
       { bad:

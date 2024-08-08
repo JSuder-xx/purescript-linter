@@ -1,4 +1,4 @@
-module Linter.NoDuplicateTypeclassConstraints (linter) where
+module Rule.NoDuplicateTypeclassConstraints (rule) where
 
 import Prelude
 
@@ -12,15 +12,16 @@ import Data.Monoid (guard)
 import Data.NonEmpty (NonEmpty(..))
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..))
-import Linter (declarationLintProducer)
-import Linter as Linter
+import Rule (declarationLintProducer)
+import Rule as Rule
 import PureScript.CST.Fold (OnPureScript)
 import PureScript.CST.Traversal (foldMapType)
 import PureScript.CST.Types (Declaration(..), Ident(..), Labeled(..), Name(..), Proper(..), QualifiedName(..))
 import PureScript.CST.Types as CST
 
-linter :: Linter.Linter
-linter = Linter.mkWithNoConfig
+rule :: Rule.Rule
+
+rule = Rule.mkWithNoConfig
   { name: "NoDuplicateTypeclassConstraints"
   , examples:
       { bad:

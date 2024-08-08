@@ -13,19 +13,19 @@ import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Console (error)
-import Linter (LintProducer, LintResult, LintResults, Linter, runLintProducer)
-import Linter.AlignedParenthesis as AlignedParenthesis
-import Linter.ArrayFormatting as ArrayFormatting
-import Linter.IfThenElse as IfThenElse
-import Linter.LetBinding as LetBinding
-import Linter.ModuleExports as ModuleExports
-import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
-import Linter.RecordFormatting as RecordFormatting
-import Linter.UnnecessarParenthesis as UnnecessarParenthesis
-import Linter.UnnecessaryDo as UnnecessaryDo
-import Linter.UseAnonymous as UseAnonymous
-import Linter.UsePunning as UsePunning
-import Linter.WhereClause as WhereClause
+import Rule (LintProducer, LintResult, LintResults, Rule, runLintProducer)
+import Rule.AlignedParenthesis as AlignedParenthesis
+import Rule.ArrayFormatting as ArrayFormatting
+import Rule.IfThenElse as IfThenElse
+import Rule.LetBinding as LetBinding
+import Rule.ModuleExports as ModuleExports
+import Rule.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
+import Rule.RecordFormatting as RecordFormatting
+import Rule.UnnecessarParenthesis as UnnecessarParenthesis
+import Rule.UnnecessaryDo as UnnecessaryDo
+import Rule.UseAnonymous as UseAnonymous
+import Rule.UsePunning as UsePunning
+import Rule.WhereClause as WhereClause
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readFile)
@@ -41,7 +41,7 @@ main :: Effect Unit
 main = launchAff_ do
   configFile <- filePathToContents "lint.config.json"
   configFile
-    # (parseJson >=> AppConfig.decode knownLinters)
+    # (parseJson >=> AppConfig.decode knownRules)
     # either
         (liftEffect <<< error <<< printJsonDecodeError)
         \appConfig -> runLinter appConfig $ Console.reporter { hideSuccess: appConfig.hideSuccess }
@@ -58,7 +58,7 @@ runLinter { ruleSets } reporter = do
     else do
       files <- for filePaths \filePath -> do
         content <- filePathToContents filePath
-        let fileResults = { filePath, lintResults: lintModule ruleSet.linter $ parseModule content }
+        let fileResults = { filePath, lintResults: lintModule ruleSet.lintProducer $ parseModule content }
         liftEffect $ reporter.fileResults fileResults
         pure fileResults
       liftEffect $ reporter.report files
@@ -73,20 +73,20 @@ runLinter { ruleSets } reporter = do
   positionedErrorToLintResult :: PositionedError -> LintResult
   positionedErrorToLintResult { error, position } = { message: printParseError error, sourceRange: { start: position, end: position } }
 
-knownLinters :: Array Linter
-knownLinters =
-  [ AlignedParenthesis.linter
-  , ArrayFormatting.linter
+knownRules :: Array Rule
+knownRules =
+  [ AlignedParenthesis.rule
+  , ArrayFormatting.rule
   , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
   , ModuleExports.exportsRequired
-  , NoDuplicateTypeclassConstraints.linter
-  , RecordFormatting.linter
-  , UnnecessarParenthesis.linter
-  , UnnecessaryDo.linter
+  , NoDuplicateTypeclassConstraints.rule
+  , RecordFormatting.rule
+  , UnnecessarParenthesis.rule
+  , UnnecessaryDo.rule
   , UseAnonymous.forOperations
   , UseAnonymous.forRecordUpdates
   , UseAnonymous.forRecordCreation
-  , UsePunning.linter
+  , UsePunning.rule
   , WhereClause.whereLeftAligned
   ]

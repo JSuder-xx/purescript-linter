@@ -1,7 +1,7 @@
-module Linter
+module Rule
   ( Examples
-  , Linter
-  , Linter'
+  , Rule
+  , Rule'
   , LintProducer
   , LintResults
   , LintResult
@@ -37,41 +37,41 @@ type Examples =
   , bad :: Array String
   }
 
-newtype Linter = Linter (forall result. (forall config. DecodeJson config => Linter' config -> result) -> result)
+newtype Rule = Rule (forall result. (forall config. DecodeJson config => Rule' config -> result) -> result)
 
-type Linter' config =
+type Rule' config =
   { name :: String
   , examples :: Examples
   , defaultConfig :: config
   , lintProducer :: config -> LintProducer
   }
 
-mkLinter :: forall config. DecodeJson config => Linter' config -> Linter
-mkLinter linter = Linter \extract -> extract linter
+mkRule :: forall config. DecodeJson config => Rule' config -> Rule
+mkRule rule = Rule \extract -> extract rule
 
-unLinter :: forall result. (forall config. DecodeJson config => Linter' config -> result) -> Linter -> result
-unLinter f (Linter linter) = linter f
+unRule :: forall result. (forall config. DecodeJson config => Rule' config -> result) -> Rule -> result
+unRule f (Rule rule) = rule f
 
-name :: Linter -> String
-name = unLinter _.name
+name :: Rule -> String
+name = unRule _.name
 
-examples :: Linter -> Examples
-examples = unLinter _.examples
+examples :: Rule -> Examples
+examples = unRule _.examples
 
-mkWithNoConfig :: { name :: String, examples :: Examples, lintProducer :: LintProducer } -> Linter
+mkWithNoConfig :: { name :: String, examples :: Examples, lintProducer :: LintProducer } -> Rule
 mkWithNoConfig { name: name', examples: examples', lintProducer } =
-  mkLinter
+  mkRule
     { name: name'
     , examples: examples'
     , defaultConfig: unit
     , lintProducer: const lintProducer
     }
 
-decodeLintProducer :: Json -> Linter -> Either JsonDecodeError LintProducer
-decodeLintProducer json = unLinter \linter -> decodeJson json <#> linter.lintProducer
+decodeLintProducer :: Json -> Rule -> Either JsonDecodeError LintProducer
+decodeLintProducer json = unRule \rule -> decodeJson json <#> rule.lintProducer
 
-defaultLintProducer :: Linter -> LintProducer
-defaultLintProducer = unLinter \linter -> linter.lintProducer linter.defaultConfig
+defaultLintProducer :: Rule -> LintProducer
+defaultLintProducer = unRule \rule -> rule.lintProducer rule.defaultConfig
 
 runLintProducer :: LintProducer -> CST.Module Void -> LintResults
 runLintProducer { onModule, onPureScript } = onModule <> foldMapModule onPureScript

@@ -1,4 +1,4 @@
-module Linter.UnnecessarParenthesis (linter) where
+module Rule.UnnecessarParenthesis (rule) where
 
 import Prelude
 
@@ -6,13 +6,14 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
 
-import Linter (expressionLintProducer)
-import Linter as Linter
+import Rule (expressionLintProducer)
+import Rule as Rule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(..))
 
-linter :: Linter.Linter
-linter = Linter.mkWithNoConfig
+rule :: Rule.Rule
+
+rule = Rule.mkWithNoConfig
   { name: "NoUnnecessaryParenthesis"
   , examples:
       { bad:

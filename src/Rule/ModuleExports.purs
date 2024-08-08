@@ -1,15 +1,15 @@
-module Linter.ModuleExports (exportsRequired) where
+module Rule.ModuleExports (exportsRequired) where
 
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Linter (moduleLintProducer)
-import Linter as Linter
+import Rule (moduleLintProducer)
+import Rule as Rule
 import PureScript.CST.Types (ModuleHeader(..), Name(..))
 import PureScript.CST.Types as CST
 
-exportsRequired :: Linter.Linter
-exportsRequired = Linter.mkWithNoConfig
+exportsRequired :: Rule.Rule
+exportsRequired = Rule.mkWithNoConfig
   { name: "ModuleExportsRequired"
   , examples:
       { bad:

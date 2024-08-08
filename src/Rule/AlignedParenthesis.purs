@@ -1,15 +1,15 @@
-module Linter.AlignedParenthesis where
+module Rule.AlignedParenthesis where
 
 import Prelude
 
 import Data.Monoid (guard)
-import Linter (LintResults, expressionLintProducer, typeLintProducer)
-import Linter as Linter
+import Rule (LintResults, expressionLintProducer, typeLintProducer)
+import Rule as Rule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Type(..), Wrapped(..))
 
-linter :: Linter.Linter
-linter = Linter.mkWithNoConfig
+rule :: Rule.Rule
+rule = Rule.mkWithNoConfig
   { name: "AlignedParenthesis"
   , examples:
       { bad:

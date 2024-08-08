@@ -1,15 +1,15 @@
-module Linter.IfThenElse where
+module Rule.IfThenElse where
 
 import Prelude
 
 import Data.Monoid (guard)
-import Linter (expressionLintProducer)
-import Linter as Linter
+import Rule (expressionLintProducer)
+import Rule as Rule
 import PureScript.CST.SourceRange (leftAligned, sameLine)
 import PureScript.CST.Types (Expr(..))
 
-ifThenElseLeftAligned :: Linter.Linter
-ifThenElseLeftAligned = Linter.mkWithNoConfig
+ifThenElseLeftAligned :: Rule.Rule
+ifThenElseLeftAligned = Rule.mkWithNoConfig
   { name: "IfThenElseLeftAligned"
   , examples:
       { bad:

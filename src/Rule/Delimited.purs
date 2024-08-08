@@ -1,4 +1,4 @@
-module Linter.Delimited where
+module Rule.Delimited where
 
 import Prelude
 
@@ -6,7 +6,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..), snd)
-import Linter (LintResults)
+import Rule (LintResults)
 import PureScript.CST.SourcePos (columnDifference)
 import PureScript.CST.SourceRange (leftAligned, noSpaceBetween, spaceBetween)
 import PureScript.CST.Types (Delimited, Separated(..), SourceRange, Wrapped(..), SourceToken)

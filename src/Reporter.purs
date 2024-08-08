@@ -2,7 +2,7 @@ module Reporter where
 
 import Prelude
 
-import Linter (LintResults)
+import Rule (LintResults)
 
 type FileResults = { filePath :: String, lintResults :: LintResults }
 

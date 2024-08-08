@@ -1,57 +1,57 @@
-module Test.Linter where
+module Test.Rule where
 
 import Prelude
 
 import Data.Traversable (for_)
-import Linter (runLintProducer)
-import Linter as Linter
-import Linter.AlignedParenthesis as AlignedParenthesis
-import Linter.ArrayFormatting as ArrayFormatting
-import Linter.IfThenElse as IfThenElse
-import Linter.LetBinding as LetBinding
-import Linter.ModuleExports as ModuleExports
-import Linter.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
-import Linter.RecordFormatting as RecordFormatting
-import Linter.UnnecessarParenthesis as UnnecessarParenthesis
-import Linter.UnnecessaryDo as UnnecessaryDo
-import Linter.UseAnonymous as UseAnonymous
-import Linter.UsePunning as UsePunning
-import Linter.WhereClause as WhereClause
+import Rule (runLintProducer)
+import Rule as Rule
+import Rule.AlignedParenthesis as AlignedParenthesis
+import Rule.ArrayFormatting as ArrayFormatting
+import Rule.IfThenElse as IfThenElse
+import Rule.LetBinding as LetBinding
+import Rule.ModuleExports as ModuleExports
+import Rule.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
+import Rule.RecordFormatting as RecordFormatting
+import Rule.UnnecessarParenthesis as UnnecessarParenthesis
+import Rule.UnnecessaryDo as UnnecessaryDo
+import Rule.UseAnonymous as UseAnonymous
+import Rule.UsePunning as UsePunning
+import Rule.WhereClause as WhereClause
 import Test.Common (assertCode, simpleModulePrefix)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
 
-linters :: Spec Unit
-linters = describe "Linters" do
+main :: Spec Unit
+main = describe "Linters" do
   for_
-    [ AlignedParenthesis.linter
-    , ArrayFormatting.linter
+    [ AlignedParenthesis.rule
+    , ArrayFormatting.rule
     , IfThenElse.ifThenElseLeftAligned
     , LetBinding.compact
-    , NoDuplicateTypeclassConstraints.linter
-    , RecordFormatting.linter
-    , UnnecessaryDo.linter
-    , UnnecessarParenthesis.linter
+    , NoDuplicateTypeclassConstraints.rule
+    , RecordFormatting.rule
+    , UnnecessaryDo.rule
+    , UnnecessarParenthesis.rule
     , UseAnonymous.forOperations
     , UseAnonymous.forRecordUpdates
     , UseAnonymous.forRecordCreation
-    , UsePunning.linter
+    , UsePunning.rule
     , WhereClause.whereLeftAligned
     ]
-    $ testLinterWithCode (simpleModulePrefix <> _)
+    $ testRuleWithCode (simpleModulePrefix <> _)
 
   for_
     [ ModuleExports.exportsRequired
     ]
-    $ testLinterWithCode identity
+    $ testRuleWithCode identity
   where
-  testLinterWithCode f linter =
-    describe (Linter.name linter) do
-      let examples = Linter.examples linter
+  testRuleWithCode f rule =
+    describe (Rule.name rule) do
+      let examples = Rule.examples rule
       describe "Examples of Failing Code" do
         for_ examples.bad \code ->
-          it code $ assertCode (f code) \m -> (runLintProducer (Linter.defaultLintProducer linter) m) `shouldNotEqual` []
+          it code $ assertCode (f code) \m -> (runLintProducer (Rule.defaultLintProducer rule) m) `shouldNotEqual` []
       describe "Examples of Passing Code" do
         for_ examples.good \code ->
-          it code $ assertCode (f code) \m -> (runLintProducer (Linter.defaultLintProducer linter) m) `shouldEqual` []
+          it code $ assertCode (f code) \m -> (runLintProducer (Rule.defaultLintProducer rule) m) `shouldEqual` []
 

@@ -1,16 +1,16 @@
-module Linter.ArrayFormatting (linter) where
+module Rule.ArrayFormatting (rule) where
 
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Linter (expressionLintProducer)
-import Linter as Linter
-import Linter.Delimited as Delimited
+import Rule (expressionLintProducer)
+import Rule as Rule
+import Rule.Delimited as Delimited
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Types (Expr(..))
 
-linter :: Linter.Linter
-linter = Linter.mkWithNoConfig
+rule :: Rule.Rule
+rule = Rule.mkWithNoConfig
   { name: "ArrayFormatting"
   , examples:
       { bad:

@@ -1,4 +1,4 @@
-module Linter.WhereClause where
+module Rule.WhereClause where
 
 import Prelude
 
@@ -8,14 +8,14 @@ import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
-import Linter (declarationLintProducer)
-import Linter as Linter
+import Rule (declarationLintProducer)
+import Rule as Rule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (isAbove, leftAligned)
 import PureScript.CST.Types (Declaration(..), Guarded(..), Where(..))
 
-whereLeftAligned :: Linter.Linter
-whereLeftAligned = Linter.mkWithNoConfig
+whereLeftAligned :: Rule.Rule
+whereLeftAligned = Rule.mkWithNoConfig
   { name: "WhereClauseLeftAligned"
   , examples:
       { bad:

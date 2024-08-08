@@ -1,4 +1,4 @@
-module Linter.UnnecessaryDo (linter) where
+module Rule.UnnecessaryDo (rule) where
 
 import Prelude
 
@@ -7,12 +7,13 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Monoid (guard)
-import Linter (expressionLintProducer)
-import Linter as Linter
+import Rule (expressionLintProducer)
+import Rule as Rule
 import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
 
-linter :: Linter.Linter
-linter = Linter.mkWithNoConfig
+rule :: Rule.Rule
+
+rule = Rule.mkWithNoConfig
   { name: "NoUnnecessaryDo"
   , examples:
       { bad:
