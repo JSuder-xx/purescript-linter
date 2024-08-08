@@ -6,3 +6,7 @@
 
 - Refactored Linter to Rule.
 - Setting process Exit Code so that CI fails appropriately.
+
+### v0.2.1 (2024-8-8)
+
+- Forgot to rebuild dist 🤦‍♂️
