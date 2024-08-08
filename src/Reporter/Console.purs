@@ -10,6 +10,7 @@ import Data.List.NonEmpty as NonEmptyList
 import Data.Maybe (maybe)
 import Effect (Effect)
 import Effect.Console (error, log)
+import Node.Process (setExitCode)
 import Reporter (Reporter)
 
 reporter :: { hideSuccess :: Boolean } -> Reporter Effect
@@ -28,6 +29,7 @@ reporter { hideSuccess } =
       log ""
       log $ "Successful: " <> (show $ Array.length successful)
       log $ "Failed: " <> (show $ Array.length failed)
+      setExitCode (if Array.null failed then 0 else 1)
   }
 
 type Style = Array GraphicsParam

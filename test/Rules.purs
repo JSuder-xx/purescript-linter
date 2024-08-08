@@ -1,4 +1,4 @@
-module Test.Rule where
+module Test.Rules where
 
 import Prelude
 
