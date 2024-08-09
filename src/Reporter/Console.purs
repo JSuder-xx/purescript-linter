@@ -19,7 +19,7 @@ reporter { hideSuccess } =
   , fileResults: \{ filePath, lintResults } ->
       if not $ Array.null lintResults then do
         log $ styled bold filePath
-        for_ lintResults \{ message, sourceRange } ->
+        for_ (Array.nub lintResults) \{ message, sourceRange } ->
           log $ styled red $ "  ✗ " <> (styled (cyan <> underline) $ filePath <> ":" <> show (sourceRange.start.line + 1) <> ":" <> show (sourceRange.start.column + 1)) <> " - " <> message
       else if not hideSuccess then log $ styled (bold <> green) $ "✓︎ " <> filePath
       else pure unit
@@ -29,7 +29,7 @@ reporter { hideSuccess } =
       log ""
       log $ "Successful: " <> (show $ Array.length successful)
       log $ "Failed: " <> (show $ Array.length failed)
-      setExitCode (if Array.null failed then 0 else 1)
+      when (not Array.null failed) $ setExitCode 1
   }
 
 type Style = Array GraphicsParam

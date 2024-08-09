@@ -10,16 +10,15 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Newtype (un, unwrap)
 import Data.Tuple (Tuple(..))
-import Rule (expressionLintProducer)
-import Rule as Rule
 import PureScript.CST.Binder as Binder
 import PureScript.CST.Expr (exprIdent)
 import PureScript.CST.Expr as Expr
 import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
-
 import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
+import Rule (expressionLintProducer)
+import Rule as Rule
 
 forOperations :: Rule.Rule
 forOperations = Rule.mkWithNoConfig
@@ -75,6 +74,7 @@ forRecordUpdates = Rule.mkWithNoConfig
           ]
       , good:
           [ "x = _ { x = 10}"
+          , "x = \\a -> _ { x = a }"
           , "x = \\a -> y { a = a + 2 }"
           , "x = \\a -> y { a = f a }"
           , "x = \\a -> y { a = a f }"
@@ -91,6 +91,7 @@ forRecordUpdates = Rule.mkWithNoConfig
           # foldMap
               ( NonEmptyArray.reverse >>> map unwrap >>> NonEmptyArray.uncons >>> \{ head: firstArgument, tail: restArguments } ->
                   case body of
+                    ExprRecordUpdate (ExprSection _) _ -> []
                     ExprRecordUpdate expr (Wrapped { value }) ->
                       let
                         identifierCountInUpdates = keyCountLookup $ QualifiedName.name <$> (recordUpdateToQualifiedIdent =<< Separated.values value)
@@ -108,7 +109,8 @@ forRecordUpdates = Rule.mkWithNoConfig
                                 # Array.reverse
                                 # Array.takeWhile (identifierCountInUpdates >>> eq 1)
                                 # Array.uncons
-                                # foldMap \{ head, tail } -> [ { message: "The last arguments to the lambda " <> (Array.intercalate ", " $ (un Ident <$> Array.cons head tail)) <> " occur exactly once in a record update.", sourceRange: rangeOf lambda } ]
+                                # foldMap \{ head, tail } ->
+                                    [ { message: "The last arguments to the lambda " <> (Array.intercalate ", " $ (un Ident <$> Array.cons head tail)) <> " occur exactly once in a record update. So it can be re-written with wildcards.", sourceRange: rangeOf lambda } ]
                             )
                     _ -> []
               )
