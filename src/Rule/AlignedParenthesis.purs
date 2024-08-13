@@ -3,7 +3,7 @@ module Rule.AlignedParenthesis where
 import Prelude
 
 import Data.Monoid (guard)
-import Rule (LintResults, expressionLintProducer, typeLintProducer)
+import Rule (LintResults, allExpressionsLintProducer, typeLintProducer)
 import Rule as Rule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Type(..), Wrapped(..))
@@ -85,7 +85,7 @@ type X r =
           """
           ]
       }
-  , lintProducer: (expressionLintProducer $ Expr.allParenthesis >=> parens)
+  , lintProducer: (allExpressionsLintProducer $ Expr.allParenthesis >=> parens)
       <>
         ( typeLintProducer $ case _ of
             TypeParens x -> parens x

@@ -6,7 +6,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (snd)
-import Rule (LintResult, expressionLintProducer)
+import Rule (LintResult, allExpressionsLintProducer)
 import Rule as Rule
 import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), QualifiedName(..), RecordLabeled(..), Separated(..), Wrapped(..))
 
@@ -18,6 +18,7 @@ rule = Rule.mkWithNoConfig
       { bad:
           [ "x = { a: a, b: b }"
           , "x = { a: 10, b: b }"
+          , "x = f { a: a, b: b }"
           ]
       , good:
           [ "x = { a: 10, b: false }"
@@ -25,7 +26,7 @@ rule = Rule.mkWithNoConfig
           , "x = { a: SomeModule.a }"
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       ExprRecord (Wrapped { value: Just (Separated { head, tail }) }) ->
         couldBePun =<< Array.cons head (tail <#> snd)
       _ -> []

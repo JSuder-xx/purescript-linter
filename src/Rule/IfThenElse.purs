@@ -3,7 +3,7 @@ module Rule.IfThenElse where
 import Prelude
 
 import Data.Monoid (guard)
-import Rule (expressionLintProducer)
+import Rule (allExpressionsLintProducer)
 import Rule as Rule
 import PureScript.CST.SourceRange (leftAligned, sameLine)
 import PureScript.CST.Types (Expr(..))
@@ -45,7 +45,7 @@ x =
                 """
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       ExprIf { keyword: { range: if' }, then: { range: then' }, else: { range: else' } } ->
         ( guard (not $ (if' `sameLine` then') || (if' `leftAligned` then'))
             $ pure { message: "When `if` and `then` are on separate lines they must be left aligned.", sourceRange: then' }

@@ -3,7 +3,7 @@ module Rule.ArrayFormatting (rule) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Rule (expressionLintProducer)
+import Rule (allExpressionsLintProducer)
 import Rule as Rule
 import Rule.Delimited as Delimited
 import PureScript.CST.Range (rangeOf)
@@ -49,6 +49,11 @@ x =
   [ 1
   , 2, 3 ]
 """
+          , """
+x = 
+  SomeConstructor [ 1
+  , 2, 3 ]
+"""
 
           ]
       , good:
@@ -71,7 +76,7 @@ x =
 """
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       ExprArray x -> Delimited.lint config x
       _ -> []
   }

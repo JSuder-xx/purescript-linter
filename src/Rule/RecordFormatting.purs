@@ -3,15 +3,14 @@ module Rule.RecordFormatting (rule) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Rule (LintResults, expressionLintProducer)
-import Rule as Rule
-import Rule.Delimited as Delimited
 import PureScript.CST.Range (class RangeOf, rangeOf)
 import PureScript.CST.SourceRange (newLineIndent, noSpaceBetween, rangeOfRecordLabeled, spaceBetween)
 import PureScript.CST.Types (Expr(..), Name(..), RecordLabeled(..))
+import Rule (LintResults, allExpressionsLintProducer)
+import Rule as Rule
+import Rule.Delimited as Delimited
 
 rule :: Rule.Rule
-
 rule = Rule.mkWithNoConfig
   { name: "RecordFormatting"
   , examples:
@@ -33,12 +32,32 @@ rule = Rule.mkWithNoConfig
 x = 
   { a: 1
   , b: 2 }
-"""
+          """
           , """
 x = 
   { a: 1
   ,b: 2 
   }
+          """
+          , """
+x = 
+  { a: 1
+    ,b: 2 
+  }
+          """
+          , """
+x = 
+  SomeConstructor 
+    { a: 1
+    ,b: 2 
+    }
+"""
+          , """
+x = 
+  f
+    { a: 1
+    ,b: 2 
+    }
 """
           ]
       , good:
@@ -51,16 +70,16 @@ x =
 x = 
   { a: 1
   }
-"""
+      """
           , """
 x = 
   { a: 1
   , b: 2
   }
-"""
+      """
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       ExprRecord x -> Delimited.lint config x
       _ -> []
   }

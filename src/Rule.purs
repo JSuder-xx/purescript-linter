@@ -10,7 +10,7 @@ module Rule
   , decodeLintProducer
   , defaultLintProducer
   , examples
-  , expressionLintProducer
+  , allExpressionsLintProducer
   , mkWithNoConfig
   , moduleLintProducer
   , name
@@ -21,9 +21,14 @@ module Rule
 import Prelude
 
 import Data.Argonaut (class DecodeJson, Json, JsonDecodeError, decodeJson)
+import Data.Array (mapMaybe)
+import Data.Array as Array
+import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either)
+import PureScript.CST.Expr as Expr
 import PureScript.CST.Fold (OnModule, OnPureScript)
 import PureScript.CST.Traversal (foldMapModule)
+import PureScript.CST.Types (Expr(..))
 import PureScript.CST.Types as CST
 
 type LintResult = { message :: String, sourceRange :: CST.SourceRange }
@@ -76,8 +81,13 @@ defaultLintProducer = unRule \rule -> rule.lintProducer rule.defaultConfig
 runLintProducer :: LintProducer -> CST.Module Void -> LintResults
 runLintProducer { onModule, onPureScript } = onModule <> foldMapModule onPureScript
 
-expressionLintProducer :: OnKind CST.Expr -> LintProducer
-expressionLintProducer onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onExpr = onExpr } }
+-- | Traverses every single expression - including Application
+allExpressionsLintProducer :: OnKind CST.Expr -> LintProducer
+allExpressionsLintProducer onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onExpr = recurse } }
+  where
+  recurse = case _ of
+    ExprApp expr nes -> onExpr expr <> (NonEmptyArray.toArray nes # Array.mapMaybe Expr.appTerm >>= recurse)
+    expr -> onExpr expr
 
 declarationLintProducer :: OnKind CST.Declaration -> LintProducer
 declarationLintProducer onDecl = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onDecl = onDecl } }

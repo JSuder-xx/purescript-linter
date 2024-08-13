@@ -7,7 +7,7 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Monoid (guard)
-import Rule (expressionLintProducer)
+import Rule (allExpressionsLintProducer)
 import Rule as Rule
 import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
 
@@ -25,7 +25,7 @@ rule = Rule.mkWithNoConfig
           , "x = do\n  y <- thing\n  z <- otherThing\n  pure $ y + z"
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       ExprDo { keyword, statements } ->
         guard (NonEmptyArray.length statements == 1)
           [ { message: "Unnecessary `do` keyword. When there is only a single line in the `do` block then this can be removed.", sourceRange: keyword.range } ]

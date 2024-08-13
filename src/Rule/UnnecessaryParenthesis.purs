@@ -6,7 +6,7 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
 
-import Rule (expressionLintProducer)
+import Rule (allExpressionsLintProducer)
 import Rule as Rule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(..))
@@ -33,7 +33,7 @@ rule = Rule.mkWithNoConfig
           , "x = _ $ 10"
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       ExprParens (Wrapped { open, value }) ->
         guard (Expr.isTerminal value) $ pure { message: "Unnecessary parenthesis around a terminal expression.", sourceRange: open.range }
       ExprOp (ExprSection _) _ -> []

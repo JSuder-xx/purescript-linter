@@ -17,7 +17,7 @@ import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
-import Rule (expressionLintProducer)
+import Rule (allExpressionsLintProducer)
 import Rule as Rule
 
 forOperations :: Rule.Rule
@@ -35,7 +35,7 @@ forOperations = Rule.mkWithNoConfig
           , "x = \\a' -> guard (a' `op` to) $> a'"
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'
@@ -84,7 +84,7 @@ forRecordUpdates = Rule.mkWithNoConfig
           , "x = y { a = _, b = _ }"
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'
@@ -139,7 +139,7 @@ forRecordCreation = Rule.mkWithNoConfig
           ]
 
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'

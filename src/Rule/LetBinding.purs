@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
-import Rule (expressionLintProducer)
+import Rule (allExpressionsLintProducer)
 import Rule as Rule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (sameLine)
@@ -21,6 +21,14 @@ x =
     x = 1
   in
     x + 2
+          """
+          , """
+x = 
+  SomeConstructor
+    let
+      x = 1
+    in
+      x + 2
           """
           , """
 x =
@@ -74,7 +82,7 @@ x = do
           """
           ]
       }
-  , lintProducer: expressionLintProducer $ case _ of
+  , lintProducer: allExpressionsLintProducer $ case _ of
       ExprDo { statements } -> statements # NonEmptyArray.toArray >>= case _ of
         DoLet letToken letStatements ->
           let
