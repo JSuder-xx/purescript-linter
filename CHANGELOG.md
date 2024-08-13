@@ -14,3 +14,7 @@
 ### v0.2.2 (2024-8-8)
 
 - Bug fixes
+
+### v0.2.3 (2024-8-13)
+
+- Bug Fix: Expressions did not recurse into Application terms.
