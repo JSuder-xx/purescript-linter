@@ -31,6 +31,11 @@ exprIdent = case _ of
   ExprIdent x -> Just x
   _ -> Nothing
 
+exprParens :: forall e79. Expr e79 -> Maybe (Wrapped (Expr e79))
+exprParens = case _ of
+  ExprParens x -> Just x
+  _ -> Nothing
+
 -- | Return all of the identifiers found at and under this expression.
 -- | 
 -- | 1. Attempted to use the traversal functions but this yielded surprising and inconsistent results. 
@@ -218,9 +223,15 @@ label expr = case expr of
 
 debugExpr :: String -> Expr Void -> String
 debugExpr indentation = label >>> \{ name, description, childKinds } ->
-  indentation <> name <> ": " <> description <> (if Array.null childKinds then "" else (fold $ childKind <$> childKinds))
+  indentation <> name <> ": " <> description <> if Array.null childKinds then "" else (fold $ childKind <$> childKinds)
   where
   childKind :: Tuple String (Array (Expr Void)) -> String
   childKind (Tuple label' children) =
     if Array.null children then ""
-    else "\n" <> (indent indentation) <> label' <> "\n" <> intercalate "\n" (debugExpr (indent $ indent indentation) <$> children)
+    else fold
+      [ "\n"
+      , indent indentation
+      , label'
+      , "\n"
+      , intercalate "\n" $ debugExpr (indent $ indent indentation) <$> children
+      ]

@@ -2,14 +2,15 @@ module Rule.Delimited where
 
 import Prelude
 
+import Data.Array (fold)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..), snd)
-import Rule (LintResults)
 import PureScript.CST.SourcePos (columnDifference)
 import PureScript.CST.SourceRange (leftAligned, noSpaceBetween, spaceBetween)
 import PureScript.CST.Types (Delimited, Separated(..), SourceRange, Wrapped(..), SourceToken)
+import Rule (LintResults)
 
 lint :: forall inner. { name :: String, itemName :: String, openToken :: String, closeToken :: String, innerRange :: inner -> SourceRange, validateInner :: inner -> Maybe LintResults } -> Delimited inner -> LintResults
 lint { name, openToken, closeToken } (Wrapped { open: { range: openRange }, close: { range: closeRange }, value: Nothing }) =
@@ -32,12 +33,12 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
           rangeLast = innerRange lastExpr
           allLabeledRecords = Array.cons head $ snd <$> tail
         in
-          guard (not $ (openRange `spaceBetween` rangeHead))
-            [ { message: "Missing space between " <> openToken <> " and " <> itemName, sourceRange: openRange } ]
-            <> guard (not (rangeLast `spaceBetween` closeRange)) [ { message: "Missing space between last " <> itemName <> " and " <> closeToken, sourceRange: closeRange } ]
-            <> (Array.findMap validateInner allLabeledRecords # fromMaybe [])
-            <>
-              let
+          fold
+            [ guard (not $ (openRange `spaceBetween` rangeHead))
+                [ { message: "Missing space between " <> openToken <> " and " <> itemName, sourceRange: openRange } ]
+            , guard (not (rangeLast `spaceBetween` closeRange)) [ { message: "Missing space between last " <> itemName <> " and " <> closeToken, sourceRange: closeRange } ]
+            , (Array.findMap validateInner allLabeledRecords # fromMaybe [])
+            , let
                 step :: { failed :: Array SourceRange, lastExprRange :: SourceRange } -> Tuple SourceToken inner -> { failed :: Array SourceRange, lastExprRange :: SourceRange }
                 step { failed, lastExprRange } (Tuple { range: delimitterRange } expr) =
                   let
@@ -52,6 +53,7 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
                     }
               in
                 (Array.foldl step { failed: [], lastExprRange: rangeHead } tail).failed <#> { message: "Incorrect spacing between the comma and preceding " <> itemName, sourceRange: _ }
+            ]
 
     where
     rangeHead = innerRange head
@@ -68,13 +70,13 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
           rangeLast = innerRange lastExpr
           allLabeledRecords = Array.cons head $ snd <$> tail
         in
-          guard (not $ (openRange `spaceBetween` rangeHead))
-            [ { message: "Missing space between { first field.", sourceRange: openRange } ]
-            <> guard (rangeLast.start.line >= closeRange.start.line || closeRange.start.column /= openRange.start.column)
-              [ { message: "Closing } should be on a new line", sourceRange: closeRange } ]
-            <> (Array.findMap validateInner allLabeledRecords # fromMaybe [])
-            <>
-              ( tail >>= \(Tuple { range } expr) ->
+          fold
+            [ guard (not $ (openRange `spaceBetween` rangeHead))
+                [ { message: "Missing space between { first field.", sourceRange: openRange } ]
+            , guard (rangeLast.start.line >= closeRange.start.line || closeRange.start.column /= openRange.start.column)
+                [ { message: "Closing } should be on a new line", sourceRange: closeRange } ]
+            , (Array.findMap validateInner allLabeledRecords # fromMaybe [])
+            , ( tail >>= \(Tuple { range } expr) ->
                   guard (range.start.column /= openRange.start.column) [ { message: "With multiline " <> name <> ", the ',' must align with the " <> openToken, sourceRange: range } ]
                     <>
                       ( let
@@ -83,6 +85,7 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
                           guard (not $ range `spaceBetween` exprRange) [ { message: "With multiline " <> name <> ", there should be a space between the leading `,` and the " <> itemName, sourceRange: exprRange } ]
                       )
               )
+            ]
     where
     rangeHead = innerRange head
 

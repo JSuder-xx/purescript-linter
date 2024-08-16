@@ -1,4 +1,4 @@
-### NEXT
+### v0.2.5 (2024-8-16)
 
 - Added: Monoid Simplification Rules
 

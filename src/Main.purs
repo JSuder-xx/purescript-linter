@@ -13,19 +13,6 @@ import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Console (error)
-import Rule (LintProducer, LintResult, LintResults, Rule, runLintProducer)
-import Rule.AlignedParenthesis as AlignedParenthesis
-import Rule.ArrayFormatting as ArrayFormatting
-import Rule.IfThenElse as IfThenElse
-import Rule.LetBinding as LetBinding
-import Rule.ModuleExports as ModuleExports
-import Rule.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
-import Rule.RecordFormatting as RecordFormatting
-import Rule.UnnecessarParenthesis as UnnecessarParenthesis
-import Rule.UnnecessaryDo as UnnecessaryDo
-import Rule.UseAnonymous as UseAnonymous
-import Rule.UsePunning as UsePunning
-import Rule.WhereClause as WhereClause
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readFile)
@@ -36,6 +23,20 @@ import PureScript.CST.Parser.Monad (PositionedError)
 import PureScript.CST.Types as CST
 import Reporter (Reporter)
 import Reporter.Console as Console
+import Rule (LintProducer, LintResult, LintResults, Rule, runLintProducer)
+import Rule.AlignedParenthesis as AlignedParenthesis
+import Rule.ArrayFormatting as ArrayFormatting
+import Rule.IfThenElse as IfThenElse
+import Rule.LetBinding as LetBinding
+import Rule.ModuleExports as ModuleExports
+import Rule.MonoidSimplifications as MonoidSimplifications
+import Rule.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
+import Rule.RecordFormatting as RecordFormatting
+import Rule.UnnecessarParenthesis as UnnecessarParenthesis
+import Rule.UnnecessaryDo as UnnecessaryDo
+import Rule.UseAnonymous as UseAnonymous
+import Rule.UsePunning as UsePunning
+import Rule.WhereClause as WhereClause
 
 main :: Effect Unit
 main = launchAff_ do
@@ -79,6 +80,10 @@ knownRules =
   , ArrayFormatting.rule
   , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
+  , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
+  , MonoidSimplifications.useFoldForRepeatedMappends
+  , MonoidSimplifications.useGuardOverIfThenElseMEmpty
+  , MonoidSimplifications.useGuardOverIfThenMemptyElse
   , ModuleExports.exportsRequired
   , NoDuplicateTypeclassConstraints.rule
   , RecordFormatting.rule

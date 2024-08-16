@@ -10,6 +10,7 @@
         "ArrayFormatting": null,
         "IfThenElseLeftAligned": null,
         "LetBinding-VerticalCompact": null,
+        "ReplaceMaybeMemptyWithFoldMap": null,
         "ModuleExportsRequired": null,
         "NoDuplicateTypeclassConstraints": null,
         "NoUnnecessaryDo": null,
@@ -18,6 +19,8 @@
         "UseAnonymous-ForOperations": null,
         "UseAnonymous-ForRecordUpdates": null,
         "UseAnonymous-ForRecordCreation": null,
+        "UseFoldForRepeatedMappends": null,
+        "UseGuardOverIfThenElseMEmpty": null,
         "UsePunning": null,
         "WhereClauseLeftAligned": null
       }

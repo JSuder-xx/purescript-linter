@@ -5,9 +5,10 @@ import Prelude
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..))
+import Data.Maybe as Maybe
 import Data.Monoid (guard)
 import Data.Newtype as Newtype
-import Data.Tuple (Tuple, fst)
+import Data.Tuple (Tuple, fst, snd)
 import PureScript.CST.Expr as Expr
 import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
@@ -104,6 +105,16 @@ x =
   (someValues a)
   <> (someDifferentValues b)
   <> (yetOtherValues c)
+  <> (more d)
+          """
+          , """
+x = 
+  "Hi!"
+  <> a
+  <> b
+  <> c
+  <> d
+  <> e
           """
           ]
       , good:
@@ -111,6 +122,12 @@ x =
 x = 
   (someValues a)
   <> (someDifferentValues b)
+          """
+          , """
+x = 
+  "first "
+  <> f "second"
+  <> "third"
           """
           , """
 x = 
@@ -124,13 +141,22 @@ x =
       }
   , lintProducer: allExpressionsLintProducer $ case _ of
       expr@(ExprOp _ neOperators) ->
-        guard (NonEmptyArray.length neOperators > 1 && NonEmptyArray.all isMappend neOperators)
-          [ { message: "Use fold When there is more than one <>", sourceRange: rangeOf expr } ]
+        guard (NonEmptyArray.all isMappend neOperators)
+          let
+            numOperators = NonEmptyArray.length neOperators
+          in
+            if (numOperators >= 5) then
+              [ { message: "Use fold when there are five or more <> operators", sourceRange: rangeOf expr } ]
+            else guard (numOperators >= 3 && NonEmptyArray.any hasParenthesis neOperators)
+              [ { message: "Use fold when there are three or more <> operators and any expressions require parenthesis ", sourceRange: rangeOf expr } ]
       _ -> []
   }
 
 isMappend :: forall e. Tuple (QualifiedName Operator) (Expr e) -> Boolean
 isMappend = fst >>> QualifiedName.name >>> Newtype.un Operator >>> eq "<>"
+
+hasParenthesis :: forall t114 t121. Tuple t114 (Expr t121) -> Boolean
+hasParenthesis = snd >>> Expr.exprParens >>> Maybe.isJust
 
 isMempty :: forall e11. Expr e11 -> Boolean
 isMempty = case _ of
