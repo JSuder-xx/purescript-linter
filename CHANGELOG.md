@@ -1,3 +1,7 @@
+### NEXT
+
+- Added: Monoid Simplification Rules
+
 ### v0.2.4 (2024-8-14)
 
 - Bug Fix: The IfThenElseLeftAligned rule did not handle chains of if/then/else.

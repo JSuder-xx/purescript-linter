@@ -10,6 +10,7 @@ import Rule.ArrayFormatting as ArrayFormatting
 import Rule.IfThenElse as IfThenElse
 import Rule.LetBinding as LetBinding
 import Rule.ModuleExports as ModuleExports
+import Rule.MonoidSimplifications as MonoidSimplifications
 import Rule.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Rule.RecordFormatting as RecordFormatting
 import Rule.UnnecessarParenthesis as UnnecessarParenthesis
@@ -28,6 +29,10 @@ main = describe "Linters" do
     , ArrayFormatting.rule
     , IfThenElse.ifThenElseLeftAligned
     , LetBinding.compact
+    , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
+    , MonoidSimplifications.useFoldForRepeatedMappends
+    , MonoidSimplifications.useGuardOverIfThenElseMEmpty
+    , MonoidSimplifications.useGuardOverIfThenMemptyElse
     , NoDuplicateTypeclassConstraints.rule
     , RecordFormatting.rule
     , UnnecessaryDo.rule
@@ -40,9 +45,7 @@ main = describe "Linters" do
     ]
     $ testRuleWithCode (simpleModulePrefix <> _)
 
-  for_
-    [ ModuleExports.exportsRequired
-    ]
+  for_ [ ModuleExports.exportsRequired ]
     $ testRuleWithCode identity
   where
   testRuleWithCode f rule =

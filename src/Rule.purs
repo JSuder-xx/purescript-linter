@@ -21,7 +21,6 @@ module Rule
 import Prelude
 
 import Data.Argonaut (class DecodeJson, Json, JsonDecodeError, decodeJson)
-import Data.Array (mapMaybe)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either)
@@ -81,12 +80,12 @@ defaultLintProducer = unRule \rule -> rule.lintProducer rule.defaultConfig
 runLintProducer :: LintProducer -> CST.Module Void -> LintResults
 runLintProducer { onModule, onPureScript } = onModule <> foldMapModule onPureScript
 
--- | Traverses every single expression - including Application
+-- | Traverses every single expression, traversing into Application to get more expressions.
 allExpressionsLintProducer :: OnKind CST.Expr -> LintProducer
 allExpressionsLintProducer onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onExpr = recurse } }
   where
   recurse = case _ of
-    ExprApp expr nes -> onExpr expr <> (NonEmptyArray.toArray nes # Array.mapMaybe Expr.appTerm >>= recurse)
+    appExpr@(ExprApp expr nes) -> onExpr appExpr <> onExpr expr <> (NonEmptyArray.toArray nes # Array.mapMaybe Expr.appTerm >>= recurse)
     expr -> onExpr expr
 
 declarationLintProducer :: OnKind CST.Declaration -> LintProducer
