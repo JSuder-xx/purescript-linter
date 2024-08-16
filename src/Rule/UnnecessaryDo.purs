@@ -12,7 +12,6 @@ import Rule as Rule
 import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
 
 rule :: Rule.Rule
-
 rule = Rule.mkWithNoConfig
   { name: "NoUnnecessaryDo"
   , examples:

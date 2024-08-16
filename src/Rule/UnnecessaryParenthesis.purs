@@ -12,7 +12,6 @@ import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(..))
 
 rule :: Rule.Rule
-
 rule = Rule.mkWithNoConfig
   { name: "NoUnnecessaryParenthesis"
   , examples:

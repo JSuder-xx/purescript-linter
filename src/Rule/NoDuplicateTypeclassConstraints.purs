@@ -20,7 +20,6 @@ import PureScript.CST.Types (Declaration(..), Ident(..), Labeled(..), Name(..), 
 import PureScript.CST.Types as CST
 
 rule :: Rule.Rule
-
 rule = Rule.mkWithNoConfig
   { name: "NoDuplicateTypeclassConstraints"
   , examples:
