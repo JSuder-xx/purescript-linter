@@ -8,6 +8,7 @@ module Rule
   , OnKind
   , declarationLintProducer
   , decodeLintProducer
+  , defaultConfigJson
   , defaultLintProducer
   , examples
   , allExpressionsLintProducer
@@ -20,7 +21,7 @@ module Rule
 
 import Prelude
 
-import Data.Argonaut (class DecodeJson, Json, JsonDecodeError, decodeJson)
+import Data.Argonaut (class DecodeJson, class EncodeJson, Json, JsonDecodeError, decodeJson, encodeJson)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either)
@@ -41,7 +42,7 @@ type Examples =
   , bad :: Array String
   }
 
-newtype Rule = Rule (forall result. (forall config. DecodeJson config => Rule' config -> result) -> result)
+newtype Rule = Rule (forall result. (forall config. EncodeJson config => DecodeJson config => Rule' config -> result) -> result)
 
 type Rule' config =
   { name :: String
@@ -50,10 +51,10 @@ type Rule' config =
   , lintProducer :: config -> LintProducer
   }
 
-mkRule :: forall config. DecodeJson config => Rule' config -> Rule
+mkRule :: forall config. EncodeJson config => DecodeJson config => Rule' config -> Rule
 mkRule rule = Rule \extract -> extract rule
 
-unRule :: forall result. (forall config. DecodeJson config => Rule' config -> result) -> Rule -> result
+unRule :: forall result. (forall config. EncodeJson config => DecodeJson config => Rule' config -> result) -> Rule -> result
 unRule f (Rule rule) = rule f
 
 name :: Rule -> String
@@ -73,6 +74,9 @@ mkWithNoConfig { name: name', examples: examples', lintProducer } =
 
 decodeLintProducer :: Json -> Rule -> Either JsonDecodeError LintProducer
 decodeLintProducer json = unRule \rule -> decodeJson json <#> rule.lintProducer
+
+defaultConfigJson :: Rule -> Json
+defaultConfigJson = unRule \rule -> encodeJson rule.defaultConfig
 
 defaultLintProducer :: Rule -> LintProducer
 defaultLintProducer = unRule \rule -> rule.lintProducer rule.defaultConfig

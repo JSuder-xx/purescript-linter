@@ -1,3 +1,7 @@
+### v0.2.6 (2024-8-20)
+
+- Command line arguments
+
 ### v0.2.5 (2024-8-16)
 
 - Added: Monoid Simplification Rules

@@ -9,6 +9,7 @@ package:
     - effect
     - language-cst-parser
     - node-glob-basic
+    - optparse
     - prelude
   test:
     main: Test.Main
