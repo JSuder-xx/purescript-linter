@@ -12,7 +12,7 @@ import Data.Foldable (fold)
 import Data.String.NonEmpty as NonEmptyString
 import Data.String.NonEmpty.Internal (NonEmptyString(..))
 import Effect (Effect)
-import Options.Applicative (Parser, ParserInfo, ReadM, eitherReader, execParser, flag, fullDesc, header, help, helper, info, long, option, progDesc, short, value, (<**>))
+import Options.Applicative (Parser, ParserInfo, ReadM, eitherReader, execParser, flag, flag', fullDesc, header, help, helper, info, long, option, progDesc, short, value, (<**>))
 
 type CommandLineOptions =
   { configFile :: NonEmptyString
@@ -21,6 +21,7 @@ type CommandLineOptions =
 
 data RunMode
   = InitConfig
+  | ShowRules
   | LintAllFiles
   | LintSingleFile NonEmptyString
 
@@ -55,6 +56,12 @@ runModeParser =
           ]
       )
   )
+    <|>
+      ( flag' ShowRules $ fold
+          [ long "show"
+          , help "Show all the available rules."
+          ]
+      )
     <|>
       ( flag LintAllFiles InitConfig $ fold
           [ long "init"

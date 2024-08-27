@@ -2,6 +2,8 @@ module Main where
 
 import Prelude
 
+import Ansi.Codes (Color(..))
+import Ansi.Output (foreground, underline, withGraphics)
 import AppConfig (AppConfig)
 import AppConfig as AppConfig
 import CommandLineOptions (RunMode(..), commandLineOptions)
@@ -11,12 +13,13 @@ import Data.Either (either)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as Maybe
 import Data.Set as Set
+import Data.String as String
 import Data.String.NonEmpty as NonEmptyString
 import Data.Traversable (for, for_, intercalate)
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
-import Effect.Console (error)
+import Effect.Console (error, log)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readFile, writeFile)
@@ -28,8 +31,10 @@ import PureScript.CST.Parser.Monad (PositionedError)
 import PureScript.CST.Types as CST
 import Reporter (Reporter)
 import Reporter.Console as Console
-import Rule (LintProducer, LintResult, LintResults, Rule, runLintProducer)
+import Rule (LintProducer, LintResult, LintResults, Rule)
+import Rule as Rule
 import Rule.AlignedParenthesis as AlignedParenthesis
+import Rule.Application as Application
 import Rule.ArrayFormatting as ArrayFormatting
 import Rule.IfThenElse as IfThenElse
 import Rule.LetBinding as LetBinding
@@ -55,6 +60,15 @@ main = launchAff_ do
         { fileName
         , contents: stringifyWithIndent 2 $ AppConfig.encodeDefault knownRules
         }
+    ShowRules -> do
+      for_ knownRules \rule -> do
+        outputStyled (underline <> foreground BrightWhite) (Rule.name rule)
+        outputStyled (foreground White) (String.trim $ Rule.description rule)
+        output ""
+      where
+      outputStyled g = output <<< withGraphics g
+      output = liftEffect <<< log
+
     LintSingleFile fileToLint -> lint options { singleFile': Just $ NonEmptyString.toString fileToLint }
     LintAllFiles -> lint options { singleFile': Nothing }
   where
@@ -96,7 +110,7 @@ runLinter { singleFile' } { ruleSets } reporter =
   where
   lintModule :: LintProducer -> RecoveredParserResult CST.Module -> LintResults
   lintModule producer = case _ of
-    ParseSucceeded m -> runLintProducer producer m
+    ParseSucceeded m -> Rule.runLintProducer producer m
     ParseSucceededWithErrors _ positionedErrors -> positionedErrorToLintResult <$> NonEmptyArray.toArray positionedErrors
     ParseFailed positionedError -> [ positionedErrorToLintResult positionedError ]
 
@@ -106,18 +120,20 @@ runLinter { singleFile' } { ruleSets } reporter =
 knownRules :: Array Rule
 knownRules =
   [ AlignedParenthesis.rule
+  , Application.inArray
+  , Application.inRecord
   , ArrayFormatting.rule
   , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
+  , ModuleExports.exportsRequired
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
   , MonoidSimplifications.useFoldForRepeatedMappends
   , MonoidSimplifications.useGuardOverIfThenElseMEmpty
   , MonoidSimplifications.useGuardOverIfThenMemptyElse
-  , ModuleExports.exportsRequired
   , NoDuplicateTypeclassConstraints.rule
   , RecordFormatting.rule
-  , UnnecessarParenthesis.rule
   , UnnecessaryDo.rule
+  , UnnecessarParenthesis.rule
   , UseAnonymous.forOperations
   , UseAnonymous.forRecordUpdates
   , UseAnonymous.forRecordCreation

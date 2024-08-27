@@ -10,6 +10,7 @@ import PureScript.CST.Types (Expr(..))
 ifThenElseLeftAligned :: Rule.Rule
 ifThenElseLeftAligned = Rule.mkWithNoConfig
   { name: "IfThenElseLeftAligned"
+  , description: "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."
   , examples:
       { bad:
           [ """
@@ -101,7 +102,7 @@ x =
 
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprIf { keyword: { range: { start: if' } }, then: { range: thenRange@{ start: then' } }, else: { range: elseRange@{ start: else' } } } ->
         let
           -- NOTE: This is a really horrific hack to handle the case when the if follows an else on the same line. 

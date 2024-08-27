@@ -1,3 +1,8 @@
+### v0.2.7 (2024-8-26)
+
+- Added: Command line argument to show all rule names and descriptions.
+- Added: Some limited function application formatting rules.
+
 ### v0.2.6 (2024-8-20)
 
 - Command line arguments

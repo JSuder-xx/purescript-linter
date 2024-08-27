@@ -13,6 +13,10 @@ import PureScript.CST.Types (DoStatement(..), Expr(..))
 compact :: Rule.Rule
 compact = Rule.mkWithNoConfig
   { name: "LetBinding-VerticalCompact"
+  , description:
+      """
+This let formatting rule prioritizes conservation of vertical space. 
+  """
   , examples:
       { bad:
           [ """
@@ -82,7 +86,7 @@ x = do
           """
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprDo { statements } -> statements # NonEmptyArray.toArray >>= case _ of
         DoLet letToken letStatements ->
           let

@@ -2,12 +2,10 @@ module Reporter.Console (reporter) where
 
 import Prelude
 
-import Ansi.Codes (GraphicsParam, escapeCodeToString)
-import Ansi.Codes as AnsiCode
+import Ansi.Codes (Color(..))
+import Ansi.Output (bold, foreground, underline, withGraphics)
 import Data.Array as Array
 import Data.Foldable (for_)
-import Data.List.NonEmpty as NonEmptyList
-import Data.Maybe (maybe)
 import Effect (Effect)
 import Effect.Console (error, log)
 import Node.Process (setExitCode)
@@ -18,10 +16,10 @@ reporter { hideSuccess } =
   { error
   , fileResults: \{ filePath, lintResults } ->
       if not $ Array.null lintResults then do
-        log $ styled bold filePath
+        log $ withGraphics bold filePath
         for_ (Array.nub lintResults) \{ message, sourceRange } ->
-          log $ styled red $ "  ✗ " <> (styled (cyan <> underline) $ filePath <> ":" <> show (sourceRange.start.line + 1) <> ":" <> show (sourceRange.start.column + 1)) <> " - " <> message
-      else if not hideSuccess then log $ styled (bold <> green) $ "✓︎ " <> filePath
+          log $ withGraphics (foreground Red) $ "  ✗ " <> (withGraphics (foreground Cyan <> underline) $ filePath <> ":" <> show (sourceRange.start.line + 1) <> ":" <> show (sourceRange.start.column + 1)) <> " - " <> message
+      else if not hideSuccess then log $ withGraphics (bold <> (foreground Green)) $ "✓︎ " <> filePath
       else pure unit
 
   , report: \results -> do
@@ -31,29 +29,4 @@ reporter { hideSuccess } =
       log $ "Failed: " <> (show $ Array.length failed)
       when (not Array.null failed) $ setExitCode 1
   }
-
-type Style = Array GraphicsParam
-
-styled :: Style -> String -> String
-styled as str =
-  NonEmptyList.fromFoldable as
-    # maybe str \as' ->
-        escapeCodeToString (AnsiCode.Graphics as')
-          <> str
-          <> escapeCodeToString (AnsiCode.Graphics $ NonEmptyList.singleton AnsiCode.Reset)
-
-red :: Style
-red = [ AnsiCode.PForeground AnsiCode.Red ]
-
-green :: Style
-green = [ AnsiCode.PForeground AnsiCode.Green ]
-
-cyan :: Style
-cyan = [ AnsiCode.PForeground AnsiCode.Cyan ]
-
-bold :: Style
-bold = [ AnsiCode.PMode AnsiCode.Bold ]
-
-underline :: Style
-underline = [ AnsiCode.PMode AnsiCode.Underline ]
 

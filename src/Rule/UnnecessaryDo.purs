@@ -14,6 +14,12 @@ import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
   { name: "NoUnnecessaryDo"
+  , description:
+      """
+A Monadic bind followed by a pure is actually a Functor map. It is more truthful to represent this as a narrower Functor map.
+
+A `do` with no binds and no let declarations is unnecessary. Readers should expect a sequence of monadic binds when they see the `do` keyword.
+  """
   , examples:
       { bad:
           [ "x = do\n  pure 10"
@@ -24,7 +30,7 @@ rule = Rule.mkWithNoConfig
           , "x = do\n  y <- thing\n  z <- otherThing\n  pure $ y + z"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprDo { keyword, statements } ->
         guard (NonEmptyArray.length statements == 1)
           [ { message: "Unnecessary `do` keyword. When there is only a single line in the `do` block then this can be removed.", sourceRange: keyword.range } ]

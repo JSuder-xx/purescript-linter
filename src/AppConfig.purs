@@ -22,6 +22,7 @@ import Rule as Rule
 type AppConfig =
   { hideSuccess :: Boolean
   , ruleSets :: Array RuleSet
+  , indentSpaces :: Int
   }
 
 type RuleSet =
@@ -43,21 +44,24 @@ encodeDefault knownRules = fromObject $ fromHomogeneous
 decode :: Array Rule -> Json -> Either JsonDecodeError AppConfig
 decode knownRules = decodeJObject >=> \object -> do
   hideSuccess <- fromMaybe true <$> object .:! "hideSuccess"
+  indentSpaces <- fromMaybe 2 <$> object .:! "indentSpaces"
   ruleSetsRaw :: Array (Object Json) <- object .: "ruleSets"
-  ruleSets <- traverse decodeRuleSet ruleSetsRaw
-  pure { hideSuccess, ruleSets }
+  ruleSets <- traverse (decodeRuleSet indentSpaces) ruleSetsRaw
+  pure { hideSuccess, ruleSets, indentSpaces }
   where
   ruleMap = knownRules <#> lift2 Tuple Rule.name identity # Map.fromFoldable
 
-  decodeRuleSet :: Object Json -> Either JsonDecodeError RuleSet
-  decodeRuleSet object = do
+  decodeRuleSet :: Int -> Object Json -> Either JsonDecodeError RuleSet
+  decodeRuleSet indentSpaces object = do
     globs <- object .: "globs"
     rules <- object .: "rules"
     lintProducer <- Object.foldM foldRule mempty rules
     pure { globs, lintProducer }
+    where
+    config = { indentSpaces }
 
-  foldRule :: LintProducer -> String -> Json -> Either JsonDecodeError LintProducer
-  foldRule accProducer ruleName ruleConfigJson = do
-    rule <- note (Named ("Rule Named:" <> ruleName) MissingValue) $ Map.lookup ruleName ruleMap
-    lintProducer <- Rule.decodeLintProducer ruleConfigJson rule
-    pure $ lintProducer <> accProducer
+    foldRule :: LintProducer -> String -> Json -> Either JsonDecodeError LintProducer
+    foldRule accProducer ruleName ruleConfigJson = do
+      rule <- note (Named ("Rule Named:" <> ruleName) MissingValue) $ Map.lookup ruleName ruleMap
+      lintProducer <- Rule.decodeLintProducer ruleConfigJson rule
+      pure $ lintProducer config <> accProducer

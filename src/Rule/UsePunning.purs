@@ -13,6 +13,7 @@ import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), Qualified
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
   { name: "UsePunning"
+  , description: "Punning is easier to read."
   , examples:
       { bad:
           [ "x = { a: a, b: b }"
@@ -25,7 +26,7 @@ rule = Rule.mkWithNoConfig
           , "x = { a: SomeModule.a }"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprRecord (Wrapped { value: Just (Separated { head, tail }) }) ->
         couldBePun =<< Array.cons head (tail <#> snd)
       _ -> []

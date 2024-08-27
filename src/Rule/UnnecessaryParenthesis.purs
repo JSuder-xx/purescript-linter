@@ -14,6 +14,7 @@ import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
   { name: "NoUnnecessaryParenthesis"
+  , description: "Using parenthesis when unnecessary harms readability."
   , examples:
       { bad:
           [ "x = (1)"
@@ -32,7 +33,7 @@ rule = Rule.mkWithNoConfig
           , "x = _ $ 10"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprParens (Wrapped { open, value }) ->
         guard (Expr.isTerminal value) $ pure { message: "Unnecessary parenthesis around a terminal expression.", sourceRange: open.range }
       ExprOp (ExprSection _) _ -> []

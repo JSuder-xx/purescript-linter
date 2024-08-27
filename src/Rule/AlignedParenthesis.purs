@@ -11,6 +11,8 @@ import PureScript.CST.Types (Type(..), Wrapped(..))
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
   { name: "AlignedParenthesis"
+  , description:
+      "Aligning Parentheses helps the reader visually parse the two tokens."
   , examples:
       { bad:
           [ """
@@ -85,7 +87,7 @@ type X r =
           """
           ]
       }
-  , lintProducer: (allExpressionsLintProducer $ Expr.allParenthesis >=> parens)
+  , lintProducer: const $ (allExpressionsLintProducer $ Expr.allParenthesis >=> parens)
       <>
         ( typeLintProducer $ case _ of
             TypeParens x -> parens x

@@ -19,6 +19,10 @@ import Rule as Rule
 replaceMaybeMemptyWithFoldMap :: Rule.Rule
 replaceMaybeMemptyWithFoldMap = Rule.mkWithNoConfig
   { name: "ReplaceMaybeMemptyWithFoldMap"
+  , description:
+      """
+Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention.
+  """
   , examples:
       { bad:
           [ "x = maybe mempty"
@@ -38,7 +42,7 @@ replaceMaybeMemptyWithFoldMap = Rule.mkWithNoConfig
           , "x = maybe \"Hello\" \\s -> f s 10"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprApp (ExprIdent (QualifiedName { token: { range: sourceRange }, name: Ident "maybe" })) appSpines ->
         appSpines
           # NonEmptyArray.head
@@ -52,6 +56,8 @@ replaceMaybeMemptyWithFoldMap = Rule.mkWithNoConfig
 useGuardOverIfThenElseMEmpty :: Rule.Rule
 useGuardOverIfThenElseMEmpty = Rule.mkWithNoConfig
   { name: "UseGuardOverIfThenElseMEmpty"
+  , description:
+      "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch."
   , examples:
       { bad:
           [ "x = if 1 == 2 then [ 1, 2, 3 ] else mempty"
@@ -65,7 +71,7 @@ useGuardOverIfThenElseMEmpty = Rule.mkWithNoConfig
           , "x = if 1 == 2 then [ 1, 2, 3 ] else f 10"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprIf { keyword: { range: sourceRange }, false: elseExpr } ->
         guard (isMempty elseExpr)
           [ { message: "Use `guard` when there is a `mempty` in the `else` expression.", sourceRange } ]
@@ -75,6 +81,8 @@ useGuardOverIfThenElseMEmpty = Rule.mkWithNoConfig
 useGuardOverIfThenMemptyElse :: Rule.Rule
 useGuardOverIfThenMemptyElse = Rule.mkWithNoConfig
   { name: "UseGuardOverIfThenMEmptyElse"
+  , description:
+      "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial."
   , examples:
       { bad:
           [ "x = if 1 == 2 then mempty else [ 1, 2, 3 ]"
@@ -88,7 +96,7 @@ useGuardOverIfThenMemptyElse = Rule.mkWithNoConfig
           , "x = if 1 == 2 then f 10 else [ 1, 2, 3 ]"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprIf { keyword: { range: sourceRange }, true: thenExpr } ->
         guard (isMempty thenExpr)
           [ { message: "Invert the condition (not) and use `guard` when there is a `mempty` in the `then` expression.", sourceRange } ]
@@ -98,6 +106,12 @@ useGuardOverIfThenMemptyElse = Rule.mkWithNoConfig
 useFoldForRepeatedMappends :: Rule.Rule
 useFoldForRepeatedMappends = Rule.mkWithNoConfig
   { name: "UseFoldForRepeatedMappends"
+  , description:
+      """
+Using `fold` 
+1. Removes the need for parenthesis which reduces lexical noise.
+2. Is more succinct, in terms of characters, when there are 8 or more mappends.  
+  """
   , examples:
       { bad:
           [ """
@@ -139,7 +153,7 @@ x =
           """
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       expr@(ExprOp _ neOperators) ->
         guard (NonEmptyArray.all isMappend neOperators)
           let

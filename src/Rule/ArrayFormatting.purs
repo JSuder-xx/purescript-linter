@@ -12,6 +12,7 @@ import PureScript.CST.Types (Expr(..))
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
   { name: "ArrayFormatting"
+  , description: "Ensures consistent spacing when declaring an array literal."
   , examples:
       { bad:
           [ "x = [ ]"
@@ -76,7 +77,7 @@ x =
 """
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       ExprArray x -> Delimited.lint config x
       _ -> []
   }

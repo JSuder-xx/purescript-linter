@@ -10,6 +10,7 @@ module Rule
   , decodeLintProducer
   , defaultConfigJson
   , defaultLintProducer
+  , description
   , examples
   , allExpressionsLintProducer
   , mkWithNoConfig
@@ -46,9 +47,10 @@ newtype Rule = Rule (forall result. (forall config. EncodeJson config => DecodeJ
 
 type Rule' config =
   { name :: String
+  , description :: String
   , examples :: Examples
   , defaultConfig :: config
-  , lintProducer :: config -> LintProducer
+  , lintProducer :: config -> { indentSpaces :: Int } -> LintProducer
   }
 
 mkRule :: forall config. EncodeJson config => DecodeJson config => Rule' config -> Rule
@@ -60,25 +62,29 @@ unRule f (Rule rule) = rule f
 name :: Rule -> String
 name = unRule _.name
 
+description :: Rule -> String
+description = unRule _.description
+
 examples :: Rule -> Examples
 examples = unRule _.examples
 
-mkWithNoConfig :: { name :: String, examples :: Examples, lintProducer :: LintProducer } -> Rule
-mkWithNoConfig { name: name', examples: examples', lintProducer } =
+mkWithNoConfig :: { name :: String, description :: String, examples :: Examples, lintProducer :: { indentSpaces :: Int } -> LintProducer } -> Rule
+mkWithNoConfig s@{ lintProducer } =
   mkRule
-    { name: name'
-    , examples: examples'
+    { name: s.name
+    , examples: s.examples
+    , description: s.description
     , defaultConfig: unit
     , lintProducer: const lintProducer
     }
 
-decodeLintProducer :: Json -> Rule -> Either JsonDecodeError LintProducer
+decodeLintProducer :: Json -> Rule -> Either JsonDecodeError ({ indentSpaces :: Int } -> LintProducer)
 decodeLintProducer json = unRule \rule -> decodeJson json <#> rule.lintProducer
 
 defaultConfigJson :: Rule -> Json
 defaultConfigJson = unRule \rule -> encodeJson rule.defaultConfig
 
-defaultLintProducer :: Rule -> LintProducer
+defaultLintProducer :: Rule -> { indentSpaces :: Int } -> LintProducer
 defaultLintProducer = unRule \rule -> rule.lintProducer rule.defaultConfig
 
 runLintProducer :: LintProducer -> CST.Module Void -> LintResults

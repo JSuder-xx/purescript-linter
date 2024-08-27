@@ -11,6 +11,8 @@ import PureScript.CST.Types as CST
 exportsRequired :: Rule.Rule
 exportsRequired = Rule.mkWithNoConfig
   { name: "ModuleExportsRequired"
+  , description:
+      "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
   , examples:
       { bad:
           [ """
@@ -29,7 +31,7 @@ x = 1
           """
           ]
       }
-  , lintProducer: moduleLintProducer $ case _ of
+  , lintProducer: const $ moduleLintProducer $ case _ of
       CST.Module { header: ModuleHeader { name: Name { token: { range: sourceRange } }, exports: Nothing } } ->
         [ { message: "Module should have explicit exports.", sourceRange } ]
       _ -> []

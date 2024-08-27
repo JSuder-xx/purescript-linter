@@ -6,6 +6,7 @@ import Data.Traversable (for_)
 import Rule (runLintProducer)
 import Rule as Rule
 import Rule.AlignedParenthesis as AlignedParenthesis
+import Rule.Application as Application
 import Rule.ArrayFormatting as ArrayFormatting
 import Rule.IfThenElse as IfThenElse
 import Rule.LetBinding as LetBinding
@@ -25,7 +26,9 @@ import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
 main :: Spec Unit
 main = describe "Linters" do
   for_
-    [ AlignedParenthesis.rule
+    [ Application.inArray
+    , Application.inRecord
+    , AlignedParenthesis.rule
     , ArrayFormatting.rule
     , IfThenElse.ifThenElseLeftAligned
     , LetBinding.compact
@@ -50,11 +53,13 @@ main = describe "Linters" do
   where
   testRuleWithCode f rule =
     describe (Rule.name rule) do
-      let examples = Rule.examples rule
+      let
+        examples = Rule.examples rule
+        config = { indentSpaces: 2 }
       describe "Examples of Failing Code" do
         for_ examples.bad \code ->
-          it code $ assertCode (f code) \m -> (runLintProducer (Rule.defaultLintProducer rule) m) `shouldNotEqual` []
+          it code $ assertCode (f code) \m -> (runLintProducer (Rule.defaultLintProducer rule config) m) `shouldNotEqual` []
       describe "Examples of Passing Code" do
         for_ examples.good \code ->
-          it code $ assertCode (f code) \m -> (runLintProducer (Rule.defaultLintProducer rule) m) `shouldEqual` []
+          it code $ assertCode (f code) \m -> (runLintProducer (Rule.defaultLintProducer rule config) m) `shouldEqual` []
 

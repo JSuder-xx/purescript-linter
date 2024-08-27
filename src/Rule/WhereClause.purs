@@ -17,6 +17,8 @@ import PureScript.CST.Types (Declaration(..), Guarded(..), Where(..))
 whereLeftAligned :: Rule.Rule
 whereLeftAligned = Rule.mkWithNoConfig
   { name: "WhereClauseLeftAligned"
+  , description:
+      "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."
   , examples:
       { bad:
           [ """
@@ -37,7 +39,7 @@ x =
           """
           ]
       }
-  , lintProducer: declarationLintProducer $ case _ of
+  , lintProducer: const $ declarationLintProducer $ case _ of
       DeclValue { guarded: Unconditional _ (Where { bindings: Just (Tuple { range: whereTokenRange } bindings), expr }) } ->
         let
           exprRange = rangeOf expr

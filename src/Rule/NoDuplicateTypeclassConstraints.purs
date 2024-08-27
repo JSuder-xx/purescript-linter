@@ -22,6 +22,8 @@ import PureScript.CST.Types as CST
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
   { name: "NoDuplicateTypeclassConstraints"
+  , description:
+      "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."
   , examples:
       { bad:
           [ "f :: forall a. Ord a => Ord a => a -> a -> Boolean"
@@ -37,7 +39,7 @@ rule = Rule.mkWithNoConfig
           , "f :: forall a. Ord a => Blarg a -> Blarg a"
           ]
       }
-  , lintProducer: declarationLintProducer $ case _ of
+  , lintProducer: const $ declarationLintProducer $ case _ of
       DeclSignature (Labeled { value: (CST.TypeForall _token _variableNames _token' type') }) ->
         (foldMapType constraints type')
           # indexedBy (\{ typeConstructorName, typeVariableNames } -> { typeConstructorName, typeVariableNames })

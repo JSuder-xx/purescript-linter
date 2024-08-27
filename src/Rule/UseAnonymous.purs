@@ -23,6 +23,7 @@ import Rule as Rule
 forOperations :: Rule.Rule
 forOperations = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForOperations"
+  , description: "It is easier to read a wildcard operations than a lambda."
   , examples:
       { bad:
           [ "x = \\s -> s < 10"
@@ -35,7 +36,7 @@ forOperations = Rule.mkWithNoConfig
           , "x = \\a' -> guard (a' `op` to) $> a'"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'
@@ -65,6 +66,7 @@ forOperations = Rule.mkWithNoConfig
 forRecordUpdates :: Rule.Rule
 forRecordUpdates = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordUpdates"
+  , description: "It is easier to read a wildcard record update than a lambda."
   , examples:
       { bad:
           [ "x = \\s -> s { x = 10 }"
@@ -84,7 +86,7 @@ forRecordUpdates = Rule.mkWithNoConfig
           , "x = y { a = _, b = _ }"
           ]
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'
@@ -121,6 +123,7 @@ forRecordUpdates = Rule.mkWithNoConfig
 forRecordCreation :: Rule.Rule
 forRecordCreation = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordCreation"
+  , description: "It is easier to read a wildcard record creation than to visually tie the arguments to the fields where they are used."
   , examples:
       { bad:
 
@@ -139,7 +142,7 @@ forRecordCreation = Rule.mkWithNoConfig
           ]
 
       }
-  , lintProducer: allExpressionsLintProducer $ case _ of
+  , lintProducer: const $ allExpressionsLintProducer $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'

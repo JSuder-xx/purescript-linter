@@ -1,5 +1,6 @@
 {
   "hideSuccess": true,
+  "indentSpaces": 2,
   "ruleSets": [
     {
       "globs": [
@@ -7,6 +8,8 @@
       ],
       "rules": {
         "AlignedParenthesis": null,
+        "Application.InArray.IndentArguments": null,
+        "Application.InRecord.IndentArguments": null,
         "ArrayFormatting": null,
         "IfThenElseLeftAligned": null,
         "LetBinding-VerticalCompact": null,
