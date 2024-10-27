@@ -5,10 +5,10 @@ import Prelude
 import Data.Array (intercalate, mapMaybe)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
-import Data.Foldable (fold)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (un)
 import Data.Tuple (Tuple(..), fst, snd)
+import PureScript.CST.Debug (Label, debugStr)
 import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (AppSpine(..), DoStatement(..), Expr(..), Guarded(..), GuardedExpr(..), Ident(..), IntValue(..), LetBinding(..), Name(..), Operator(..), PatternGuard(..), Proper(..), QualifiedName(..), RecordLabeled(..), RecordUpdate(..), Where(..), Wrapped(..))
@@ -37,8 +37,8 @@ exprParens = case _ of
   _ -> Nothing
 
 -- | Return all of the identifiers found at and under this expression.
--- | 
--- | 1. Attempted to use the traversal functions but this yielded surprising and inconsistent results. 
+-- |
+-- | 1. Attempted to use the traversal functions but this yielded surprising and inconsistent results.
 -- | 2. There counts implicit identifiers from record puns.
 allUnqualifiedIdentifiers :: Expr Void -> Array Ident
 allUnqualifiedIdentifiers = case _ of
@@ -47,7 +47,7 @@ allUnqualifiedIdentifiers = case _ of
     Separated.values exprs
       >>=
         case _ of
-          RecordField _ _ expr' -> allUnqualifiedIdentifiers expr'
+          RecordField _ _ expr -> allUnqualifiedIdentifiers expr
           RecordPun (Name { name }) -> [ name ]
 
   expr -> label expr # _.childKinds >>= snd >>= allUnqualifiedIdentifiers
@@ -61,15 +61,6 @@ appTerm ∷ AppSpine Expr Void → Maybe (Expr Void)
 appTerm = case _ of
   AppType _ _ -> Nothing
   AppTerm expr -> Just expr
-
-indent :: String -> String
-indent s = s <> "  "
-
-type ExprLabel e =
-  { name :: String
-  , description :: String
-  , childKinds :: Array (Tuple String (Array (Expr e)))
-  }
 
 guardedExprs :: Guarded Void -> Array (Expr Void)
 guardedExprs = case _ of
@@ -106,8 +97,10 @@ letBindingExprs =
     LetBindingPattern _ _ where' -> whereExprs where'
     LetBindingError _ -> []
 
+type ExprLabel e = Label (Expr e)
+
 label :: Expr Void -> ExprLabel Void
-label expr = case expr of
+label = case _ of
   ExprHole (Name { name: Ident name }) -> leaf "ExprHole" name
   ExprSection _ -> leaf "ExprSection" ""
   ExprIdent (QualifiedName { name: Ident name }) -> leaf "ExprIdent" name
@@ -126,47 +119,47 @@ label expr = case expr of
   ExprRecord (Wrapped { value: Just exprs }) -> withChildren "ExprRecord"
     $ Array.mapMaybe
         case _ of
-          RecordField _ _ expr' -> Just expr'
+          RecordField _ _ expr -> Just expr
           _ -> Nothing
     $ Separated.values exprs
-  ExprParens (Wrapped { value: expr' }) -> singleChildExpr "ExprParens" expr'
-  ExprTyped expr' _ _ -> singleChildExpr "ExprTyped" expr'
+  ExprParens (Wrapped { value: expr }) -> singleChildExpr "ExprParens" expr
+  ExprTyped expr _ _ -> singleChildExpr "ExprTyped" expr
   ExprError _ -> leaf "ExprError" ""
-  ExprInfix expr' exprs ->
+  ExprInfix expr exprs ->
     { name: "ExprInfix"
     , description: ""
     , childKinds:
-        [ Tuple "MainExpr" [ expr' ]
+        [ Tuple "MainExpr" [ expr ]
         , Tuple "Other" (NonEmptyArray.toArray exprs >>= \(Tuple (Wrapped { value: first }) second) -> [ first, second ])
         ]
     }
-  ExprOp expr' ops ->
+  ExprOp expr ops ->
     let
       opsArray = NonEmptyArray.toArray ops
     in
       { name: "ExprOp"
       , description: intercalate ", " $ (un Operator <<< QualifiedName.name <<< fst) <$> opsArray
       , childKinds:
-          [ Tuple "MainExpr" [ expr' ]
+          [ Tuple "MainExpr" [ expr ]
           , Tuple "Ops" $ snd <$> opsArray
           ]
       }
   ExprOpName (QualifiedName { name: Operator operator }) -> leaf "ExprOpName" operator
-  ExprNegate _ expr' -> singleChildExpr "ExprNegate" expr'
-  ExprRecordAccessor { expr: expr' } -> singleChildExpr "ExprRecordAccessor" expr'
-  ExprRecordUpdate expr' (Wrapped { value: updates }) ->
+  ExprNegate _ expr -> singleChildExpr "ExprNegate" expr
+  ExprRecordAccessor { expr: expr } -> singleChildExpr "ExprRecordAccessor" expr
+  ExprRecordUpdate expr (Wrapped { value: updates }) ->
     { name: "ExprRecordUpdate"
     , description: ""
     , childKinds:
-        [ Tuple "MainExpr" [ expr' ]
+        [ Tuple "MainExpr" [ expr ]
         , Tuple "Updates" $ recordUpdateExprs =<< Separated.values updates
         ]
     }
-  ExprApp expr' appSpines ->
+  ExprApp expr appSpines ->
     { name: "ExprApp"
     , description: ""
     , childKinds:
-        [ Tuple "MainExpr" [ expr' ]
+        [ Tuple "MainExpr" [ expr ]
         , Tuple "AppSpines" (mapMaybe appTerm $ NonEmptyArray.toArray appSpines)
         ]
     }
@@ -222,16 +215,4 @@ label expr = case expr of
   singleChildExpr name single = { name, description: "", childKinds: [ Tuple "Single" [ single ] ] }
 
 debugExpr :: String -> Expr Void -> String
-debugExpr indentation = label >>> \{ name, description, childKinds } ->
-  indentation <> name <> ": " <> description <> if Array.null childKinds then "" else (fold $ childKind <$> childKinds)
-  where
-  childKind :: Tuple String (Array (Expr Void)) -> String
-  childKind (Tuple label' children) =
-    if Array.null children then ""
-    else fold
-      [ "\n"
-      , indent indentation
-      , label'
-      , "\n"
-      , intercalate "\n" $ debugExpr (indent $ indent indentation) <$> children
-      ]
+debugExpr = debugStr label

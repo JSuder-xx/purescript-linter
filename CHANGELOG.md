@@ -1,3 +1,7 @@
+### v0.2.8 (2024-10-27)
+
+- Fixed bug in NoDuplicateTypeclassConstraints.
+
 ### v0.2.7 (2024-8-26)
 
 - Added: Command line argument to show all rule names and descriptions.
