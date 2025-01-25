@@ -13,6 +13,7 @@ module Rule
   , description
   , examples
   , allExpressionsLintProducer
+  , mkRule
   , mkWithNoConfig
   , moduleLintProducer
   , name
@@ -68,6 +69,7 @@ description = unRule _.description
 examples :: Rule -> Examples
 examples = unRule _.examples
 
+-- | Define a rule that does not store any custom configuration. The Lint Producer will still be given the system-wide identSpaces configuration.
 mkWithNoConfig :: { name :: String, description :: String, examples :: Examples, lintProducer :: { indentSpaces :: Int } -> LintProducer } -> Rule
 mkWithNoConfig s@{ lintProducer } =
   mkRule
