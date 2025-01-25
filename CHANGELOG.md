@@ -1,3 +1,7 @@
+### NEXT
+
+- Expanded application of NoDuplicateTypeclassConstraints to all types (and not just declarations).
+
 ### v0.2.8 (2024-10-27)
 
 - Fixed bug in NoDuplicateTypeclassConstraints.

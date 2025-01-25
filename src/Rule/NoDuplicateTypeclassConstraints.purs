@@ -12,9 +12,9 @@ import Data.Tuple (Tuple(..))
 import PureScript.CST.Fold (OnPureScript)
 import PureScript.CST.Traversal (foldMapType)
 import PureScript.CST.Type (debugType)
-import PureScript.CST.Types (Declaration(..), Labeled(..), Proper(..), QualifiedName(..))
+import PureScript.CST.Types (Proper(..), QualifiedName(..))
 import PureScript.CST.Types as CST
-import Rule (declarationLintProducer)
+import Rule (typeLintProducer)
 import Rule as Rule
 
 rule :: Rule.Rule
@@ -33,6 +33,7 @@ rule = Rule.mkWithNoConfig
           , "f :: forall a. Bif a Blarg => Bif a Blarg => Int -> Int"
           , "f :: forall a b. Bif a (Blarg b) => Bif a (Blarg b) => Int -> Int"
           , "f :: forall a b. Bif a { | b } => Bif a { | b } => Int -> Int"
+          , "f :: String ->  (forall a b. Bif a { | b } => Bif a { | b } => Int -> Int)"
           ]
       , good:
           [ "f :: forall a. Ord a => a -> a -> Boolean"
@@ -44,10 +45,11 @@ rule = Rule.mkWithNoConfig
           , "f :: forall a b  . Bif a (Blarg b) => Bif (Blarg b) a => Int -> Int"
           , "f :: forall a b c. Bif a (Blarg b) => Bif a (Blarg c) => Int -> Int"
           , "f :: forall a b c. Bif a { | b } => Bif a { | a } => Int -> Int"
+          , "f :: String -> (forall a b c. Bif a { | b } => Bif a { | a } => Int -> Int)"
           ]
       }
-  , lintProducer: const $ declarationLintProducer $ case _ of
-      DeclSignature (Labeled { value: (CST.TypeForall _token _variableNames _token' type') }) ->
+  , lintProducer: const $ typeLintProducer $ case _ of
+      CST.TypeForall _token _variableNames _token' type' ->
         foldMapType constraints type'
           # indexedBy (\{ typeConstructorName, typeDescriptions } -> { typeConstructorName, typeDescriptions })
           # Map.toUnfoldable
