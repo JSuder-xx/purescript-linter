@@ -62,4 +62,3 @@ main = describe "Linters" do
       describe "Examples of Passing Code" do
         for_ examples.good \code ->
           it code $ assertCode (f code) \m -> (runLintProducer (Rule.defaultLintProducer rule config) m) `shouldEqual` []
-

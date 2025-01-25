@@ -7,9 +7,9 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Monoid (guard)
+import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
 import Rule (allExpressionsLintProducer)
 import Rule as Rule
-import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
 
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig

@@ -3,7 +3,6 @@ module Rule.RecordFormatting (rule) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-
 import PureScript.CST.Range (class RangeOf, rangeOf)
 import PureScript.CST.SourceRange (noSpaceBetween, rangeOfRecordLabeled, spaceBetween)
 import PureScript.CST.Types (Expr(..), Name(..), RecordLabeled(..))
@@ -60,69 +59,69 @@ bad =
   , "x = { x: 1, y: 1, z:3 }"
   , "x = { x: 1, y: 1,z: 3 }"
   , """
-x = 
+x =
   { a: 1
   , b: 2 }
           """
   , """
-x = 
+x =
   { a: 1
-  ,b: 2 
+  ,b: 2
   }
           """
   , """
-x = 
+x =
   { a: 1
-    ,b: 2 
+    ,b: 2
   }
           """
   , """
-x = 
-  SomeConstructor 
+x =
+  SomeConstructor
     { a: 1
-    ,b: 2 
+    ,b: 2
     }
 """
   , """
-x = 
+x =
   f
     { a: 1
-    ,b: 2 
+    ,b: 2
     }
 """
   , """
-x = 
-  { a: 
+x =
+  { a:
   1
-  , b: 2 
+  , b: 2
   }
           """
   , """
-x = 
-  { a: 
+x =
+  { a:
    1
-  , b: 2 
+  , b: 2
   }
           """
   , """
-x = 
-  { a: 
+x =
+  { a:
     1
-  , b: 2 
+  , b: 2
   }
           """
   , """
-x = 
-  { a: 
+x =
+  { a:
      1
-  , b: 2 
+  , b: 2
   }
           """
   , """
-x = 
-  { a: 
+x =
+  { a:
        1
-  , b: 2 
+  , b: 2
   }
           """
   ]
@@ -135,21 +134,21 @@ good =
   , "x = { x: 1, y: 2 }"
   , "x = { x: 1, y: 2, z: 3 }"
   , """
-x = 
+x =
   { a: 1
   }
       """
   , """
-x = 
+x =
   { a: 1
   , b: 2
   }
       """
   , """
-x = 
-  { a: 
+x =
+  { a:
       1
-  , b: 2 
+  , b: 2
   }
           """
   ]

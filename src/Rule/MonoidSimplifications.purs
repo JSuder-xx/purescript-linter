@@ -108,21 +108,21 @@ useFoldForRepeatedMappends = Rule.mkWithNoConfig
   { name: "UseFoldForRepeatedMappends"
   , description:
       """
-Using `fold` 
+Using `fold`
 1. Removes the need for parenthesis which reduces lexical noise.
-2. Is more succinct, in terms of characters, when there are 8 or more mappends.  
+2. Is more succinct, in terms of characters, when there are 8 or more mappends.
   """
   , examples:
       { bad:
           [ """
-x = 
+x =
   (someValues a)
   <> (someDifferentValues b)
   <> (yetOtherValues c)
   <> (more d)
           """
           , """
-x = 
+x =
   "Hi!"
   <> a
   <> b
@@ -133,19 +133,19 @@ x =
           ]
       , good:
           [ """
-x = 
+x =
   (someValues a)
   <> (someDifferentValues b)
           """
           , """
-x = 
+x =
   "first "
   <> f "second"
   <> "third"
           """
           , """
-x = 
-  fold 
+x =
+  fold
     [ someValues a
     , someDifferentValues b
     , yetOtherValues c
@@ -181,4 +181,3 @@ isMempty = case _ of
   ExprIdent (QualifiedName { module: Nothing, name: Ident "EQ" }) -> true -- "EQ" (not qualified because assumed it comes from Prelude)
   ExprIdent (QualifiedName { module: Nothing, name: Ident "unit" }) -> true -- "unit" (not qualified because assumed it comes from Prelude)
   _ -> false
-

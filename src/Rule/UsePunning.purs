@@ -6,9 +6,9 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (snd)
+import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), QualifiedName(..), RecordLabeled(..), Separated(..), Wrapped(..))
 import Rule (LintResult, allExpressionsLintProducer)
 import Rule as Rule
-import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), QualifiedName(..), RecordLabeled(..), Separated(..), Wrapped(..))
 
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig

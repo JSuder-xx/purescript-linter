@@ -71,4 +71,3 @@ runModeParser =
 
 nonEmptyString :: ReadM NonEmptyString
 nonEmptyString = eitherReader (NonEmptyString.fromString >>> note "Missing value")
-

@@ -4,18 +4,18 @@ import Prelude
 
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
-import Rule (allExpressionsLintProducer)
-import Rule as Rule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (sameLine)
 import PureScript.CST.Types (DoStatement(..), Expr(..))
+import Rule (allExpressionsLintProducer)
+import Rule as Rule
 
 compact :: Rule.Rule
 compact = Rule.mkWithNoConfig
   { name: "LetBinding-VerticalCompact"
   , description:
       """
-This let formatting rule prioritizes conservation of vertical space. 
+This let formatting rule prioritizes conservation of vertical space.
   """
   , examples:
       { bad:
@@ -27,7 +27,7 @@ x =
     x + 2
           """
           , """
-x = 
+x =
   SomeConstructor
     let
       x = 1

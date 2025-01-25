@@ -3,10 +3,10 @@ module Rule.AlignedParenthesis where
 import Prelude
 
 import Data.Monoid (guard)
-import Rule (LintResults, allExpressionsLintProducer, typeLintProducer)
-import Rule as Rule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Type(..), Wrapped(..))
+import Rule (LintResults, allExpressionsLintProducer, typeLintProducer)
+import Rule as Rule
 
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
@@ -16,22 +16,22 @@ rule = Rule.mkWithNoConfig
   , examples:
       { bad:
           [ """
-x = 
+x =
   (stuff 10
       )
           """
           , """
-x = 
+x =
   f (stuff 10
   )
           """
           , """
-x = 
+x =
   f (stuff 10
         )
           """
           , """
-x = 
+x =
   f (stuff 10
     g 10
     h 20
@@ -51,21 +51,21 @@ type X r = ( x :: Int
           ]
       , good:
           [ """
-x = 
+x =
   (stuff 10
   )
           """
           , """
-x = 
+x =
   f (stuff 10)
           """
           , """
-x = 
+x =
   f (stuff 10
     )
           """
           , """
-x = 
+x =
   f (stuff 10
       h 10
       h20
@@ -73,13 +73,13 @@ x =
           """
           , "type X = ( x :: Int )"
           , """
-type X = 
+type X =
   ( x :: Int
   , y :: Int
   )
           """
           , """
-type X r = 
+type X r =
   ( x :: Int
   , y :: Int
   | r
@@ -100,4 +100,3 @@ type X r =
   parens (Wrapped { open: { range: open }, close: { range: close } }) =
     guard (open.start.column /= close.start.column && close.start.line > open.start.line)
       [ { message: "Parenthesis must be aligned in the same column when they appear on different lines.", sourceRange: close } ]
-

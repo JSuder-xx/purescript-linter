@@ -3,10 +3,10 @@ module Rule.ModuleExports (exportsRequired) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Rule (moduleLintProducer)
-import Rule as Rule
 import PureScript.CST.Types (ModuleHeader(..), Name(..))
 import PureScript.CST.Types as CST
+import Rule (moduleLintProducer)
+import Rule as Rule
 
 exportsRequired :: Rule.Rule
 exportsRequired = Rule.mkWithNoConfig
@@ -18,7 +18,7 @@ exportsRequired = Rule.mkWithNoConfig
           [ """
 module FlimFlam where
 
-x :: Int 
+x :: Int
 x = 1
           """
           ]
@@ -26,7 +26,7 @@ x = 1
           [ """
 module FlimFlam (x) where
 
-x :: Int 
+x :: Int
 x = 1
           """
           ]

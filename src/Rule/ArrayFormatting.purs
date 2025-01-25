@@ -3,11 +3,11 @@ module Rule.ArrayFormatting (rule) where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import PureScript.CST.Range (rangeOf)
+import PureScript.CST.Types (Expr(..))
 import Rule (allExpressionsLintProducer)
 import Rule as Rule
 import Rule.Delimited as Delimited
-import PureScript.CST.Range (rangeOf)
-import PureScript.CST.Types (Expr(..))
 
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig
@@ -32,26 +32,26 @@ x =
    ]
 """
           , """
-x = 
+x =
   [ 1
-  ,2 
+  ,2
   ,3
   ]
 """
           , """
-x = 
+x =
   [1
-  , 2 
+  , 2
   , 3
   ]
 """
           , """
-x = 
+x =
   [ 1
   , 2, 3 ]
 """
           , """
-x = 
+x =
   SomeConstructor [ 1
   , 2, 3 ]
 """
@@ -69,9 +69,9 @@ x =
   ]
 """
           , """
-x = 
+x =
   [ 1
-  , 2 
+  , 2
   , 3
   ]
 """
@@ -90,4 +90,3 @@ x =
     , innerRange: rangeOf
     , validateInner: const Nothing
     }
-

@@ -29,4 +29,3 @@ reporter { hideSuccess } =
       log $ "Failed: " <> (show $ Array.length failed)
       when (not Array.null failed) $ setExitCode 1
   }
-

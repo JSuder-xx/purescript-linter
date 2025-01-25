@@ -17,60 +17,60 @@ inArray = Rule.mkWithNoConfig
   { name: "Application.InArray.IndentArguments"
   , description:
       """
-This very limited rule ensures proper function call argument indentation when the function call is made inside an array. 
+This very limited rule ensures proper function call argument indentation when the function call is made inside an array.
 
 While limited, this rule helps with the formatting of function calls in render functions.
   """
   , examples:
       { bad:
           [ """
-x = 
-  [ div 
+x =
+  [ div
     []
     []
   ]
           """
           , """
-x = 
-  [ span 
+x =
+  [ span
    [] []
   ]
           """
           , """
-x = 
-  [ div 
+x =
+  [ div
      [] []
   ]
           """
           ]
       , good:
           [ """
-x = 
+x =
   [ div [] [] ]
           """
           , """
-x = 
-  [ div [] 
+x =
+  [ div []
       []
   ]
           """
           , """
-x = 
-  [ div 
+x =
+  [ div
       [] []
   ]
           """
           , """
-x = 
-  [ div 
+x =
+  [ div
       []
       []
   ]
           """
           , """
-x = 
+x =
   [ div [] []
-  , div 
+  , div
       []
       []
   ]
@@ -106,34 +106,34 @@ inRecord = Rule.mkWithNoConfig
   { name: "Application.InRecord.IndentArguments"
   , description:
       """
-This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal. 
+This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal.
   """
   , examples:
       { bad:
           [ """
-x = 
+x =
   { foo: f
          1
          2
   }
           """
           , """
-x = 
+x =
   { foo: f
            1
   }
           """
           , """
-x = 
-  { foo: 
+x =
+  { foo:
     f
     1
   }
           """
           , """
-x = 
+x =
   if b then
-    { foo: 
+    { foo:
       f
       1
     }
@@ -143,55 +143,55 @@ x =
           ]
       , good:
           [ """
-x = 
+x =
   { foo: f 1 }
           """
           , """
-x = 
+x =
   { foo: f 1
       3
   }
           """
           , """
-x = 
+x =
   { foo: f
       3 4
   }
           """
           , """
-x = 
-  { foo: f 
+x =
+  { foo: f
       1
       2
   }
           """
           , """
-x = 
+x =
   { foo: g 1 2
-  , bar: f 
+  , bar: f
       1
       2
   }
           """
           , """
-x = 
+x =
   { foo: g 1 2
-  , bar: 
-      f 
+  , bar:
+      f
         1
         2
   }
           """
           , """
-x = 
+x =
   if b then
-    { foo:  
+    { foo:
         f
           1
     }
   else
-    { foo: 
-        f 1 
+    { foo:
+        f 1
     }
           """
 
@@ -261,4 +261,3 @@ checkSpines { initialLine, indentSpaces, indentOffColumn, indentOffLabel, contex
             }
       )
       { errors: [], lastLine: initialLine, lastIsFunction: true }
-

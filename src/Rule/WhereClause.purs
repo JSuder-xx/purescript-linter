@@ -8,11 +8,11 @@ import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
-import Rule (declarationLintProducer)
-import Rule as Rule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (isAbove, leftAligned)
 import PureScript.CST.Types (Declaration(..), Guarded(..), Where(..))
+import Rule (declarationLintProducer)
+import Rule as Rule
 
 whereLeftAligned :: Rule.Rule
 whereLeftAligned = Rule.mkWithNoConfig
@@ -25,8 +25,8 @@ whereLeftAligned = Rule.mkWithNoConfig
 x = y + 1 where y = 20
           """
           , """
-x = 
-  y + 1 
+x =
+  y + 1
   where y = 20
           """
           ]
@@ -58,4 +58,3 @@ x =
 
       _ -> []
   }
-

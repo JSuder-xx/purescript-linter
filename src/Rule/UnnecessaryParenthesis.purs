@@ -5,11 +5,10 @@ import Prelude
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
-
-import Rule (allExpressionsLintProducer)
-import Rule as Rule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(..))
+import Rule (allExpressionsLintProducer)
+import Rule as Rule
 
 rule :: Rule.Rule
 rule = Rule.mkWithNoConfig

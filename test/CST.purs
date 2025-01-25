@@ -40,7 +40,7 @@ cst =
 
         expectNames "Multiple Expression Terms"
           """
-f = x a + y b + z c 
+f = x a + y b + z c
           """
           [ "a", "b", "c", "x", "y", "z" ]
 
@@ -52,39 +52,39 @@ f = \x -> a b c d
 
         expectNames "Deeply Nested Let"
           """
-f = 
-  let 
-    x = 
+f =
+  let
+    x =
       let
         y =
-          let 
+          let
             z = 1
             q = r 10 + s 10 + (if t then u else v)
-          in 
+          in
             z + 1
       in
         y + 1
   in
-    x + 10     
+    x + 10
                 """
           [ "r", "s", "t", "u", "v", "x", "y", "z" ]
 
         expectNames "Nested Records"
           """
-z = 
-  let 
-    x = 
+z =
+  let
+    x =
       { field1: a + 1
-      , field2: { nested: { reallyNested1: b, reallyNested2: c + (d 10) + if e { f1: f } then g else h } } 
+      , field2: { nested: { reallyNested1: b, reallyNested2: c + (d 10) + if e { f1: f } then g else h } }
       }
   in
-    x + 10     
+    x + 10
                 """
           [ "a", "b", "c", "d", "e", "f", "g", "h", "x" ]
 
         expectNames "Record with pun"
           """
-f = 
+f =
   { a
   , b
   , c: a + 1
@@ -92,4 +92,3 @@ f =
   }
           """
           [ "a", "a", "a", "a", "b" ]
-

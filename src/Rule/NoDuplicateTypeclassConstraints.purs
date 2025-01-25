@@ -3,7 +3,6 @@ module Rule.NoDuplicateTypeclassConstraints (rule) where
 import Prelude
 
 import Data.Array as Array
-
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Map as Map
 import Data.Map.Extra (indexedBy)

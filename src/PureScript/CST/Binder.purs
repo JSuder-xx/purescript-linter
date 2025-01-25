@@ -7,7 +7,6 @@ import Data.Array.Extra (takeMapMaybe) as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Maybe (Maybe(..))
-
 import PureScript.CST.Types (Binder(..), Ident, Name)
 
 binderVar :: forall e. Binder e -> Maybe (Name Ident)

@@ -9,7 +9,7 @@ import Data.Monoid (guard)
 import Data.Tuple (Tuple(..), snd)
 import PureScript.CST.SourcePos (columnDifference)
 import PureScript.CST.SourceRange (leftAligned, noSpaceBetween, spaceBetween)
-import PureScript.CST.Types (Delimited, Separated(..), SourceRange, Wrapped(..), SourceToken)
+import PureScript.CST.Types (Delimited, Separated(..), SourceRange, SourceToken, Wrapped(..))
 import Rule (LintResults)
 
 lint :: forall inner. { name :: String, itemName :: String, openToken :: String, closeToken :: String, innerRange :: inner -> SourceRange, validateInner :: inner -> Maybe LintResults } -> Delimited inner -> LintResults
@@ -88,4 +88,3 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
             ]
     where
     rangeHead = innerRange head
-
