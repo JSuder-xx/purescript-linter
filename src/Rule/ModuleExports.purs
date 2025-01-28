@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import PureScript.CST.Types (ModuleHeader(..), Name(..))
 import PureScript.CST.Types as CST
-import Rule (moduleLintProducer)
+import Rule (moduleIssueIdentifier)
 import Rule as Rule
 
 exportsRequired :: Rule.Rule
@@ -14,7 +14,7 @@ exportsRequired = Rule.mkWithNoConfig
   , description:
       "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
   , examples:
-      { bad:
+      { failingCode:
           [ """
 module FlimFlam where
 
@@ -22,7 +22,7 @@ x :: Int
 x = 1
           """
           ]
-      , good:
+      , passingCode:
           [ """
 module FlimFlam (x) where
 
@@ -31,7 +31,7 @@ x = 1
           """
           ]
       }
-  , lintProducer: const $ moduleLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ moduleIssueIdentifier $ case _ of
       CST.Module { header: ModuleHeader { name: Name { token: { range: sourceRange } }, exports: Nothing } } ->
         [ { message: "Module should have explicit exports.", sourceRange } ]
       _ -> []

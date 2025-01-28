@@ -1,24 +1,25 @@
 module Rule
   ( Examples
+  , IssueIdentifierIn
+  , MkModuleIssueIdentifier
+  , ModuleIssueIdentifier
+  , Issue
   , Rule
   , Rule'
-  , LintProducer
-  , LintResults
-  , LintResult
-  , OnKind
-  , declarationLintProducer
-  , decodeLintProducer
+  , SystemConfig
+  , declarationIssueIdentifierInModule
+  , decodeMkModuleIssueIdentifier
   , defaultConfigJson
-  , defaultLintProducer
+  , defaultModuleIssueIdentifier
   , description
   , examples
-  , allExpressionsLintProducer
+  , expressionIssueIdentifier
   , mkRule
   , mkWithNoConfig
-  , moduleLintProducer
+  , moduleIssueIdentifier
   , name
-  , runLintProducer
-  , typeLintProducer
+  , identifyModuleIssues
+  , typeIssueIdentifier
   ) where
 
 import Prelude
@@ -33,31 +34,55 @@ import PureScript.CST.Traversal (foldMapModule)
 import PureScript.CST.Types (Expr(..))
 import PureScript.CST.Types as CST
 
-type LintResult = { message :: String, sourceRange :: CST.SourceRange }
-type LintResults = Array LintResult
-type OnKind f = f Void -> LintResults
+type Issue = { message :: String, sourceRange :: CST.SourceRange }
 
-type LintProducer = OnModule LintResults
+-- | Function that return issues for a given CST node.
+type IssueIdentifierIn cstType = cstType Void -> Array Issue
 
+-- | A record of functions that identify issues in different parts of a Module ex. types, declarations, expressions, imports/exports, etc..
+type ModuleIssueIdentifier = OnModule (Array Issue)
+
+-- | System level configuration provided to all Rules.
+type SystemConfig = { indentSpaces :: Int }
+
+type MkModuleIssueIdentifier = SystemConfig -> ModuleIssueIdentifier
+
+-- | Each rule should provide examples of code that would fail the rule and code that would pass.
 type Examples =
-  { good :: Array String
-  , bad :: Array String
+  { passingCode :: Array String
+  , failingCode :: Array String
   }
 
-newtype Rule = Rule (forall result. (forall config. EncodeJson config => DecodeJson config => Rule' config -> result) -> result)
+-- | A rule identifies a specific set of problems / issues with code.
+-- |
+-- | NOTE: This is existentially quantified so that each rule can have its own ruleConfiguration which can be decoded from the rule set JSON.
+newtype Rule = Rule
+  (forall result. (forall ruleConfig. EncodeJson ruleConfig => DecodeJson ruleConfig => Rule' ruleConfig -> result) -> result)
 
-type Rule' config =
+type Rule' ruleConfig =
   { name :: String
   , description :: String
   , examples :: Examples
-  , defaultConfig :: config
-  , lintProducer :: config -> { indentSpaces :: Int } -> LintProducer
+  , defaultConfig :: ruleConfig
+  , moduleIssueIdentifier :: ruleConfig -> MkModuleIssueIdentifier
   }
 
-mkRule :: forall config. EncodeJson config => DecodeJson config => Rule' config -> Rule
+-- | Make a rule that features a custom configuration.
+mkRule :: forall ruleConfig. EncodeJson ruleConfig => DecodeJson ruleConfig => Rule' ruleConfig -> Rule
 mkRule rule = Rule \extract -> extract rule
 
-unRule :: forall result. (forall config. EncodeJson config => DecodeJson config => Rule' config -> result) -> Rule -> result
+-- | Make a rule that does not store any custom configuration. The rule is still be given the system-wide configuration.
+mkWithNoConfig :: { name :: String, description :: String, examples :: Examples, moduleIssueIdentifier :: MkModuleIssueIdentifier } -> Rule
+mkWithNoConfig s =
+  mkRule
+    { name: s.name
+    , examples: s.examples
+    , description: s.description
+    , defaultConfig: unit
+    , moduleIssueIdentifier: const s.moduleIssueIdentifier
+    }
+
+unRule :: forall result. (forall ruleConfig. EncodeJson ruleConfig => DecodeJson ruleConfig => Rule' ruleConfig -> result) -> Rule -> result
 unRule f (Rule rule) = rule f
 
 name :: Rule -> String
@@ -69,42 +94,31 @@ description = unRule _.description
 examples :: Rule -> Examples
 examples = unRule _.examples
 
--- | Define a rule that does not store any custom configuration. The Lint Producer will still be given the system-wide identSpaces configuration.
-mkWithNoConfig :: { name :: String, description :: String, examples :: Examples, lintProducer :: { indentSpaces :: Int } -> LintProducer } -> Rule
-mkWithNoConfig s@{ lintProducer } =
-  mkRule
-    { name: s.name
-    , examples: s.examples
-    , description: s.description
-    , defaultConfig: unit
-    , lintProducer: const lintProducer
-    }
-
-decodeLintProducer :: Json -> Rule -> Either JsonDecodeError ({ indentSpaces :: Int } -> LintProducer)
-decodeLintProducer json = unRule \rule -> decodeJson json <#> rule.lintProducer
+decodeMkModuleIssueIdentifier :: Json -> Rule -> Either JsonDecodeError MkModuleIssueIdentifier
+decodeMkModuleIssueIdentifier json = unRule \rule -> decodeJson json <#> rule.moduleIssueIdentifier
 
 defaultConfigJson :: Rule -> Json
 defaultConfigJson = unRule \rule -> encodeJson rule.defaultConfig
 
-defaultLintProducer :: Rule -> { indentSpaces :: Int } -> LintProducer
-defaultLintProducer = unRule \rule -> rule.lintProducer rule.defaultConfig
+defaultModuleIssueIdentifier :: Rule -> MkModuleIssueIdentifier
+defaultModuleIssueIdentifier = unRule \rule -> rule.moduleIssueIdentifier rule.defaultConfig
 
-runLintProducer :: LintProducer -> CST.Module Void -> LintResults
-runLintProducer { onModule, onPureScript } = onModule <> foldMapModule onPureScript
+identifyModuleIssues :: ModuleIssueIdentifier -> CST.Module Void -> Array Issue
+identifyModuleIssues { onModule, onPureScript } = onModule <> foldMapModule onPureScript
 
 -- | Traverses every single expression, traversing into Application to get more expressions.
-allExpressionsLintProducer :: OnKind CST.Expr -> LintProducer
-allExpressionsLintProducer onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onExpr = recurse } }
+expressionIssueIdentifier :: IssueIdentifierIn CST.Expr -> ModuleIssueIdentifier
+expressionIssueIdentifier onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript (Array Issue)) { onExpr = recurse } }
   where
   recurse = case _ of
     appExpr@(ExprApp expr nes) -> onExpr appExpr <> onExpr expr <> (NonEmptyArray.toArray nes # Array.mapMaybe Expr.appTerm >>= recurse)
     expr -> onExpr expr
 
-declarationLintProducer :: OnKind CST.Declaration -> LintProducer
-declarationLintProducer onDecl = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onDecl = onDecl } }
+declarationIssueIdentifierInModule :: IssueIdentifierIn CST.Declaration -> ModuleIssueIdentifier
+declarationIssueIdentifierInModule onDecl = { onModule: mempty, onPureScript: (mempty :: OnPureScript (Array Issue)) { onDecl = onDecl } }
 
-moduleLintProducer :: OnKind CST.Module -> LintProducer
-moduleLintProducer onModule = { onModule, onPureScript: (mempty :: OnPureScript LintResults) }
+moduleIssueIdentifier :: IssueIdentifierIn CST.Module -> ModuleIssueIdentifier
+moduleIssueIdentifier onModule = { onModule, onPureScript: (mempty :: OnPureScript (Array Issue)) }
 
-typeLintProducer :: OnKind CST.Type -> LintProducer
-typeLintProducer onType = { onModule: mempty, onPureScript: (mempty :: OnPureScript LintResults) { onType = onType } }
+typeIssueIdentifier :: IssueIdentifierIn CST.Type -> ModuleIssueIdentifier
+typeIssueIdentifier onType = { onModule: mempty, onPureScript: (mempty :: OnPureScript (Array Issue)) { onType = onType } }

@@ -9,7 +9,7 @@ import Data.Monoid (guard)
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (AppSpine, Expr(..), Name(..), RecordLabeled(..), Wrapped(..))
-import Rule (LintResults, allExpressionsLintProducer)
+import Rule (Issue, expressionIssueIdentifier)
 import Rule as Rule
 
 inArray :: Rule.Rule
@@ -22,7 +22,7 @@ This very limited rule ensures proper function call argument indentation when th
 While limited, this rule helps with the formatting of function calls in render functions.
   """
   , examples:
-      { bad:
+      { failingCode:
           [ """
 x =
   [ div
@@ -43,7 +43,7 @@ x =
   ]
           """
           ]
-      , good:
+      , passingCode:
           [ """
 x =
   [ div [] [] ]
@@ -77,7 +77,7 @@ x =
           """
           ]
       }
-  , lintProducer: \{ indentSpaces } -> allExpressionsLintProducer $
+  , moduleIssueIdentifier: \{ indentSpaces } -> expressionIssueIdentifier $
       case _ of
         ExprArray (Wrapped { value: Just separatedExprs }) ->
           Separated.values separatedExprs
@@ -109,7 +109,7 @@ inRecord = Rule.mkWithNoConfig
 This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal.
   """
   , examples:
-      { bad:
+      { failingCode:
           [ """
 x =
   { foo: f
@@ -141,7 +141,7 @@ x =
     { foo: 1 }
           """
           ]
-      , good:
+      , passingCode:
           [ """
 x =
   { foo: f 1 }
@@ -197,7 +197,7 @@ x =
 
           ]
       }
-  , lintProducer: \{ indentSpaces } -> allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: \{ indentSpaces } -> expressionIssueIdentifier $ case _ of
       ExprRecord (Wrapped { value: Just separatedExprs }) ->
         Separated.values separatedExprs
           # foldMap
@@ -238,7 +238,7 @@ checkSpines
      , initialLine :: Int
      }
   -> f (AppSpine Expr Void)
-  -> LintResults
+  -> Array Issue
 checkSpines { initialLine, indentSpaces, indentOffColumn, indentOffLabel, context } =
   _.errors <<<
     foldl

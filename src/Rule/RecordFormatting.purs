@@ -6,7 +6,7 @@ import Data.Maybe (Maybe(..))
 import PureScript.CST.Range (class RangeOf, rangeOf)
 import PureScript.CST.SourceRange (noSpaceBetween, rangeOfRecordLabeled, spaceBetween)
 import PureScript.CST.Types (Expr(..), Name(..), RecordLabeled(..))
-import Rule (LintResults, allExpressionsLintProducer)
+import Rule (Issue, expressionIssueIdentifier)
 import Rule as Rule
 import Rule.Delimited as Delimited
 
@@ -16,10 +16,10 @@ rule = Rule.mkWithNoConfig
   , description:
       "Ensures consistent spacing when declaring a record literal."
   , examples:
-      { bad
-      , good
+      { failingCode
+      , passingCode
       }
-  , lintProducer: \{ indentSpaces } -> allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: \{ indentSpaces } -> expressionIssueIdentifier $ case _ of
       ExprRecord x -> Delimited.lint (config indentSpaces) x
       _ -> []
   }
@@ -33,7 +33,7 @@ rule = Rule.mkWithNoConfig
     , validateInner: recordLabelIncorrectlySpaced
     }
     where
-    recordLabelIncorrectlySpaced :: forall e. RangeOf e => RecordLabeled (Expr e) -> Maybe LintResults
+    recordLabelIncorrectlySpaced :: forall e. RangeOf e => RecordLabeled (Expr e) -> Maybe (Array Issue)
     recordLabelIncorrectlySpaced (RecordPun _) = Nothing
     recordLabelIncorrectlySpaced (RecordField (Name { token: { range: nameRange } }) { range: colonRange } expr) =
       let
@@ -43,8 +43,8 @@ rule = Rule.mkWithNoConfig
         else if (colonRange `spaceBetween` exprRange) || ((nameRange.start.line < exprRange.start.line) && ((nameRange.start.column + identSpaces) == exprRange.start.column)) then Nothing
         else Just [ { message: "Expecting the field expression to either follow the `:` with a single space OR to be on the next line with the value aligned with the field label", sourceRange: exprRange } ]
 
-bad :: Array String
-bad =
+failingCode :: Array String
+failingCode =
   [ "x = { }"
   , "x = {   }"
   , "x = {x: 1}"
@@ -126,8 +126,8 @@ x =
           """
   ]
 
-good :: Array String
-good =
+passingCode :: Array String
+passingCode =
   [ "x = {}"
   , "x = { x: 1 }"
   , "x = { y }"

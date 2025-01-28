@@ -5,7 +5,7 @@ import Prelude
 import Data.Monoid (guard)
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Type(..), Wrapped(..))
-import Rule (LintResults, allExpressionsLintProducer, typeLintProducer)
+import Rule (Issue, expressionIssueIdentifier, typeIssueIdentifier)
 import Rule as Rule
 
 rule :: Rule.Rule
@@ -14,7 +14,7 @@ rule = Rule.mkWithNoConfig
   , description:
       "Aligning Parentheses helps the reader visually parse the two tokens."
   , examples:
-      { bad:
+      { failingCode:
           [ """
 x =
   (stuff 10
@@ -49,7 +49,7 @@ type X r = ( x :: Int
   )
           """
           ]
-      , good:
+      , passingCode:
           [ """
 x =
   (stuff 10
@@ -87,16 +87,16 @@ type X r =
           """
           ]
       }
-  , lintProducer: const $ (allExpressionsLintProducer $ Expr.allParenthesis >=> parens)
+  , moduleIssueIdentifier: const $ (expressionIssueIdentifier $ Expr.allParenthesis >=> parens)
       <>
-        ( typeLintProducer $ case _ of
+        ( typeIssueIdentifier $ case _ of
             TypeParens x -> parens x
             TypeRow x -> parens x
             _ -> []
         )
   }
   where
-  parens :: forall a. Wrapped a -> LintResults
+  parens :: forall a. Wrapped a -> Array Issue
   parens (Wrapped { open: { range: open }, close: { range: close } }) =
     guard (open.start.column /= close.start.column && close.start.line > open.start.line)
       [ { message: "Parenthesis must be aligned in the same column when they appear on different lines.", sourceRange: close } ]

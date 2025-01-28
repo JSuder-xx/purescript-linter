@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Types (Expr(..))
-import Rule (allExpressionsLintProducer)
+import Rule (expressionIssueIdentifier)
 import Rule as Rule
 import Rule.Delimited as Delimited
 
@@ -14,7 +14,7 @@ rule = Rule.mkWithNoConfig
   { name: "ArrayFormatting"
   , description: "Ensures consistent spacing when declaring an array literal."
   , examples:
-      { bad:
+      { failingCode:
           [ "x = [ ]"
           , "x = [    ]"
           , "x = [1]"
@@ -57,7 +57,7 @@ x =
 """
 
           ]
-      , good:
+      , passingCode:
           [ "x = []"
           , "x = [ [] ]"
           , "x = [ 1 ]"
@@ -77,7 +77,7 @@ x =
 """
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprArray x -> Delimited.lint config x
       _ -> []
   }

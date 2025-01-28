@@ -16,7 +16,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst)
 import Foreign.Object (Object, fromFoldable, fromHomogeneous)
 import Foreign.Object as Object
-import Rule (LintProducer, Rule)
+import Rule (ModuleIssueIdentifier, Rule)
 import Rule as Rule
 
 type AppConfig =
@@ -27,7 +27,7 @@ type AppConfig =
 
 type RuleSet =
   { globs :: Array String
-  , lintProducer :: LintProducer
+  , moduleIssueIdentifier :: ModuleIssueIdentifier
   }
 
 encodeDefault :: Array Rule -> Json
@@ -55,13 +55,13 @@ decode knownRules = decodeJObject >=> \object -> do
   decodeRuleSet indentSpaces object = do
     globs <- object .: "globs"
     rules <- object .: "rules"
-    lintProducer <- Object.foldM foldRule mempty rules
-    pure { globs, lintProducer }
+    moduleIssueIdentifier <- Object.foldM foldRule mempty rules
+    pure { globs, moduleIssueIdentifier }
     where
     config = { indentSpaces }
 
-    foldRule :: LintProducer -> String -> Json -> Either JsonDecodeError LintProducer
+    foldRule :: ModuleIssueIdentifier -> String -> Json -> Either JsonDecodeError ModuleIssueIdentifier
     foldRule accProducer ruleName ruleConfigJson = do
       rule <- note (Named ("Rule Named:" <> ruleName) MissingValue) $ Map.lookup ruleName ruleMap
-      lintProducer <- Rule.decodeLintProducer ruleConfigJson rule
-      pure $ lintProducer config <> accProducer
+      moduleIssueIdentifier <- Rule.decodeMkModuleIssueIdentifier ruleConfigJson rule
+      pure $ moduleIssueIdentifier config <> accProducer

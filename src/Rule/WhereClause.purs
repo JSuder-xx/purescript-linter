@@ -11,7 +11,7 @@ import Data.Tuple (Tuple(..))
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (isAbove, leftAligned)
 import PureScript.CST.Types (Declaration(..), Guarded(..), Where(..))
-import Rule (declarationLintProducer)
+import Rule (declarationIssueIdentifierInModule)
 import Rule as Rule
 
 whereLeftAligned :: Rule.Rule
@@ -20,7 +20,7 @@ whereLeftAligned = Rule.mkWithNoConfig
   , description:
       "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."
   , examples:
-      { bad:
+      { failingCode:
           [ """
 x = y + 1 where y = 20
           """
@@ -30,7 +30,7 @@ x =
   where y = 20
           """
           ]
-      , good:
+      , passingCode:
           [ """
 x =
   y + 1
@@ -39,7 +39,7 @@ x =
           """
           ]
       }
-  , lintProducer: const $ declarationLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ declarationIssueIdentifierInModule $ case _ of
       DeclValue { guarded: Unconditional _ (Where { bindings: Just (Tuple { range: whereTokenRange } bindings), expr }) } ->
         let
           exprRange = rangeOf expr

@@ -2,9 +2,9 @@ module Reporter where
 
 import Prelude
 
-import Rule (LintResults)
+import Rule (Issue)
 
-type FileResults = { filePath :: String, lintResults :: LintResults }
+type FileResults = { filePath :: String, issues :: Array Issue }
 
 type Reporter m =
   { error :: String -> m Unit

@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Monoid (guard)
 import PureScript.CST.Types (Expr(..))
-import Rule (allExpressionsLintProducer)
+import Rule (expressionIssueIdentifier)
 import Rule as Rule
 
 ifThenElseLeftAligned :: Rule.Rule
@@ -12,7 +12,7 @@ ifThenElseLeftAligned = Rule.mkWithNoConfig
   { name: "IfThenElseLeftAligned"
   , description: "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."
   , examples:
-      { bad:
+      { failingCode:
           [ """
 x =
   if 1 == 2
@@ -42,7 +42,7 @@ x = if 1 == 2
   else 4
           """
           ]
-      , good:
+      , passingCode:
           [ "x = if 1 == 2 then 3 else 4"
           , """
 x =
@@ -102,7 +102,7 @@ x =
 
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprIf { keyword: { range: { start: if' } }, then: { range: thenRange@{ start: then' } }, else: { range: elseRange@{ start: else' } } } ->
         let
           -- NOTE: This is a really horrific hack to handle the case when the if follows an else on the same line.

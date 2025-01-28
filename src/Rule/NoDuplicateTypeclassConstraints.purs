@@ -14,7 +14,7 @@ import PureScript.CST.Traversal (foldMapType)
 import PureScript.CST.Type (debugType)
 import PureScript.CST.Types (Proper(..), QualifiedName(..))
 import PureScript.CST.Types as CST
-import Rule (typeLintProducer)
+import Rule (typeIssueIdentifier)
 import Rule as Rule
 
 rule :: Rule.Rule
@@ -23,7 +23,7 @@ rule = Rule.mkWithNoConfig
   , description:
       "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."
   , examples:
-      { bad:
+      { failingCode:
           [ "f :: forall a. Ord a => Ord a => a -> a -> Boolean"
           , "f :: forall a. Ord a => Ord b => Ord a => a -> a -> Boolean"
           , "f :: forall a b. Coercible a b => Coercible a b => a -> Boolean"
@@ -35,7 +35,7 @@ rule = Rule.mkWithNoConfig
           , "f :: forall a b. Bif a { | b } => Bif a { | b } => Int -> Int"
           , "f :: String ->  (forall a b. Bif a { | b } => Bif a { | b } => Int -> Int)"
           ]
-      , good:
+      , passingCode:
           [ "f :: forall a. Ord a => a -> a -> Boolean"
           , "f :: forall a b. Ord a => Ord b => a -> Boolean"
           , "f :: forall a b c. Coercible a b => Coercible b c => a -> Boolean"
@@ -48,7 +48,7 @@ rule = Rule.mkWithNoConfig
           , "f :: String -> (forall a b c. Bif a { | b } => Bif a { | a } => Int -> Int)"
           ]
       }
-  , lintProducer: const $ typeLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ typeIssueIdentifier $ case _ of
       CST.TypeForall _token _variableNames _token' type' ->
         foldMapType constraints type'
           # indexedBy (\{ typeConstructorName, typeDescriptions } -> { typeConstructorName, typeDescriptions })

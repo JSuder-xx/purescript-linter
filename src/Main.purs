@@ -31,7 +31,7 @@ import PureScript.CST.Parser.Monad (PositionedError)
 import PureScript.CST.Types as CST
 import Reporter (Reporter)
 import Reporter.Console as Console
-import Rule (LintProducer, LintResult, LintResults, Rule)
+import Rule (Issue, ModuleIssueIdentifier, Rule)
 import Rule as Rule
 import Rule.AlignedParenthesis as AlignedParenthesis
 import Rule.Application as Application
@@ -102,19 +102,19 @@ runLinter { singleFile' } { ruleSets } reporter =
         )
         \filePath -> do
           content <- filePathToContents filePath
-          let fileResults = { filePath, lintResults: lintModule ruleSet.lintProducer $ parseModule content }
+          let fileResults = { filePath, issues: findIssues ruleSet.moduleIssueIdentifier $ parseModule content }
           liftEffect $ reporter.fileResults fileResults
           pure fileResults
       liftEffect $ reporter.report files
 
   where
-  lintModule :: LintProducer -> RecoveredParserResult CST.Module -> LintResults
-  lintModule producer = case _ of
-    ParseSucceeded m -> Rule.runLintProducer producer m
+  findIssues :: ModuleIssueIdentifier -> RecoveredParserResult CST.Module -> Array Issue
+  findIssues producer = case _ of
+    ParseSucceeded module' -> Rule.identifyModuleIssues producer module'
     ParseSucceededWithErrors _ positionedErrors -> positionedErrorToLintResult <$> NonEmptyArray.toArray positionedErrors
     ParseFailed positionedError -> [ positionedErrorToLintResult positionedError ]
 
-  positionedErrorToLintResult :: PositionedError -> LintResult
+  positionedErrorToLintResult :: PositionedError -> Issue
   positionedErrorToLintResult { error, position } = { message: printParseError error, sourceRange: { start: position, end: position } }
 
 knownRules :: Array Rule

@@ -10,9 +10,19 @@ import Data.Tuple (Tuple(..), snd)
 import PureScript.CST.SourcePos (columnDifference)
 import PureScript.CST.SourceRange (leftAligned, noSpaceBetween, spaceBetween)
 import PureScript.CST.Types (Delimited, Separated(..), SourceRange, SourceToken, Wrapped(..))
-import Rule (LintResults)
+import Rule (Issue)
 
-lint :: forall inner. { name :: String, itemName :: String, openToken :: String, closeToken :: String, innerRange :: inner -> SourceRange, validateInner :: inner -> Maybe LintResults } -> Delimited inner -> LintResults
+lint
+  :: forall inner
+   . { name :: String
+     , itemName :: String
+     , openToken :: String
+     , closeToken :: String
+     , innerRange :: inner -> SourceRange
+     , validateInner :: inner -> Maybe (Array Issue)
+     }
+  -> Delimited inner
+  -> Array Issue
 lint { name, openToken, closeToken } (Wrapped { open: { range: openRange }, close: { range: closeRange }, value: Nothing }) =
   guard ((closeRange.start `columnDifference` openRange.start) > 1) $ pure { message: "An empty " <> name <> " should be " <> openToken <> closeToken, sourceRange: openRange }
 lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapped { open: { range: openRange }, close: { range: closeRange }, value: Just (Separated { head, tail }) }) =
@@ -22,7 +32,7 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
     checkMultiLine unit
 
   where
-  checkSingleLine :: Unit -> LintResults
+  checkSingleLine :: Unit -> Array Issue
   checkSingleLine _ =
     case Array.unsnoc tail of
       Nothing ->
@@ -58,7 +68,7 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
     where
     rangeHead = innerRange head
 
-  checkMultiLine :: Unit -> LintResults
+  checkMultiLine :: Unit -> Array Issue
   checkMultiLine _ =
     case Array.unsnoc tail of
       Nothing ->

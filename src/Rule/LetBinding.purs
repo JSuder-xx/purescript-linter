@@ -7,7 +7,7 @@ import Data.Monoid (guard)
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (sameLine)
 import PureScript.CST.Types (DoStatement(..), Expr(..))
-import Rule (allExpressionsLintProducer)
+import Rule (expressionIssueIdentifier)
 import Rule as Rule
 
 compact :: Rule.Rule
@@ -18,7 +18,7 @@ compact = Rule.mkWithNoConfig
 This let formatting rule prioritizes conservation of vertical space.
   """
   , examples:
-      { bad:
+      { failingCode:
           [ """
 x =
   let
@@ -55,7 +55,7 @@ x = do
   pure $ x + y
           """
           ]
-      , good:
+      , passingCode:
           [ """
 x =
   let x = 1 in
@@ -86,7 +86,7 @@ x = do
           """
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprDo { statements } -> statements # NonEmptyArray.toArray >>= case _ of
         DoLet letToken letStatements ->
           let

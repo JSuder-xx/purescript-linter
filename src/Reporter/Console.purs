@@ -14,16 +14,16 @@ import Reporter (Reporter)
 reporter :: { hideSuccess :: Boolean } -> Reporter Effect
 reporter { hideSuccess } =
   { error
-  , fileResults: \{ filePath, lintResults } ->
-      if not $ Array.null lintResults then do
+  , fileResults: \{ filePath, issues } ->
+      if not $ Array.null issues then do
         log $ withGraphics bold filePath
-        for_ (Array.nub lintResults) \{ message, sourceRange } ->
+        for_ (Array.nub issues) \{ message, sourceRange } ->
           log $ withGraphics (foreground Red) $ "  ✗ " <> (withGraphics (foreground Cyan <> underline) $ filePath <> ":" <> show (sourceRange.start.line + 1) <> ":" <> show (sourceRange.start.column + 1)) <> " - " <> message
       else if not hideSuccess then log $ withGraphics (bold <> (foreground Green)) $ "✓︎ " <> filePath
       else pure unit
 
   , report: \results -> do
-      let { yes: successful, no: failed } = Array.partition (Array.null <<< _.lintResults) results
+      let { yes: successful, no: failed } = Array.partition (Array.null <<< _.issues) results
       log ""
       log $ "Successful: " <> (show $ Array.length successful)
       log $ "Failed: " <> (show $ Array.length failed)

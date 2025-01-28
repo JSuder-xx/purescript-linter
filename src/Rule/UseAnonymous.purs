@@ -17,7 +17,7 @@ import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
-import Rule (allExpressionsLintProducer)
+import Rule (expressionIssueIdentifier)
 import Rule as Rule
 
 forOperations :: Rule.Rule
@@ -25,18 +25,18 @@ forOperations = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForOperations"
   , description: "It is easier to read a wildcard operations than a lambda."
   , examples:
-      { bad:
+      { failingCode:
           [ "x = \\s -> s < 10"
           , "x = filter (\\s -> s < 10) [ 1, 2, 3 ]"
           ]
-      , good:
+      , passingCode:
           [ "x = (_ < 10)"
           , "x = \\s -> M.s < 10"
           , "x = filter (_ < 10) [ 1, 2, 3 ]"
           , "x = \\a' -> guard (a' `op` to) $> a'"
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'
@@ -68,13 +68,13 @@ forRecordUpdates = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordUpdates"
   , description: "It is easier to read a wildcard record update than a lambda."
   , examples:
-      { bad:
+      { failingCode:
           [ "x = \\s -> s { x = 10 }"
           , "x = \\a -> y { a = a }"
           , "x = \\a b -> y { a = a + 1, b = b }"
           , "x = \\a b -> y { a = a, b = b }"
           ]
-      , good:
+      , passingCode:
           [ "x = _ { x = 10}"
           , "x = \\a -> _ { x = a }"
           , "x = \\a -> y { a = a + 2 }"
@@ -86,7 +86,7 @@ forRecordUpdates = Rule.mkWithNoConfig
           , "x = y { a = _, b = _ }"
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'
@@ -125,14 +125,14 @@ forRecordCreation = Rule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordCreation"
   , description: "It is easier to read a wildcard record creation than to visually tie the arguments to the fields where they are used."
   , examples:
-      { bad:
+      { failingCode:
 
           [ "x = \\a -> { a: a }"
           , "x = \\a b -> { a: a, b: b }"
           , "x = \\a -> { a, b: 10 }"
           , "x = \\a b -> { a: a, b }"
           ]
-      , good:
+      , passingCode:
           [ "x = \\a -> { a: a + 10 }"
           , "x = { a: _, b: 10 }"
           , "x = { a: _, b: _ }"
@@ -142,7 +142,7 @@ forRecordCreation = Rule.mkWithNoConfig
           ]
 
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'

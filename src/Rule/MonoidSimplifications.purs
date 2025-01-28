@@ -13,7 +13,7 @@ import PureScript.CST.Expr as Expr
 import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Types (Expr(..), Ident(..), Operator(..), QualifiedName(..), Wrapped(..))
-import Rule (allExpressionsLintProducer)
+import Rule (expressionIssueIdentifier)
 import Rule as Rule
 
 replaceMaybeMemptyWithFoldMap :: Rule.Rule
@@ -24,7 +24,7 @@ replaceMaybeMemptyWithFoldMap = Rule.mkWithNoConfig
 Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention.
   """
   , examples:
-      { bad:
+      { failingCode:
           [ "x = maybe mempty"
           , "x = maybe \"\""
           , "x = maybe []"
@@ -35,14 +35,14 @@ Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly 
           , "x = maybe \"\" \\s -> f s 10"
           , "x = maybe [] \\s -> f s 10"
           ]
-      , good:
+      , passingCode:
           [ "x = maybe [ 1, 2, 3 ]"
           , "x = maybe \"Hello\""
           , "x = maybe [ 1, 2, 3 ] \\s -> f s 10"
           , "x = maybe \"Hello\" \\s -> f s 10"
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprApp (ExprIdent (QualifiedName { token: { range: sourceRange }, name: Ident "maybe" })) appSpines ->
         appSpines
           # NonEmptyArray.head
@@ -59,19 +59,19 @@ useGuardOverIfThenElseMEmpty = Rule.mkWithNoConfig
   , description:
       "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch."
   , examples:
-      { bad:
+      { failingCode:
           [ "x = if 1 == 2 then [ 1, 2, 3 ] else mempty"
           , "x = if 1 == 2 then [ 1, 2, 3 ] else []"
           , "x = if 1 == 2 then \"Hello\" else \"\""
           ]
-      , good:
+      , passingCode:
           [ "x = guard (1 == 2) [ 1, 2, 3 ]"
           , "x = guard (1 == 2) \"Hello\""
           , "x = if 1 == 2 then [ 1, 2, 3 ] else [ 4, 5 ]"
           , "x = if 1 == 2 then [ 1, 2, 3 ] else f 10"
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprIf { keyword: { range: sourceRange }, false: elseExpr } ->
         guard (isMempty elseExpr)
           [ { message: "Use `guard` when there is a `mempty` in the `else` expression.", sourceRange } ]
@@ -84,19 +84,19 @@ useGuardOverIfThenMemptyElse = Rule.mkWithNoConfig
   , description:
       "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial."
   , examples:
-      { bad:
+      { failingCode:
           [ "x = if 1 == 2 then mempty else [ 1, 2, 3 ]"
           , "x = if 1 == 2 then [] else [ 1, 2, 3 ]"
           , "x = if 1 == 2 then \"\" else \"Hello\""
           ]
-      , good:
+      , passingCode:
           [ "x = guard (1 /= 2) [ 1, 2, 3 ]"
           , "x = guard (1 /= 2) \"Hello\""
           , "x = if 1 == 2 then [ 4, 5 ] else [ 1, 2, 3 ]"
           , "x = if 1 == 2 then f 10 else [ 1, 2, 3 ]"
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprIf { keyword: { range: sourceRange }, true: thenExpr } ->
         guard (isMempty thenExpr)
           [ { message: "Invert the condition (not) and use `guard` when there is a `mempty` in the `then` expression.", sourceRange } ]
@@ -113,7 +113,7 @@ Using `fold`
 2. Is more succinct, in terms of characters, when there are 8 or more mappends.
   """
   , examples:
-      { bad:
+      { failingCode:
           [ """
 x =
   (someValues a)
@@ -131,7 +131,7 @@ x =
   <> e
           """
           ]
-      , good:
+      , passingCode:
           [ """
 x =
   (someValues a)
@@ -153,7 +153,7 @@ x =
           """
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       expr@(ExprOp _ neOperators) ->
         guard (NonEmptyArray.all isMappend neOperators)
           let

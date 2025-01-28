@@ -7,7 +7,7 @@ import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(..))
-import Rule (allExpressionsLintProducer)
+import Rule (expressionIssueIdentifier)
 import Rule as Rule
 
 rule :: Rule.Rule
@@ -15,14 +15,14 @@ rule = Rule.mkWithNoConfig
   { name: "NoUnnecessaryParenthesis"
   , description: "Using parenthesis when unnecessary harms readability."
   , examples:
-      { bad:
+      { failingCode:
           [ "x = (1)"
           , "x = (\"Hi\")"
           , "x = (y)"
           , "x = f $ 1"
           , "x = f $ g 23 $ 10"
           ]
-      , good:
+      , passingCode:
           [ "x = 1"
           , "x = (2 + 3)"
           , "x = (f y)"
@@ -32,7 +32,7 @@ rule = Rule.mkWithNoConfig
           , "x = _ $ 10"
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprParens (Wrapped { open, value }) ->
         guard (Expr.isTerminal value) $ pure { message: "Unnecessary parenthesis around a terminal expression.", sourceRange: open.range }
       ExprOp (ExprSection _) _ -> []

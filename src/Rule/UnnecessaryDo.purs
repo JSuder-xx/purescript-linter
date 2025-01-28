@@ -8,7 +8,7 @@ import Data.List (List(..), (:))
 import Data.List as List
 import Data.Monoid (guard)
 import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
-import Rule (allExpressionsLintProducer)
+import Rule (expressionIssueIdentifier)
 import Rule as Rule
 
 rule :: Rule.Rule
@@ -21,16 +21,16 @@ A Monadic bind followed by a pure is actually a Functor map. It is more truthful
 A `do` with no binds and no let declarations is unnecessary. Readers should expect a sequence of monadic binds when they see the `do` keyword.
   """
   , examples:
-      { bad:
+      { failingCode:
           [ "x = do\n  pure 10"
           , "x = do\n  x <- thing\n  pure x"
           ]
-      , good:
+      , passingCode:
           [ "x = do\n  x <- thing\n  y x"
           , "x = do\n  y <- thing\n  z <- otherThing\n  pure $ y + z"
           ]
       }
-  , lintProducer: const $ allExpressionsLintProducer $ case _ of
+  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
       ExprDo { keyword, statements } ->
         guard (NonEmptyArray.length statements == 1)
           [ { message: "Unnecessary `do` keyword. When there is only a single line in the `do` block then this can be removed.", sourceRange: keyword.range } ]

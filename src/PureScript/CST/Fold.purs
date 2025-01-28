@@ -4,16 +4,16 @@ import Prelude
 
 import PureScript.CST.Types as CST
 
-type OnKind f m = f Void -> m
+type OnKind cstType monoid = cstType Void -> monoid
 
-type OnPureScript m =
-  { onDecl :: OnKind CST.Declaration m
-  , onBinder :: OnKind CST.Binder m
-  , onExpr :: OnKind CST.Expr m
-  , onType :: OnKind CST.Type m
+type OnPureScript monoid =
+  { onDecl :: OnKind CST.Declaration monoid
+  , onBinder :: OnKind CST.Binder monoid
+  , onExpr :: OnKind CST.Expr monoid
+  , onType :: OnKind CST.Type monoid
   }
 
-type OnModule m =
-  { onModule :: OnKind CST.Module m
-  , onPureScript :: OnPureScript m
+type OnModule monoid =
+  { onModule :: OnKind CST.Module monoid
+  , onPureScript :: OnPureScript monoid
   }
