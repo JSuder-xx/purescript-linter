@@ -1,17 +1,17 @@
-module Rule.LetBinding (compact) where
+module Linter.ModuleRules.LetBinding (compact) where
 
 import Prelude
 
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
+import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (sameLine)
 import PureScript.CST.Types (DoStatement(..), Expr(..))
-import Rule (expressionIssueIdentifier)
-import Rule as Rule
 
-compact :: Rule.Rule
-compact = Rule.mkWithNoConfig
+compact :: ModuleRule.ModuleRule
+compact = ModuleRule.mkWithNoConfig
   { name: "LetBinding-VerticalCompact"
   , description:
       """

@@ -1,15 +1,15 @@
-module Reporter.Console (reporter) where
+module CLI.Reporter.Console (reporter) where
 
 import Prelude
 
 import Ansi.Codes (Color(..))
 import Ansi.Output (bold, foreground, underline, withGraphics)
+import CLI.Reporter (Reporter)
 import Data.Array as Array
 import Data.Foldable (for_)
 import Effect (Effect)
 import Effect.Console (error, log)
 import Node.Process (setExitCode)
-import Reporter (Reporter)
 
 reporter :: { hideSuccess :: Boolean } -> Reporter Effect
 reporter { hideSuccess } =

@@ -3,22 +3,22 @@ module Test.Rules where
 import Prelude
 
 import Data.Traversable (for_)
-import Rule (identifyModuleIssues)
-import Rule as Rule
-import Rule.AlignedParenthesis as AlignedParenthesis
-import Rule.Application as Application
-import Rule.ArrayFormatting as ArrayFormatting
-import Rule.IfThenElse as IfThenElse
-import Rule.LetBinding as LetBinding
-import Rule.ModuleExports as ModuleExports
-import Rule.MonoidSimplifications as MonoidSimplifications
-import Rule.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
-import Rule.RecordFormatting as RecordFormatting
-import Rule.UnnecessarParenthesis as UnnecessarParenthesis
-import Rule.UnnecessaryDo as UnnecessaryDo
-import Rule.UseAnonymous as UseAnonymous
-import Rule.UsePunning as UsePunning
-import Rule.WhereClause as WhereClause
+import Linter.ModuleRule (identifyModuleIssues)
+import Linter.ModuleRule as ModuleRule
+import Linter.ModuleRules.AlignedParenthesis as AlignedParenthesis
+import Linter.ModuleRules.Application as Application
+import Linter.ModuleRules.ArrayFormatting as ArrayFormatting
+import Linter.ModuleRules.IfThenElse as IfThenElse
+import Linter.ModuleRules.LetBinding as LetBinding
+import Linter.ModuleRules.ModuleExports as ModuleExports
+import Linter.ModuleRules.MonoidSimplifications as MonoidSimplifications
+import Linter.ModuleRules.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
+import Linter.ModuleRules.RecordFormatting as RecordFormatting
+import Linter.ModuleRules.UnnecessarParenthesis as UnnecessarParenthesis
+import Linter.ModuleRules.UnnecessaryDo as UnnecessaryDo
+import Linter.ModuleRules.UseAnonymous as UseAnonymous
+import Linter.ModuleRules.UsePunning as UsePunning
+import Linter.ModuleRules.WhereClause as WhereClause
 import Test.Common (assertCode, simpleModulePrefix)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
@@ -52,13 +52,13 @@ main = describe "Linters" do
     $ testRuleWithCode identity
   where
   testRuleWithCode f rule =
-    describe (Rule.name rule) do
+    describe (ModuleRule.name rule) do
       let
-        examples = Rule.examples rule
+        examples = ModuleRule.examples rule
         config = { indentSpaces: 2 }
       describe "Examples of Failing Code" do
         for_ examples.failingCode \code ->
-          it code $ assertCode (f code) \m -> (identifyModuleIssues (Rule.defaultModuleIssueIdentifier rule config) m) `shouldNotEqual` []
+          it code $ assertCode (f code) \m -> (identifyModuleIssues (ModuleRule.defaultModuleIssueIdentifier rule config) m) `shouldNotEqual` []
       describe "Examples of Passing Code" do
         for_ examples.passingCode \code ->
-          it code $ assertCode (f code) \m -> (identifyModuleIssues (Rule.defaultModuleIssueIdentifier rule config) m) `shouldEqual` []
+          it code $ assertCode (f code) \m -> (identifyModuleIssues (ModuleRule.defaultModuleIssueIdentifier rule config) m) `shouldEqual` []

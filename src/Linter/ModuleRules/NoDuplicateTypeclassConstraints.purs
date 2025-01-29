@@ -1,4 +1,4 @@
-module Rule.NoDuplicateTypeclassConstraints (rule) where
+module Linter.ModuleRules.NoDuplicateTypeclassConstraints (rule) where
 
 import Prelude
 
@@ -9,16 +9,16 @@ import Data.Map.Extra (indexedBy)
 import Data.Monoid (guard)
 import Data.NonEmpty (NonEmpty(..))
 import Data.Tuple (Tuple(..))
+import Linter.ModuleRule (typeIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Fold (OnPureScript)
 import PureScript.CST.Traversal (foldMapType)
 import PureScript.CST.Type (debugType)
 import PureScript.CST.Types (Proper(..), QualifiedName(..))
 import PureScript.CST.Types as CST
-import Rule (typeIssueIdentifier)
-import Rule as Rule
 
-rule :: Rule.Rule
-rule = Rule.mkWithNoConfig
+rule :: ModuleRule.ModuleRule
+rule = ModuleRule.mkWithNoConfig
   { name: "NoDuplicateTypeclassConstraints"
   , description:
       "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."

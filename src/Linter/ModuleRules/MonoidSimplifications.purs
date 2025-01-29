@@ -1,4 +1,4 @@
-module Rule.MonoidSimplifications where
+module Linter.ModuleRules.MonoidSimplifications where
 
 import Prelude
 
@@ -9,15 +9,15 @@ import Data.Maybe as Maybe
 import Data.Monoid (guard)
 import Data.Newtype as Newtype
 import Data.Tuple (Tuple, fst, snd)
+import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Types (Expr(..), Ident(..), Operator(..), QualifiedName(..), Wrapped(..))
-import Rule (expressionIssueIdentifier)
-import Rule as Rule
 
-replaceMaybeMemptyWithFoldMap :: Rule.Rule
-replaceMaybeMemptyWithFoldMap = Rule.mkWithNoConfig
+replaceMaybeMemptyWithFoldMap :: ModuleRule.ModuleRule
+replaceMaybeMemptyWithFoldMap = ModuleRule.mkWithNoConfig
   { name: "ReplaceMaybeMemptyWithFoldMap"
   , description:
       """
@@ -53,8 +53,8 @@ Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly 
       _ -> []
   }
 
-useGuardOverIfThenElseMEmpty :: Rule.Rule
-useGuardOverIfThenElseMEmpty = Rule.mkWithNoConfig
+useGuardOverIfThenElseMEmpty :: ModuleRule.ModuleRule
+useGuardOverIfThenElseMEmpty = ModuleRule.mkWithNoConfig
   { name: "UseGuardOverIfThenElseMEmpty"
   , description:
       "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch."
@@ -78,8 +78,8 @@ useGuardOverIfThenElseMEmpty = Rule.mkWithNoConfig
       _ -> []
   }
 
-useGuardOverIfThenMemptyElse :: Rule.Rule
-useGuardOverIfThenMemptyElse = Rule.mkWithNoConfig
+useGuardOverIfThenMemptyElse :: ModuleRule.ModuleRule
+useGuardOverIfThenMemptyElse = ModuleRule.mkWithNoConfig
   { name: "UseGuardOverIfThenMEmptyElse"
   , description:
       "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial."
@@ -103,8 +103,8 @@ useGuardOverIfThenMemptyElse = Rule.mkWithNoConfig
       _ -> []
   }
 
-useFoldForRepeatedMappends :: Rule.Rule
-useFoldForRepeatedMappends = Rule.mkWithNoConfig
+useFoldForRepeatedMappends :: ModuleRule.ModuleRule
+useFoldForRepeatedMappends = ModuleRule.mkWithNoConfig
   { name: "UseFoldForRepeatedMappends"
   , description:
       """

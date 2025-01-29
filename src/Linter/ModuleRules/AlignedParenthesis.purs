@@ -1,15 +1,15 @@
-module Rule.AlignedParenthesis where
+module Linter.ModuleRules.AlignedParenthesis where
 
 import Prelude
 
 import Data.Monoid (guard)
+import Linter.ModuleRule (Issue, ModuleRule, expressionIssueIdentifier, typeIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Type(..), Wrapped(..))
-import Rule (Issue, expressionIssueIdentifier, typeIssueIdentifier)
-import Rule as Rule
 
-rule :: Rule.Rule
-rule = Rule.mkWithNoConfig
+rule :: ModuleRule
+rule = ModuleRule.mkWithNoConfig
   { name: "AlignedParenthesis"
   , description:
       "Aligning Parentheses helps the reader visually parse the two tokens."

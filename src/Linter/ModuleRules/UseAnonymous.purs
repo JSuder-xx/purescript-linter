@@ -1,4 +1,4 @@
-module Rule.UseAnonymous (forOperations, forRecordUpdates, forRecordCreation) where
+module Linter.ModuleRules.UseAnonymous (forOperations, forRecordUpdates, forRecordCreation) where
 
 import Prelude
 
@@ -10,6 +10,8 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Newtype (un, unwrap)
 import Data.Tuple (Tuple(..))
+import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Binder as Binder
 import PureScript.CST.Expr (exprIdent)
 import PureScript.CST.Expr as Expr
@@ -17,11 +19,9 @@ import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
-import Rule (expressionIssueIdentifier)
-import Rule as Rule
 
-forOperations :: Rule.Rule
-forOperations = Rule.mkWithNoConfig
+forOperations :: ModuleRule.ModuleRule
+forOperations = ModuleRule.mkWithNoConfig
   { name: "UseAnonymous-ForOperations"
   , description: "It is easier to read a wildcard operations than a lambda."
   , examples:
@@ -63,8 +63,8 @@ forOperations = Rule.mkWithNoConfig
       _ -> []
   }
 
-forRecordUpdates :: Rule.Rule
-forRecordUpdates = Rule.mkWithNoConfig
+forRecordUpdates :: ModuleRule.ModuleRule
+forRecordUpdates = ModuleRule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordUpdates"
   , description: "It is easier to read a wildcard record update than a lambda."
   , examples:
@@ -120,8 +120,8 @@ forRecordUpdates = Rule.mkWithNoConfig
       _ -> []
   }
 
-forRecordCreation :: Rule.Rule
-forRecordCreation = Rule.mkWithNoConfig
+forRecordCreation :: ModuleRule.ModuleRule
+forRecordCreation = ModuleRule.mkWithNoConfig
   { name: "UseAnonymous-ForRecordCreation"
   , description: "It is easier to read a wildcard record creation than to visually tie the arguments to the fields where they are used."
   , examples:

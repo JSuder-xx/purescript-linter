@@ -1,14 +1,14 @@
-module Rule.IfThenElse where
+module Linter.ModuleRules.IfThenElse where
 
 import Prelude
 
 import Data.Monoid (guard)
+import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Types (Expr(..))
-import Rule (expressionIssueIdentifier)
-import Rule as Rule
 
-ifThenElseLeftAligned :: Rule.Rule
-ifThenElseLeftAligned = Rule.mkWithNoConfig
+ifThenElseLeftAligned :: ModuleRule.ModuleRule
+ifThenElseLeftAligned = ModuleRule.mkWithNoConfig
   { name: "IfThenElseLeftAligned"
   , description: "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."
   , examples:

@@ -1,17 +1,17 @@
-module Rule.RecordFormatting (rule) where
+module Linter.ModuleRules.RecordFormatting (rule) where
 
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Linter.ModuleRule (Issue, expressionIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
+import Linter.ModuleRules.Delimited as Delimited
 import PureScript.CST.Range (class RangeOf, rangeOf)
 import PureScript.CST.SourceRange (noSpaceBetween, rangeOfRecordLabeled, spaceBetween)
 import PureScript.CST.Types (Expr(..), Name(..), RecordLabeled(..))
-import Rule (Issue, expressionIssueIdentifier)
-import Rule as Rule
-import Rule.Delimited as Delimited
 
-rule :: Rule.Rule
-rule = Rule.mkWithNoConfig
+rule :: ModuleRule.ModuleRule
+rule = ModuleRule.mkWithNoConfig
   { name: "RecordFormatting"
   , description:
       "Ensures consistent spacing when declaring a record literal."

@@ -1,8 +1,8 @@
-module Reporter where
+module CLI.Reporter where
 
 import Prelude
 
-import Rule (Issue)
+import Linter.ModuleRule (Issue)
 
 type FileResults = { filePath :: String, issues :: Array Issue }
 

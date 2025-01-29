@@ -1,4 +1,4 @@
-module CommandLineOptions
+module CLI.CommandLineOptions
   ( CommandLineOptions
   , RunMode(..)
   , commandLineOptions

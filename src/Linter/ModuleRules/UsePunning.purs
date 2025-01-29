@@ -1,4 +1,4 @@
-module Rule.UsePunning (rule) where
+module Linter.ModuleRules.UsePunning (rule) where
 
 import Prelude
 
@@ -6,12 +6,12 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (snd)
+import Linter.ModuleRule (Issue, expressionIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), QualifiedName(..), RecordLabeled(..), Separated(..), Wrapped(..))
-import Rule (Issue, expressionIssueIdentifier)
-import Rule as Rule
 
-rule :: Rule.Rule
-rule = Rule.mkWithNoConfig
+rule :: ModuleRule.ModuleRule
+rule = ModuleRule.mkWithNoConfig
   { name: "UsePunning"
   , description: "Punning is easier to read."
   , examples:

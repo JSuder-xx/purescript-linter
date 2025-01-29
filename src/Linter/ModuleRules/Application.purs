@@ -1,4 +1,4 @@
-module Rule.Application (inArray, inRecord) where
+module Linter.ModuleRules.Application (inArray, inRecord) where
 
 import Prelude
 
@@ -6,14 +6,14 @@ import Data.Array (fold, foldMap)
 import Data.Foldable (class Foldable, foldl)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
+import Linter.ModuleRule (Issue, ModuleRule, expressionIssueIdentifier)
+import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
 import PureScript.CST.Types (AppSpine, Expr(..), Name(..), RecordLabeled(..), Wrapped(..))
-import Rule (Issue, expressionIssueIdentifier)
-import Rule as Rule
 
-inArray :: Rule.Rule
-inArray = Rule.mkWithNoConfig
+inArray :: ModuleRule
+inArray = ModuleRule.mkWithNoConfig
   { name: "Application.InArray.IndentArguments"
   , description:
       """
@@ -101,8 +101,8 @@ x =
 
   }
 
-inRecord :: Rule.Rule
-inRecord = Rule.mkWithNoConfig
+inRecord :: ModuleRule
+inRecord = ModuleRule.mkWithNoConfig
   { name: "Application.InRecord.IndentArguments"
   , description:
       """
