@@ -17,6 +17,7 @@ import Linter.ModuleRules.RecordFormatting as RecordFormatting
 import Linter.ModuleRules.UnnecessarParenthesis as UnnecessarParenthesis
 import Linter.ModuleRules.UnnecessaryDo as UnnecessaryDo
 import Linter.ModuleRules.UseAnonymous as UseAnonymous
+import Linter.ModuleRules.UseForallSymbol as UseForallSymbol
 import Linter.ModuleRules.UsePunning as UsePunning
 import Linter.ModuleRules.WhereClause as WhereClause
 import Test.Common (assertCode, simpleModulePrefix)
@@ -43,6 +44,7 @@ main = describe "Linters" do
     , UseAnonymous.forOperations
     , UseAnonymous.forRecordUpdates
     , UseAnonymous.forRecordCreation
+    , UseForallSymbol.rule
     , UsePunning.rule
     , WhereClause.whereLeftAligned
     ]
