@@ -1,6 +1,7 @@
 ### NEXT
 
 - Expanded application of NoDuplicateTypeclassConstraints to all types (and not just declarations).
+- Added: UseForallSymbol rule.
 
 ### v0.2.8 (2024-10-27)
 

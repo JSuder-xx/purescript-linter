@@ -23,6 +23,7 @@
         "UseAnonymous-ForRecordCreation": null,
         "UseAnonymous-ForRecordUpdates": null,
         "UseFoldForRepeatedMappends": null,
+        "UseForallSymbol": null,
         "UseGuardOverIfThenElseMEmpty": null,
         "UseGuardOverIfThenMEmptyElse": null,
         "UsePunning": null,
