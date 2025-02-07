@@ -4,24 +4,30 @@ import Prelude
 
 import Ansi.Codes (Color(..))
 import Ansi.Output (foreground, underline, withGraphics)
-import CLI.AppConfig (AppConfig)
+import CLI.AppConfig (AppConfig, ProjectRoot)
 import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
 import CLI.Reporter (Reporter)
 import CLI.Reporter.Console as Console
 import Data.Argonaut (parseJson, printJsonDecodeError, stringifyWithIndent)
+import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
+import Data.DateTime.Instant as Instant
 import Data.Either (either)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as Maybe
+import Data.Maybe.Extra as Maybe.Extra
+import Data.Monoid (guard)
 import Data.Set as Set
+import Data.String (Pattern(..), Replacement(..))
 import Data.String as String
 import Data.String.NonEmpty as NonEmptyString
-import Data.Traversable (for, for_, intercalate)
+import Data.Traversable (foldMap, for, for_, intercalate)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console (error, log)
+import Effect.Now (now)
 import Linter.ModuleRule (Issue, ModuleIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import Linter.ModuleRules (allModuleRules)
@@ -30,9 +36,13 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readFile, writeFile)
 import Node.FS.Sync (exists)
 import Node.Glob.Basic (expandGlobsCwd)
+import Node.Path (sep)
+import Node.Path as Path
+import Node.Process (cwd)
 import PureScript.CST (RecoveredParserResult(..), parseModule)
 import PureScript.CST.Errors (printParseError)
 import PureScript.CST.Parser.Monad (PositionedError)
+import PureScript.CST.Types (Module(..), ModuleHeader(..), ModuleName(..), Name(..))
 import PureScript.CST.Types as CST
 
 cli :: Aff Unit
@@ -60,12 +70,13 @@ cli = do
     LintAllFiles -> lint cliOptions { singleFile': Nothing }
   where
   lint cliOptions files = do
+    cwd <- liftEffect cwd
     configFile <- filePathToContents $ NonEmptyString.toString cliOptions.configFile
     configFile
       # (parseJson >=> AppConfig.decode allModuleRules)
       # either
           (liftEffect <<< error <<< printJsonDecodeError)
-          \appConfig -> runLinter files appConfig $ Console.reporter { hideSuccess: appConfig.hideSuccess }
+          \appConfig -> runLinter files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Console.reporter { hideSuccess: appConfig.hideSuccess }
 
 filePathToContents :: String -> Aff String
 filePathToContents =
@@ -76,8 +87,9 @@ contentsToFilePath { fileName, contents } =
   writeFile fileName =<< (liftEffect $ Buffer.fromString contents UTF8)
 
 runLinter :: { singleFile' :: Maybe String } -> AppConfig -> Reporter Effect -> Aff Unit
-runLinter { singleFile' } { ruleSets } reporter =
+runLinter { singleFile' } { ruleSets, projectRoots } reporter =
   for_ ruleSets \ruleSet -> do
+    startNow <- liftEffect now
     filePathSet <- expandGlobsCwd ruleSet.globs
     if filePathSet == mempty && Maybe.isNothing singleFile' then
       liftEffect $ reporter.error $ "No Files found with globs: " <> (intercalate ", " ruleSet.globs)
@@ -89,16 +101,30 @@ runLinter { singleFile' } { ruleSets } reporter =
         )
         \filePath -> do
           content <- filePathToContents filePath
-          let fileResults = { filePath, issues: findIssues ruleSet.moduleIssueIdentifier $ parseModule content }
+          let fileResults = { filePath, issues: findIssues filePath ruleSet.moduleIssueIdentifier $ parseModule content }
           liftEffect $ reporter.fileResults fileResults
           pure fileResults
-      liftEffect $ reporter.report files
+      endNow <- liftEffect now
+      liftEffect $ reporter.report (Instant.diff endNow startNow) files
   where
-  findIssues :: ModuleIssueIdentifier -> RecoveredParserResult CST.Module -> Array Issue
-  findIssues producer = case _ of
-    ParseSucceeded module' -> ModuleRule.identifyModuleIssues producer module'
+  findIssues :: String -> ModuleIssueIdentifier -> RecoveredParserResult CST.Module -> Array Issue
+  findIssues filePath producer = case _ of
+    ParseSucceeded moduleCst@(Module { header: ModuleHeader { name: moduleName } }) ->
+      issuesWithModuleName filePath moduleName projectRoots <> ModuleRule.identifyModuleIssues producer moduleCst
     ParseSucceededWithErrors _ positionedErrors -> positionedErrorToLintResult <$> NonEmptyArray.toArray positionedErrors
     ParseFailed positionedError -> [ positionedErrorToLintResult positionedError ]
+
+  issuesWithModuleName :: String -> Name ModuleName -> Array ProjectRoot -> Array Issue
+  issuesWithModuleName filePath (Name { name: ModuleName moduleName, token: { range } }) =
+    Array.findMap (\{ pathPrefix, modulePrefix } -> String.stripPrefix (Pattern pathPrefix) filePath <#> \remainingPath -> { remainingPath, modulePrefix })
+      >>> foldMap \{ modulePrefix, remainingPath } ->
+        let
+          expected = modulePrefix <> pathToModule remainingPath
+        in
+          guard (expected /= moduleName) [ { message: "Expecting module named '" <> moduleName <> "' to be named '" <> expected <> "' based on its path.", sourceRange: range } ]
+
+  pathToModule :: String -> String
+  pathToModule = (Maybe.Extra.recover $ String.stripPrefix (Pattern ".")) <<< (Maybe.Extra.recover $ String.stripSuffix (Pattern ".purs")) <<< String.replaceAll (Pattern sep) (Replacement ".")
 
   positionedErrorToLintResult :: PositionedError -> Issue
   positionedErrorToLintResult { error, position } = { message: printParseError error, sourceRange: { start: position, end: position } }

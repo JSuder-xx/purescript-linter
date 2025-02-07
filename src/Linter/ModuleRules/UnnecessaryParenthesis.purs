@@ -1,4 +1,4 @@
-module Linter.ModuleRules.UnnecessarParenthesis (rule) where
+module Linter.ModuleRules.UnnecessaryParenthesis (rule) where
 
 import Prelude
 

@@ -2,6 +2,8 @@
 
 - Expanded application of NoDuplicateTypeclassConstraints to all types (and not just declarations).
 - Added: UseForallSymbol rule.
+- Added: Hardcoded rule to verify that Module Names match their File Path.
+- Added: Display of time it took to run each Rule Set.
 
 ### v0.2.8 (2024-10-27)
 

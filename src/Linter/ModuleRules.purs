@@ -10,8 +10,8 @@ import Linter.ModuleRules.ModuleExports as ModuleExports
 import Linter.ModuleRules.MonoidSimplifications as MonoidSimplifications
 import Linter.ModuleRules.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.ModuleRules.RecordFormatting as RecordFormatting
-import Linter.ModuleRules.UnnecessarParenthesis as UnnecessarParenthesis
 import Linter.ModuleRules.UnnecessaryDo as UnnecessaryDo
+import Linter.ModuleRules.UnnecessaryParenthesis as UnnecessaryParenthesis
 import Linter.ModuleRules.UseAnonymous as UseAnonymous
 import Linter.ModuleRules.UseForallSymbol as UseForallSymbol
 import Linter.ModuleRules.UsePunning as UsePunning
@@ -33,7 +33,7 @@ allModuleRules =
   , NoDuplicateTypeclassConstraints.rule
   , RecordFormatting.rule
   , UnnecessaryDo.rule
-  , UnnecessarParenthesis.rule
+  , UnnecessaryParenthesis.rule
   , UseAnonymous.forOperations
   , UseAnonymous.forRecordUpdates
   , UseAnonymous.forRecordCreation

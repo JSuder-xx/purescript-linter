@@ -1,10 +1,16 @@
 {
   "hideSuccess": true,
   "indentSpaces": 2,
+  "projectRoots": [
+    {
+      "pathPrefix": "src",
+      "modulePrefix": ""
+    }
+  ],
   "ruleSets": [
     {
       "globs": [
-        "**/*.purs"
+        "./src/**/*.purs"
       ],
       "rules": {
         "AlignedParenthesis": null,

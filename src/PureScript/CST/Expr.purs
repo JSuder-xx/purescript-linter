@@ -5,7 +5,8 @@ import Prelude
 import Data.Array (intercalate, mapMaybe)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
-import Data.Maybe (Maybe(..), maybe)
+import Data.Foldable (foldMap)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (un)
 import Data.Tuple (Tuple(..), fst, snd)
 import PureScript.CST.Debug (Label, debugStr)
@@ -78,7 +79,7 @@ guardedExprExprs :: GuardedExpr Void -> Array (Expr Void)
 guardedExprExprs (GuardedExpr { patterns, where: where' }) = whereExprs where' <> (patternGuardExprs =<< Separated.values patterns)
 
 whereExprs :: Where Void -> Array (Expr Void)
-whereExprs (Where { expr: expr', bindings }) = [ expr' ] <> (letBindingExprs =<< maybe [] (NonEmptyArray.toArray <<< snd) bindings)
+whereExprs (Where { expr: expr', bindings }) = [ expr' ] <> (letBindingExprs =<< foldMap (NonEmptyArray.toArray <<< snd) bindings)
 
 patternGuardExprs :: PatternGuard Void -> Array (Expr Void)
 patternGuardExprs (PatternGuard { expr: expr' }) = [ expr' ]

@@ -7,6 +7,8 @@ import Ansi.Output (bold, foreground, underline, withGraphics)
 import CLI.Reporter (Reporter)
 import Data.Array as Array
 import Data.Foldable (for_)
+import Data.Newtype (un)
+import Data.Time.Duration (Seconds(..))
 import Effect (Effect)
 import Effect.Console (error, log)
 import Node.Process (setExitCode)
@@ -22,10 +24,11 @@ reporter { hideSuccess } =
       else if not hideSuccess then log $ withGraphics (bold <> (foreground Green)) $ "✓︎ " <> filePath
       else pure unit
 
-  , report: \results -> do
+  , report: \duration results -> do
       let { yes: successful, no: failed } = Array.partition (Array.null <<< _.issues) results
       log ""
       log $ "Successful: " <> (show $ Array.length successful)
       log $ "Failed: " <> (show $ Array.length failed)
+      log $ "Lint Time: " <> (show $ un Seconds duration) <> " seconds"
       when (not Array.null failed) $ setExitCode 1
   }
