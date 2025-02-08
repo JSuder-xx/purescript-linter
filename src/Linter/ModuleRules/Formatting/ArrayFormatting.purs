@@ -1,17 +1,18 @@
-module Linter.ModuleRules.ArrayFormatting (rule) where
+module Linter.ModuleRules.Formatting.ArrayFormatting (rule) where
 
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
-import Linter.ModuleRules.Delimited as Delimited
+import Linter.ModuleRules.Formatting.Delimited as Delimited
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Types (Expr(..))
 
 rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "ArrayFormatting"
+  , category: Formatting
   , description: "Ensures consistent spacing when declaring an array literal."
   , examples:
       { failingCode:

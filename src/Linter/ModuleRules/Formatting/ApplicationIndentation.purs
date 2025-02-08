@@ -1,4 +1,4 @@
-module Linter.ModuleRules.Application (inArray, inRecord) where
+module Linter.ModuleRules.Formatting.ApplicationIndentation (inArray, inRecord) where
 
 import Prelude
 
@@ -6,7 +6,7 @@ import Data.Array (fold, foldMap)
 import Data.Foldable (class Foldable, foldl)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
-import Linter.ModuleRule (Issue, ModuleRule, expressionIssueIdentifier)
+import Linter.ModuleRule (Issue, ModuleRule, RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
@@ -15,6 +15,7 @@ import PureScript.CST.Types (AppSpine, Expr(..), Name(..), RecordLabeled(..), Wr
 inArray :: ModuleRule
 inArray = ModuleRule.mkWithNoConfig
   { name: "Application.InArray.IndentArguments"
+  , category: Formatting
   , description:
       """
 This very limited rule ensures proper function call argument indentation when the function call is made inside an array.
@@ -104,6 +105,7 @@ x =
 inRecord :: ModuleRule
 inRecord = ModuleRule.mkWithNoConfig
   { name: "Application.InRecord.IndentArguments"
+  , category: Formatting
   , description:
       """
 This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal.

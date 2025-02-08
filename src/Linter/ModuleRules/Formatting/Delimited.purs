@@ -1,4 +1,4 @@
-module Linter.ModuleRules.Delimited where
+module Linter.ModuleRules.Formatting.Delimited where
 
 import Prelude
 

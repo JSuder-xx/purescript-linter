@@ -1,4 +1,4 @@
-module Linter.ModuleRules.UsePunning (rule) where
+module Linter.ModuleRules.Style.UsePunning (rule) where
 
 import Prelude
 
@@ -6,14 +6,20 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (snd)
-import Linter.ModuleRule (Issue, expressionIssueIdentifier)
+import Linter.ModuleRule (Issue, RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Types (Expr(..), Ident(..), Label(..), Name(..), QualifiedName(..), RecordLabeled(..), Separated(..), Wrapped(..))
 
 rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "UsePunning"
-  , description: "Punning is easier to read."
+  , description:
+      """Punning is easier to read because it reduces the noise of unnecessary repetition. By removing unnecessary repetition, true differences stand out more.
+
+For example, can you spot the difference in `{ alice: alice, bob: bob', cindy: cindy', dave: dave }`?
+Now with punning that is `{ alice, bob, cindy: cindy', dave }`.
+  """
+  , category: Style
   , examples:
       { failingCode:
           [ "x = { a: a, b: b }"

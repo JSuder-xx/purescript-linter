@@ -18,8 +18,6 @@
         "Application.InRecord.IndentArguments": null,
         "ArrayFormatting": null,
         "IfThenElseLeftAligned": null,
-        "LetBinding-VerticalCompact": null,
-        "ModuleExportsRequired": null,
         "NoDuplicateTypeclassConstraints": null,
         "NoUnnecessaryDo": null,
         "NoUnnecessaryParenthesis": null,
@@ -29,11 +27,9 @@
         "UseAnonymous-ForRecordCreation": null,
         "UseAnonymous-ForRecordUpdates": null,
         "UseFoldForRepeatedMappends": null,
-        "UseForallSymbol": null,
         "UseGuardOverIfThenElseMEmpty": null,
         "UseGuardOverIfThenMEmptyElse": null,
-        "UsePunning": null,
-        "WhereClauseLeftAligned": null
+        "UsePunning": null
       }
     }
   ]

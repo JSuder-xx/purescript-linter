@@ -1,4 +1,4 @@
-module Linter.ModuleRules.MonoidSimplifications where
+module Linter.ModuleRules.Style.MonoidSimplifications where
 
 import Prelude
 
@@ -9,7 +9,7 @@ import Data.Maybe as Maybe
 import Data.Monoid (guard)
 import Data.Newtype as Newtype
 import Data.Tuple (Tuple, fst, snd)
-import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.QualifiedName as QualifiedName
@@ -19,6 +19,7 @@ import PureScript.CST.Types (Expr(..), Ident(..), Operator(..), QualifiedName(..
 replaceMaybeMemptyWithFoldMap :: ModuleRule.ModuleRule
 replaceMaybeMemptyWithFoldMap = ModuleRule.mkWithNoConfig
   { name: "ReplaceMaybeMemptyWithFoldMap"
+  , category: Style
   , description:
       """
 Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention.
@@ -56,6 +57,7 @@ Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly 
 useGuardOverIfThenElseMEmpty :: ModuleRule.ModuleRule
 useGuardOverIfThenElseMEmpty = ModuleRule.mkWithNoConfig
   { name: "UseGuardOverIfThenElseMEmpty"
+  , category: Style
   , description:
       "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch."
   , examples:
@@ -81,6 +83,7 @@ useGuardOverIfThenElseMEmpty = ModuleRule.mkWithNoConfig
 useGuardOverIfThenMemptyElse :: ModuleRule.ModuleRule
 useGuardOverIfThenMemptyElse = ModuleRule.mkWithNoConfig
   { name: "UseGuardOverIfThenMEmptyElse"
+  , category: Style
   , description:
       "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial."
   , examples:
@@ -106,6 +109,7 @@ useGuardOverIfThenMemptyElse = ModuleRule.mkWithNoConfig
 useFoldForRepeatedMappends :: ModuleRule.ModuleRule
 useFoldForRepeatedMappends = ModuleRule.mkWithNoConfig
   { name: "UseFoldForRepeatedMappends"
+  , category: Style
   , description:
       """
 Using `fold`

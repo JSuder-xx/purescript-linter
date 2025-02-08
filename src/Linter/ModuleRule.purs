@@ -1,12 +1,14 @@
 module Linter.ModuleRule
   ( Examples
+  , Issue
   , IssueIdentifierIn
   , MkModuleIssueIdentifier
   , ModuleIssueIdentifier
-  , Issue
   , ModuleRule
   , ModuleRule'
+  , RuleCategory(..)
   , SystemConfig
+  , category
   , declarationIssueIdentifierInModule
   , decodeMkModuleIssueIdentifier
   , defaultConfigJson
@@ -43,10 +45,18 @@ newtype ModuleRule = ModuleRule
 type ModuleRule' ruleConfig =
   { name :: String
   , description :: String
+  , category :: RuleCategory
   , examples :: Examples
   , defaultConfig :: ruleConfig
   , moduleIssueIdentifier :: ruleConfig -> MkModuleIssueIdentifier
   }
+
+data RuleCategory
+  = Formatting
+  | Style
+
+derive instance Eq RuleCategory
+derive instance Ord RuleCategory
 
 type Issue = { message :: String, sourceRange :: CST.SourceRange }
 
@@ -72,11 +82,19 @@ mkModuleRule :: forall ruleConfig. EncodeJson ruleConfig => DecodeJson ruleConfi
 mkModuleRule rule = ModuleRule \extract -> extract rule
 
 -- | Make a rule that does not store any custom configuration. The rule is still be given the system-wide configuration.
-mkWithNoConfig :: { name :: String, description :: String, examples :: Examples, moduleIssueIdentifier :: MkModuleIssueIdentifier } -> ModuleRule
+mkWithNoConfig
+  :: { name :: String
+     , description :: String
+     , category :: RuleCategory
+     , examples :: Examples
+     , moduleIssueIdentifier :: MkModuleIssueIdentifier
+     }
+  -> ModuleRule
 mkWithNoConfig s =
   mkModuleRule
     { name: s.name
     , examples: s.examples
+    , category: s.category
     , description: s.description
     , defaultConfig: unit
     , moduleIssueIdentifier: const s.moduleIssueIdentifier
@@ -90,6 +108,9 @@ name = unModuleRule _.name
 
 description :: ModuleRule -> String
 description = unModuleRule _.description
+
+category :: ModuleRule -> RuleCategory
+category = unModuleRule _.category
 
 examples :: ModuleRule -> Examples
 examples = unModuleRule _.examples

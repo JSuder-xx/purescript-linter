@@ -3,7 +3,7 @@ module CLI where
 import Prelude
 
 import Ansi.Codes (Color(..))
-import Ansi.Output (foreground, underline, withGraphics)
+import Ansi.Output (background, foreground, underline, withGraphics)
 import CLI.AppConfig (AppConfig, ProjectRoot)
 import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
@@ -14,21 +14,25 @@ import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.DateTime.Instant as Instant
 import Data.Either (either)
+import Data.Map as Map
+import Data.Map.Extra as Map.Extra
 import Data.Maybe (Maybe(..))
 import Data.Maybe as Maybe
 import Data.Maybe.Extra as Maybe.Extra
 import Data.Monoid (guard)
+import Data.NonEmpty as NonEmpty
 import Data.Set as Set
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as String
 import Data.String.NonEmpty as NonEmptyString
 import Data.Traversable (foldMap, for, for_, intercalate)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console (error, log)
 import Effect.Now (now)
-import Linter.ModuleRule (Issue, ModuleIssueIdentifier)
+import Linter.ModuleRule (Issue, ModuleIssueIdentifier, RuleCategory(..))
 import Linter.ModuleRule as ModuleRule
 import Linter.ModuleRules (allModuleRules)
 import Node.Buffer as Buffer
@@ -57,14 +61,20 @@ cli = do
         { fileName
         , contents: stringifyWithIndent 2 $ AppConfig.encodeDefault allModuleRules
         }
-    ShowRules -> do
-      for_ allModuleRules \rule -> do
-        outputStyled (underline <> foreground BrightWhite) (ModuleRule.name rule)
-        outputStyled (foreground White) (String.trim $ ModuleRule.description rule)
-        output ""
+    ShowRules ->
+      for_ ((Map.toUnfoldable $ Map.Extra.indexedBy ModuleRule.category allModuleRules) :: Array _) \(Tuple category rules) -> do
+        outputStyled "" (underline <> foreground BrightWhite <> background Black) case category of
+          Style -> "Style"
+          Formatting -> "Formatting"
+        for_ (Array.sortWith ModuleRule.name $ NonEmpty.fromNonEmpty Array.cons rules) \rule -> do
+          outputStyled "  " (foreground BrightBlue <> background Black) (ModuleRule.name rule)
+          outputStyled "  " (foreground White <> background Black) (String.trim $ ModuleRule.description rule)
+          output "" ""
+          output "" ""
+        output "" ""
       where
-      outputStyled g = output <<< withGraphics g
-      output = liftEffect <<< log
+      outputStyled indent g = output indent <<< withGraphics g
+      output indent s = for_ (String.split (String.Pattern "\n") s) $ \line -> liftEffect $ log $ indent <> line
 
     LintSingleFile fileToLint -> lint cliOptions { singleFile': Just $ NonEmptyString.toString fileToLint }
     LintAllFiles -> lint cliOptions { singleFile': Nothing }
@@ -116,7 +126,7 @@ runLinter { singleFile' } { ruleSets, projectRoots } reporter =
 
   issuesWithModuleName :: String -> Name ModuleName -> Array ProjectRoot -> Array Issue
   issuesWithModuleName filePath (Name { name: ModuleName moduleName, token: { range } }) =
-    Array.findMap (\{ pathPrefix, modulePrefix } -> String.stripPrefix (Pattern pathPrefix) filePath <#> \remainingPath -> { remainingPath, modulePrefix })
+    Array.findMap (\{ pathPrefix, modulePrefix } -> String.stripPrefix (Pattern pathPrefix) filePath <#> { remainingPath: _, modulePrefix })
       >>> foldMap \{ modulePrefix, remainingPath } ->
         let
           expected = modulePrefix <> pathToModule remainingPath

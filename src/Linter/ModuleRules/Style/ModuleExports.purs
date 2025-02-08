@@ -1,9 +1,9 @@
-module Linter.ModuleRules.ModuleExports (exportsRequired) where
+module Linter.ModuleRules.Style.ModuleExports (exportsRequired) where
 
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Linter.ModuleRule (moduleIssueIdentifier)
+import Linter.ModuleRule (RuleCategory(..), moduleIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Types (ModuleHeader(..), Name(..))
 import PureScript.CST.Types as CST
@@ -11,6 +11,7 @@ import PureScript.CST.Types as CST
 exportsRequired :: ModuleRule.ModuleRule
 exportsRequired = ModuleRule.mkWithNoConfig
   { name: "ModuleExportsRequired"
+  , category: Style
   , description:
       "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
   , examples:

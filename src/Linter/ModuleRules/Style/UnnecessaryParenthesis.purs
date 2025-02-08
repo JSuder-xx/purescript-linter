@@ -1,11 +1,11 @@
-module Linter.ModuleRules.UnnecessaryParenthesis (rule) where
+module Linter.ModuleRules.Style.UnnecessaryParenthesis (rule) where
 
 import Prelude
 
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
-import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Types (Expr(..), Operator(..), QualifiedName(..), Wrapped(..))
@@ -14,6 +14,7 @@ rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "NoUnnecessaryParenthesis"
   , description: "Using parenthesis when unnecessary harms readability."
+  , category: Style
   , examples:
       { failingCode:
           [ "x = (1)"

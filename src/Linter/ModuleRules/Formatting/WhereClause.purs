@@ -1,4 +1,4 @@
-module Linter.ModuleRules.WhereClause where
+module Linter.ModuleRules.Formatting.WhereClause where
 
 import Prelude
 
@@ -8,7 +8,7 @@ import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
-import Linter.ModuleRule (declarationIssueIdentifierInModule)
+import Linter.ModuleRule (RuleCategory(..), declarationIssueIdentifierInModule)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.SourceRange (isAbove, leftAligned)
@@ -17,6 +17,7 @@ import PureScript.CST.Types (Declaration(..), Guarded(..), Where(..))
 whereLeftAligned :: ModuleRule.ModuleRule
 whereLeftAligned = ModuleRule.mkWithNoConfig
   { name: "WhereClauseLeftAligned"
+  , category: Formatting
   , description:
       "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."
   , examples:

@@ -1,4 +1,4 @@
-module Linter.ModuleRules.UnnecessaryDo (rule) where
+module Linter.ModuleRules.Style.UnnecessaryDo (rule) where
 
 import Prelude
 
@@ -7,13 +7,14 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Monoid (guard)
-import Linter.ModuleRule (expressionIssueIdentifier)
+import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Types (DoStatement(..), Expr(..), Ident(..), QualifiedName(..))
 
 rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "NoUnnecessaryDo"
+  , category: Style
   , description:
       """
 A Monadic bind followed by a pure is actually a Functor map. It is more truthful to represent this as a narrower Functor map.

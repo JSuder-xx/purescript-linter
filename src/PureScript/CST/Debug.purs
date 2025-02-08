@@ -22,11 +22,11 @@ debugStr label indentation = label >>> \{ name, description, childKinds } ->
   where
   childKind :: Tuple String (Array a) -> String
   childKind (Tuple label' children) =
-    if Array.null children then ""
-    else fold
-      [ "\n"
-      , indent indentation
-      , label'
-      , "\n"
-      , intercalate "\n" $ debugStr label (indent $ indent indentation) <$> children
-      ]
+    guard (not Array.null children) $
+      fold
+        [ "\n"
+        , indent indentation
+        , label'
+        , "\n"
+        , intercalate "\n" $ debugStr label (indent $ indent indentation) <$> children
+        ]

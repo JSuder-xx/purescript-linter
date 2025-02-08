@@ -1,8 +1,8 @@
-module Linter.ModuleRules.UseForallSymbol (rule) where
+module Linter.ModuleRules.Style.UseForallSymbol (rule) where
 
 import Prelude
 
-import Linter.ModuleRule (typeIssueIdentifier)
+import Linter.ModuleRule (RuleCategory(..), typeIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Types (SourceStyle(..), Token(..))
 import PureScript.CST.Types as CST
@@ -10,6 +10,7 @@ import PureScript.CST.Types as CST
 rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "UseForallSymbol"
+  , category: Style
   , description:
       "Some projects prefer using the ∀ symbol rather than 'forall' to improve type signature readability and require less typing."
   , examples:
