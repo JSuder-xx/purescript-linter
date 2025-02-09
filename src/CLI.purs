@@ -8,7 +8,7 @@ import CLI.AppConfig (AppConfig, ProjectRoot)
 import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
 import CLI.Reporter (Reporter)
-import CLI.Reporter.Console as Console
+import CLI.Reporter.Console as Reporter.Console
 import Data.Argonaut (parseJson, printJsonDecodeError, stringifyWithIndent)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
@@ -30,7 +30,7 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Console (error, log)
+import Effect.Console as Console
 import Effect.Now (now)
 import Linter.ModuleRule (Issue, ModuleIssueIdentifier, RuleCategory(..))
 import Linter.ModuleRule as ModuleRule
@@ -56,37 +56,76 @@ cli = do
     InitConfig -> do
       let fileName = NonEmptyString.toString cliOptions.configFile
       fileNameExists <- liftEffect $ exists fileName
-      if fileNameExists then liftEffect $ error $ fileName <> " already exists."
+      if fileNameExists then liftEffect $ Console.error $ fileName <> " already exists."
       else contentsToFilePath
         { fileName
         , contents: stringifyWithIndent 2 $ AppConfig.encodeDefault allModuleRules
         }
-    ShowRules ->
-      for_ ((Map.toUnfoldable $ Map.Extra.indexedBy ModuleRule.category allModuleRules) :: Array _) \(Tuple category rules) -> do
-        outputStyled "" (underline <> foreground BrightWhite <> background Black) case category of
-          Style -> "Style"
-          Formatting -> "Formatting"
-        for_ (Array.sortWith ModuleRule.name $ NonEmpty.fromNonEmpty Array.cons rules) \rule -> do
-          outputStyled "  " (foreground BrightBlue <> background Black) (ModuleRule.name rule)
-          outputStyled "  " (foreground White <> background Black) (String.trim $ ModuleRule.description rule)
-          output "" ""
-          output "" ""
-        output "" ""
+    ShowRulesAsMarkdown -> do
+      log "# Rules"
+      showRules
+        { categoryHeader: log <<< ("## " <> _)
+        , categoryDescription: log
+        , ruleHeader: \s -> do
+            log $ "### " <> s
+            log ""
+        , ruleDescription: \s -> do
+            log s
+            log ""
+        }
+    ShowRulesAsAnsi ->
+      showRules
+        { categoryHeader: outputStyled "" (underline <> foreground BrightWhite)
+        , categoryDescription: outputStyled "" (foreground White)
+        , ruleHeader: outputStyled "  " (foreground BrightYellow)
+        , ruleDescription: \s -> do
+            let content = outputStyled "  " (foreground White)
+            content s
+            content ""
+            content ""
+        }
       where
-      outputStyled indent g = output indent <<< withGraphics g
-      output indent s = for_ (String.split (String.Pattern "\n") s) $ \line -> liftEffect $ log $ indent <> line
+      outputStyled indent g s = for_ (String.split (String.Pattern "\n") s) $ \line ->
+        log $ withGraphics (g <> background Black) $ indent <> line
 
     LintSingleFile fileToLint -> lint cliOptions { singleFile': Just $ NonEmptyString.toString fileToLint }
     LintAllFiles -> lint cliOptions { singleFile': Nothing }
   where
+  log = liftEffect <<< Console.log
+
+  showRules { categoryHeader, categoryDescription, ruleHeader, ruleDescription } =
+    for_ ((Map.toUnfoldable $ Map.Extra.indexedBy ModuleRule.category allModuleRules) :: Array _) \(Tuple category rules) -> do
+      let
+        { header, description } = case category of
+          Style ->
+            { header: "Style"
+            , description:
+                """Style rules cover code "correctness" or stylistic choices. For example, there is a rule to prefer the use of punning when available.
+            """
+            }
+          Formatting ->
+            { header: "Formatting"
+            , description:
+                """Formatting rules cover lexical formatting concerns that might overwise be handled by a formatter/pretty printer.
+Use these rules when unable to use a formatter in your codebase. For example, perhaps a formatter does not conform to prescribed rules."""
+            }
+      categoryHeader header
+      categoryDescription description
+      log ""
+
+      for_ (Array.sortWith ModuleRule.name $ NonEmpty.fromNonEmpty Array.cons rules) \rule -> do
+        ruleHeader $ ModuleRule.name rule
+        ruleDescription $ String.trim $ ModuleRule.description rule
+      log ""
+
   lint cliOptions files = do
     cwd <- liftEffect cwd
     configFile <- filePathToContents $ NonEmptyString.toString cliOptions.configFile
     configFile
       # (parseJson >=> AppConfig.decode allModuleRules)
       # either
-          (liftEffect <<< error <<< printJsonDecodeError)
-          \appConfig -> runLinter files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Console.reporter { hideSuccess: appConfig.hideSuccess }
+          (liftEffect <<< Console.error <<< printJsonDecodeError)
+          \appConfig -> runLinter files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { hideSuccess: appConfig.hideSuccess }
 
 filePathToContents :: String -> Aff String
 filePathToContents =

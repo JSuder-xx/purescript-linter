@@ -27,8 +27,11 @@ reporter { hideSuccess } =
   , report: \duration results -> do
       let { yes: successful, no: failed } = Array.partition (Array.null <<< _.issues) results
       log ""
-      log $ "Successful: " <> (show $ Array.length successful)
-      log $ "Failed: " <> (show $ Array.length failed)
+      if Array.null failed then
+        log $ withGraphics (bold <> (foreground Green)) $ "✓︎ " <> (show $ Array.length successful) <> " file(s) linted successfully!!!"
+      else do
+        log $ "Successful: " <> (show $ Array.length successful)
+        log $ "Failed: " <> (show $ Array.length failed)
       log $ "Lint Time: " <> (show $ un Seconds duration) <> " seconds"
       when (not Array.null failed) $ setExitCode 1
   }

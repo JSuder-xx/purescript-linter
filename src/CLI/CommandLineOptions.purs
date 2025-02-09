@@ -21,7 +21,8 @@ type CommandLineOptions =
 
 data RunMode
   = InitConfig
-  | ShowRules
+  | ShowRulesAsAnsi
+  | ShowRulesAsMarkdown
   | LintAllFiles
   | LintSingleFile NonEmptyString
 
@@ -57,9 +58,15 @@ runModeParser =
       )
   )
     <|>
-      ( flag' ShowRules $ fold
+      ( flag' ShowRulesAsAnsi $ fold
           [ long "show"
-          , help "Show all the available rules."
+          , help "Print all the available rules to the console formatted with ANSI."
+          ]
+      )
+    <|>
+      ( flag' ShowRulesAsMarkdown $ fold
+          [ long "show-markdown"
+          , help "Print all the available rules to the console formatted as Markdown."
           ]
       )
     <|>

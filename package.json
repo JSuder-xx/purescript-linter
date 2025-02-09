@@ -13,7 +13,8 @@
     "test": "npx spago test",
     "build": "npm run compile",
     "compile": "spago bundle --outfile dist/index.js --minify --bundle-type module --platform node",
-    "lint-project": "node index.js"
+    "lint-project": "node index.js",
+    "document": "node index.js --show-markdown > Rules.md"
   },
   "author": "John Suder (https://github.com/JSuder-xx)",
   "license": "MIT",
