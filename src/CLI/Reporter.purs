@@ -9,6 +9,8 @@ type FileResults = { filePath :: String, issues :: Array Issue }
 
 type Reporter m =
   { error :: String -> m Unit
-  , fileResults :: FileResults -> m Unit
+  , indicateStarted :: m Unit
+  , indicateFileProcessed :: m Unit
+  , indicateEnded :: m Unit
   , report :: Seconds -> Array FileResults -> m Unit
   }

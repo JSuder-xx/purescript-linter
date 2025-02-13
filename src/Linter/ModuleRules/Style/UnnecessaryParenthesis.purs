@@ -16,7 +16,8 @@ rule = ModuleRule.mkWithNoConfig
   , description: "Using parenthesis when unnecessary harms readability."
   , category: Style
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = (1)"
           , "x = (\"Hi\")"
           , "x = (y)"

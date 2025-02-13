@@ -15,7 +15,8 @@ rule = ModuleRule.mkWithNoConfig
   , description:
       "Aligning Parentheses helps the reader visually parse the two tokens."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ """
 x =
   (stuff 10

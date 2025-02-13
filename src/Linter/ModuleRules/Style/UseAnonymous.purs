@@ -26,7 +26,8 @@ forOperations = ModuleRule.mkWithNoConfig
   , description: "It is easier to read a wildcard operations than a lambda."
   , category: Style
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = \\s -> s < 10"
           , "x = filter (\\s -> s < 10) [ 1, 2, 3 ]"
           ]
@@ -70,7 +71,8 @@ forRecordUpdates = ModuleRule.mkWithNoConfig
   , category: Style
   , description: "It is easier to read a wildcard record update than a lambda."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = \\s -> s { x = 10 }"
           , "x = \\a -> y { a = a }"
           , "x = \\a b -> y { a = a + 1, b = b }"
@@ -128,8 +130,8 @@ forRecordCreation = ModuleRule.mkWithNoConfig
   , description: "It is easier to read a wildcard record creation than to visually tie the arguments to the fields where they are used."
   , category: Style
   , examples:
-      { failingCode:
-
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = \\a -> { a: a }"
           , "x = \\a b -> { a: a, b: b }"
           , "x = \\a -> { a, b: 10 }"

@@ -14,7 +14,8 @@ rule = ModuleRule.mkWithNoConfig
   , description:
       "Some projects prefer using the ∀ symbol rather than 'forall' to improve type signature readability and require less typing."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "f :: forall a. a -> a"
           , "f :: forall a b c. a -> b -> c -> a"
           , "f :: forall a b. a -> b -> (forall c. c -> String) -> String"

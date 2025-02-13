@@ -15,7 +15,8 @@ exportsRequired = ModuleRule.mkWithNoConfig
   , description:
       "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
   , examples:
-      { failingCode:
+      { includeModuleHeader: true
+      , failingCode:
           [ """
 module FlimFlam where
 

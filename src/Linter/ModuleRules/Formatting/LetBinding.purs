@@ -19,7 +19,8 @@ compact = ModuleRule.mkWithNoConfig
 This let formatting rule prioritizes conservation of vertical space.
   """
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ """
 x =
   let

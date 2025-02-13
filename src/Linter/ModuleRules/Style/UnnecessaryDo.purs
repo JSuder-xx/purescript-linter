@@ -22,7 +22,8 @@ A Monadic bind followed by a pure is actually a Functor map. It is more truthful
 A `do` with no binds and no let declarations is unnecessary. Readers should expect a sequence of monadic binds when they see the `do` keyword.
   """
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = do\n  pure 10"
           , "x = do\n  x <- thing\n  pure x"
           ]

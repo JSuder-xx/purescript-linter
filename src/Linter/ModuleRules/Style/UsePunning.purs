@@ -21,7 +21,8 @@ Now with punning that is `{ alice, bob, cindy: cindy', dave }`.
   """
   , category: Style
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = { a: a, b: b }"
           , "x = { a: 10, b: b }"
           , "x = f { a: a, b: b }"

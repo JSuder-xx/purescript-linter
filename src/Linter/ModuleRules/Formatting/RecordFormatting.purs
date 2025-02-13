@@ -17,7 +17,8 @@ rule = ModuleRule.mkWithNoConfig
   , description:
       "Ensures consistent spacing when declaring a record literal."
   , examples:
-      { failingCode
+      { includeModuleHeader: false
+      , failingCode
       , passingCode
       }
   , moduleIssueIdentifier: \{ indentSpaces } -> expressionIssueIdentifier $ case _ of

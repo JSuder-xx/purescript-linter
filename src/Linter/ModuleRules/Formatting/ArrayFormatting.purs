@@ -15,7 +15,8 @@ rule = ModuleRule.mkWithNoConfig
   , category: Formatting
   , description: "Ensures consistent spacing when declaring an array literal."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = [ ]"
           , "x = [    ]"
           , "x = [1]"

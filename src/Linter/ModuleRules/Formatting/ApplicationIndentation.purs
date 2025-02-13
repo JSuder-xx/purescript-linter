@@ -23,7 +23,8 @@ This very limited rule ensures proper function call argument indentation when th
 While limited, this rule helps with the formatting of function calls in render functions.
   """
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ """
 x =
   [ div
@@ -111,7 +112,8 @@ inRecord = ModuleRule.mkWithNoConfig
 This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal.
   """
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ """
 x =
   { foo: f

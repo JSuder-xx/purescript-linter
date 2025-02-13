@@ -75,6 +75,7 @@ type MkModuleIssueIdentifier = SystemConfig -> ModuleIssueIdentifier
 type Examples =
   { passingCode :: Array String
   , failingCode :: Array String
+  , includeModuleHeader :: Boolean
   }
 
 -- | Make a rule that features a custom configuration.

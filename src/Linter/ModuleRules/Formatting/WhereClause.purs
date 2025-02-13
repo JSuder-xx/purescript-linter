@@ -21,7 +21,8 @@ whereLeftAligned = ModuleRule.mkWithNoConfig
   , description:
       "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ """
 x = y + 1 where y = 20
           """

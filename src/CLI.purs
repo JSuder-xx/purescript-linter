@@ -136,7 +136,8 @@ contentsToFilePath { fileName, contents } =
   writeFile fileName =<< (liftEffect $ Buffer.fromString contents UTF8)
 
 runLinter :: { singleFile' :: Maybe String } -> AppConfig -> Reporter Effect -> Aff Unit
-runLinter { singleFile' } { ruleSets, projectRoots } reporter =
+runLinter { singleFile' } { ruleSets, projectRoots } reporter = do
+  liftEffect reporter.indicateStarted
   for_ ruleSets \ruleSet -> do
     startNow <- liftEffect now
     filePathSet <- expandGlobsCwd ruleSet.globs
@@ -149,10 +150,9 @@ runLinter { singleFile' } { ruleSets, projectRoots } reporter =
             (Set.intersection filePathSet <<< Set.singleton)
         )
         \filePath -> do
-          content <- filePathToContents filePath
-          let fileResults = { filePath, issues: findIssues filePath ruleSet.moduleIssueIdentifier $ parseModule content }
-          liftEffect $ reporter.fileResults fileResults
-          pure fileResults
+          liftEffect reporter.indicateFileProcessed
+          filePathToContents filePath <#> \content ->
+            { filePath, issues: findIssues filePath ruleSet.moduleIssueIdentifier $ parseModule content }
       endNow <- liftEffect now
       liftEffect $ reporter.report (Instant.diff endNow startNow) files
   where

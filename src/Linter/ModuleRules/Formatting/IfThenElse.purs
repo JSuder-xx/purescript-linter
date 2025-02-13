@@ -13,7 +13,8 @@ ifThenElseLeftAligned = ModuleRule.mkWithNoConfig
   , category: Formatting
   , description: "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ """
 x =
   if 1 == 2

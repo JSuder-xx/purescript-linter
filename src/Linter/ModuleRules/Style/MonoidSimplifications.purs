@@ -25,7 +25,8 @@ replaceMaybeMemptyWithFoldMap = ModuleRule.mkWithNoConfig
 Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention.
   """
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = maybe mempty"
           , "x = maybe \"\""
           , "x = maybe []"
@@ -61,7 +62,8 @@ useGuardOverIfThenElseMEmpty = ModuleRule.mkWithNoConfig
   , description:
       "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = if 1 == 2 then [ 1, 2, 3 ] else mempty"
           , "x = if 1 == 2 then [ 1, 2, 3 ] else []"
           , "x = if 1 == 2 then \"Hello\" else \"\""
@@ -87,7 +89,8 @@ useGuardOverIfThenMemptyElse = ModuleRule.mkWithNoConfig
   , description:
       "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "x = if 1 == 2 then mempty else [ 1, 2, 3 ]"
           , "x = if 1 == 2 then [] else [ 1, 2, 3 ]"
           , "x = if 1 == 2 then \"\" else \"Hello\""
@@ -117,7 +120,8 @@ Using `fold`
 2. Is more succinct, in terms of characters, when there are 8 or more mappends.
   """
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ """
 x =
   (someValues a)

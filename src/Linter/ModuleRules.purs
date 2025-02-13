@@ -9,6 +9,7 @@ import Linter.ModuleRules.Formatting.LetBinding as LetBinding
 import Linter.ModuleRules.Formatting.RecordFormatting as RecordFormatting
 import Linter.ModuleRules.Formatting.WhereClause as WhereClause
 import Linter.ModuleRules.Style.ModuleExports as ModuleExports
+import Linter.ModuleRules.Style.ModuleImports as ModuleImports
 import Linter.ModuleRules.Style.MonoidSimplifications as MonoidSimplifications
 import Linter.ModuleRules.Style.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.ModuleRules.Style.UnnecessaryDo as UnnecessaryDo
@@ -26,6 +27,7 @@ allModuleRules =
   , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
   , ModuleExports.exportsRequired
+  , ModuleImports.qualification
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
   , MonoidSimplifications.useFoldForRepeatedMappends
   , MonoidSimplifications.useGuardOverIfThenElseMEmpty

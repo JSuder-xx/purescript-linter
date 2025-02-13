@@ -24,7 +24,8 @@ rule = ModuleRule.mkWithNoConfig
   , description:
       "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."
   , examples:
-      { failingCode:
+      { includeModuleHeader: false
+      , failingCode:
           [ "f :: forall a. Ord a => Ord a => a -> a -> Boolean"
           , "f :: forall a. Ord a => Ord b => Ord a => a -> a -> Boolean"
           , "f :: forall a b. Coercible a b => Coercible a b => a -> Boolean"
