@@ -2,11 +2,14 @@ module Linter.ModuleRules.Style.ModuleImports where
 
 import Prelude
 
-import Data.Foldable (foldMap)
-import Data.Matcher (Matcher(..))
-import Data.Matcher as Matcher
-import Data.Maybe (Maybe(Just, Nothing))
+import Data.Array as Array
+import Data.Foldable (fold, foldMap)
+import Data.Maybe (maybe')
 import Data.Monoid (guard)
+import Data.String as String
+import Data.String.Regex (Regex)
+import Data.String.Regex as Regex
+import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
 import Data.Tuple (Tuple(..))
 import Linter.ModuleRule (ModuleRule, RuleCategory(..), mkModuleRule, moduleIssueIdentifier)
 import PureScript.CST.Import as Import
@@ -18,7 +21,11 @@ import PureScript.CST.Types as CST
 qualification :: ModuleRule
 qualification = mkModuleRule
   { name: "ModuleImportQualification"
-  , description: ""
+  , description:
+      """Use this rule to ensure that developers
+- Are not importing functions, values, and types with ambiguous names ex. `fromFoldable` is available for many container types such that a lack of qualification is confusing.
+- Are qualifying modules consistently.
+  """
   , category: Style
   , examples:
       { includeModuleHeader: true
@@ -26,7 +33,8 @@ qualification = mkModuleRule
           includeModuleName <$>
             [ "import Data.Array (blurble)" -- single import not on the list
             , "import Data.Array (foo, bar, baz)" -- multiple imports not on the list
-            , "import Data.Array (fromFoldable) as Array" -- function on the list but module qualified
+            , "import Data.Array (fromFoldable) as Array" -- function on the list but module qualified with the correct name
+            , "import Data.List.Lazy (fromFoldable) as List.Lazy" -- qualified correct qualification name
             , "import Data.Whatever (fromFoldable)" -- import on the list but module not a match
             , "import Data.Whatever" -- module name not on list so open ended is allowed
             ]
@@ -36,23 +44,29 @@ qualification = mkModuleRule
             , "import Data.Array (foo, bar, fromFoldable)" -- single module with two passing imports
             , "import Data.Array (foo, fromFoldable, bar, toUnfoldable)" -- single module with two passing and two failing imports
             , "import Data.Array" -- failed because open ended module and on the list of modules to match
+            , "import Data.Array (fromFoldable) as Arr" -- qualified but with the wrong qualification name
+            , "import Data.List.Lazy (fromFoldable) as List" -- qualified but with the wrong qualification name
             ]
       }
   , defaultConfig:
-      [ { module: MatchExact
-            [ "Data.Array"
-            , "Data.Array.NonEmpty"
-            , "Data.Either"
-            , "Data.Lens"
-            , "Data.List"
-            , "Data.List.Lazy"
-            , "Data.Map"
-            , "Data.Maybe"
-            , "Data.Set"
-            , "Foreign.Object"
-            , "JSON.Object"
+      [ { module: exampleRegex $ fold
+            [ "^Data."
+            , "("
+            , String.joinWith "|"
+                [ "Array"
+                , "Array.NonEmpty"
+                , "Either"
+                , "Lens"
+                , "List"
+                , "List.Lazy"
+                , "Map"
+                , "Maybe"
+                , "Set"
+                ]
+            , ")$"
             ]
-        , import: MatchExact
+        , qualifyAs: "$1"
+        , import: exampleRegex $ String.joinWith "|"
             [ "fromFoldable"
             , "toUnfoldable"
             , "fromString"
@@ -63,25 +77,54 @@ qualification = mkModuleRule
             , "get"
             ]
         }
-      ] :: Array ImportMatch
-  , moduleIssueIdentifier: \importMatches _systemConfig -> moduleIssueIdentifier $ \(CST.Module { header: CST.ModuleHeader { imports } }) -> do
-      importMatch <- importMatches
-      verifyImportDeclaration importMatch =<< imports
+      ] :: Array ImportMatchRuleJson
+  , moduleIssueIdentifier: \importMatchJsons _systemConfig ->
+      let
+        importMatches = fromJson <$> importMatchJsons
+      in
+        moduleIssueIdentifier $ \(CST.Module { header: CST.ModuleHeader { imports } }) ->
+          verifyImportDeclaration importMatches =<< imports
   }
   where
   includeModuleName s = "module Test where\n" <> s
 
-  verifyImportDeclaration _ (ImportDecl { qualified: Just _ }) = []
-  verifyImportDeclaration importMatch (importDecl@(ImportDecl { module: Name { name: ModuleName moduleName }, names: Nothing })) =
-    guard (Matcher.matches moduleName importMatch.module)
-      [ { message: "Cannot import open ended when requiring qualification and the module name matches.", sourceRange: rangeOf importDecl } ]
-  verifyImportDeclaration importMatch (ImportDecl { module: Name { name: ModuleName moduleName }, names: Just (Tuple _sourceToken (Wrapped { value: separatedImports })) }) =
-    guard (Matcher.matches moduleName importMatch.module) (separatedImports # Separated.values >>= verifyImport importMatch.import)
+  verifyImportDeclaration importMatches (importDecl@(ImportDecl { module: Name { name: ModuleName moduleName }, names, qualified })) =
+    foldMap applyRule firstMatchingRule'
+    where
+    firstMatchingRule' = Array.find (_.module >>> flip Regex.test moduleName) importMatches
+
+    applyRule importMatchRule = qualified #
+      maybe'
+        -- if not qualified then ensure developer is not importing anything ambiguously... either open or specifically problematic
+        assertNoAmbiguousImports
+        -- if qualified then check that the qualification uses the right name
+        assertCorrectQualification
+      where
+      assertCorrectQualification (Tuple _sourceToken (qualificationName@(Name { name: ModuleName actualQualifiedModuleName }))) =
+        let
+          expectedQualifiedModuleName = Regex.replace importMatchRule.module importMatchRule.qualifyAs moduleName
+        in
+          guard (actualQualifiedModuleName /= expectedQualifiedModuleName)
+            [ { message: "Expecting module " <> moduleName <> " to be qualified as " <> expectedQualifiedModuleName, sourceRange: rangeOf qualificationName } ]
+      assertNoAmbiguousImports _ = names # maybe'
+        (\_ -> [ { message: "Cannot import open ended when requiring qualification.", sourceRange: rangeOf importDecl } ])
+        (\(Tuple _sourceToken (Wrapped { value: separatedImports })) -> separatedImports # Separated.values >>= verifyImport importMatchRule.import)
 
   verifyImport moduleMatch import' = import' # Import.name' # foldMap \importName ->
-    guard (Matcher.matches importName moduleMatch) [ { message: "Do not", sourceRange: rangeOf import' } ]
+    guard (Regex.test moduleMatch importName) [ { message: "Import of '" <> importName <> "' must be qualified.", sourceRange: rangeOf import' } ]
+
+type ImportMatchRuleJson =
+  { module :: RegexJson
+  , import :: RegexJson
+  , qualifyAs :: String
+  }
 
 type ImportMatch =
-  { module :: Matcher
-  , import :: Matcher
+  { module :: Regex
+  , import :: Regex
+  , qualifyAs :: String
   }
+
+fromJson :: ImportMatchRuleJson -> ImportMatch
+fromJson { qualifyAs, module: RegexJson moduleRegex, import: RegexJson importRegex } =
+  { qualifyAs, module: moduleRegex, import: importRegex }

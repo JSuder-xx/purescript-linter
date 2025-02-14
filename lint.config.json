@@ -18,6 +18,18 @@
         "Application.InRecord.IndentArguments": null,
         "ArrayFormatting": null,
         "IfThenElseLeftAligned": null,
+        "ModuleImportQualification": [
+          {
+            "import": "fromFoldable|toUnfoldable|fromString|singleton|member|over|set|get",
+            "module": "Data.Array.NonEmpty",
+            "qualifyAs": "NonEmptyArray"
+          },
+          {
+            "import": "fromFoldable|toUnfoldable|fromString|singleton|member|over|set|get",
+            "module": "^Data.(Array|Either|Lens|List|List.Lazy|Map|Maybe|Set)$",
+            "qualifyAs": "$1"
+          }
+        ],
         "NoDuplicateTypeclassConstraints": null,
         "NoUnnecessaryDo": null,
         "NoUnnecessaryParenthesis": null,

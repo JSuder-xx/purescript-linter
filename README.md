@@ -1,6 +1,6 @@
 # Overview
 
-A linter for PureScript built using the fantastic CST parser written by Nate Faubion.
+A linter for PureScript with rules that check both formatting and stylistic issues that can represent code quality issues.
 
 ## Rules
 
