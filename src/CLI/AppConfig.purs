@@ -11,7 +11,7 @@ import Data.Argonaut.Encode.Encoders (encodeArray, encodeBoolean, encodeInt, enc
 import Data.Array as Array
 import Data.Either (Either, note)
 import Data.Map as Map
-import Data.Maybe (Maybe, fromMaybe)
+import Data.Maybe (fromMaybe)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst)
 import Foreign.Object (Object, fromFoldable, fromHomogeneous)
@@ -35,7 +35,6 @@ type ProjectRoot =
 type RuleSet =
   { globs :: Array String
   , moduleIssueIdentifier :: ModuleIssueIdentifier
-  , verifyModuleNameFromRootPath' :: Maybe String
   }
 
 withCwd :: String -> AppConfig -> AppConfig
@@ -77,9 +76,8 @@ decode allModuleRules = decodeJObject >=> \object -> do
   decodeRuleSet indentSpaces object = do
     globs <- object .: "globs"
     rules <- object .: "rules"
-    verifyModuleNameFromRootPath' <- object .:! "verifyModuleNameFromRootPath"
     moduleIssueIdentifier <- Object.foldM foldRule mempty rules
-    pure { globs, moduleIssueIdentifier, verifyModuleNameFromRootPath' }
+    pure { globs, moduleIssueIdentifier }
     where
     config = { indentSpaces }
 
