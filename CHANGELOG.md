@@ -1,3 +1,7 @@
+### NEXT RELEASE
+
+- Friendlier error messages for config decode errors.
+
 ### 0.2.9 (2025-02-14)
 
 - Expanded application of NoDuplicateTypeclassConstraints to all types (and not just declarations).

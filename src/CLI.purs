@@ -4,7 +4,7 @@ import Prelude
 
 import Ansi.Codes (Color(..))
 import Ansi.Output (background, foreground, underline, withGraphics)
-import CLI.AppConfig (AppConfig, ProjectRoot)
+import CLI.AppConfig (AppConfigProcessed, ProjectRoot)
 import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
 import CLI.Reporter (Reporter)
@@ -12,6 +12,7 @@ import CLI.Reporter.Console as Reporter.Console
 import Data.Argonaut (parseJson, printJsonDecodeError, stringifyWithIndent)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
+import Data.Bifunctor (lmap)
 import Data.DateTime.Instant as Instant
 import Data.Either (either)
 import Data.Map as Map
@@ -120,11 +121,12 @@ Use these rules when unable to use a formatter in your codebase. For example, pe
 
   lint cliOptions files = do
     cwd <- liftEffect cwd
-    configFile <- filePathToContents $ NonEmptyString.toString cliOptions.configFile
+    let configFilename = NonEmptyString.toString cliOptions.configFile
+    configFile <- filePathToContents configFilename
     configFile
-      # (parseJson >=> AppConfig.decode allModuleRules)
+      # (parseJson >>> lmap printJsonDecodeError >=> (AppConfig.decode >>> lmap printJsonDecodeError) >=> AppConfig.rawToProcessed allModuleRules)
       # either
-          (liftEffect <<< Console.error <<< printJsonDecodeError)
+          (liftEffect <<< Console.error <<< \decodeError -> "Error decoding '" <> configFilename <> "'\n" <> decodeError)
           \appConfig -> runLinter files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { hideSuccess: appConfig.hideSuccess }
 
 filePathToContents :: String -> Aff String
@@ -135,7 +137,7 @@ contentsToFilePath :: { fileName :: String, contents :: String } -> Aff Unit
 contentsToFilePath { fileName, contents } =
   writeFile fileName =<< (liftEffect $ Buffer.fromString contents UTF8)
 
-runLinter :: { singleFile' :: Maybe String } -> AppConfig -> Reporter Effect -> Aff Unit
+runLinter :: { singleFile' :: Maybe String } -> AppConfigProcessed -> Reporter Effect -> Aff Unit
 runLinter { singleFile' } { ruleSets, projectRoots } reporter = do
   liftEffect reporter.indicateStarted
   for_ ruleSets \ruleSet -> do
@@ -152,7 +154,7 @@ runLinter { singleFile' } { ruleSets, projectRoots } reporter = do
         \filePath -> do
           liftEffect reporter.indicateFileProcessed
           filePathToContents filePath <#> \content ->
-            { filePath, issues: findIssues filePath ruleSet.moduleIssueIdentifier $ parseModule content }
+            { filePath, issues: findIssues filePath ruleSet.rules $ parseModule content }
       endNow <- liftEffect now
       liftEffect $ reporter.report (Instant.diff endNow startNow) files
   where
