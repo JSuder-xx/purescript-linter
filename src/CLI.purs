@@ -19,7 +19,7 @@ import Data.Foldable (foldM, foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Map.Extra as Map.Extra
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Maybe as Maybe
 import Data.Maybe.Extra as Maybe.Extra
 import Data.Monoid (guard)
@@ -129,7 +129,10 @@ Use these rules when unable to use a formatter in your codebase. For example, pe
       # (parseJson >>> lmap printJsonDecodeError >=> (AppConfig.decode >>> lmap printJsonDecodeError) >=> AppConfig.rawToProcessed allModuleRules)
       # either
           (liftEffect <<< Console.error <<< \decodeError -> "Error decoding '" <> configFilename <> "'\n" <> decodeError)
-          \appConfig -> runLinter files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { hideSuccess: appConfig.hideSuccess }
+          \appConfig -> runLinter { cwd } files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { hideSuccess: appConfig.hideSuccess }
+
+simplifyPath :: String -> String -> String
+simplifyPath cwd filePath = filePath # String.stripPrefix (Pattern cwd) # maybe filePath ("." <> _)
 
 filePathToContents :: String -> Aff String
 filePathToContents =
@@ -139,18 +142,18 @@ contentsToFilePath :: { fileName :: String, contents :: String } -> Aff Unit
 contentsToFilePath { fileName, contents } =
   writeFile fileName =<< (liftEffect $ Buffer.fromString contents UTF8)
 
-runLinter :: { singleFile' :: Maybe String } -> AppConfigProcessed -> Reporter Effect -> Aff Unit
-runLinter { singleFile' } { ruleSets, projectRoots } reporter = do
+runLinter :: { cwd :: String } -> { singleFile' :: Maybe String } -> AppConfigProcessed -> Reporter Effect -> Aff Unit
+runLinter { cwd } { singleFile' } { ruleSets, projectRoots } reporter = do
   startNow <- liftEffect now
   liftEffect reporter.indicateStarted
   { warnings, filesMap } <- findAllFiles
   for_ warnings $ liftEffect <<< reporter.error
-  files <- for (Map.toUnfoldable filesMap) \(Tuple filePath rules) -> do
+  fileResults <- for (Map.toUnfoldable filesMap) \(Tuple filePath rules) -> do
     liftEffect reporter.indicateFileProcessed
     filePathToContents filePath <#> \content ->
       { filePath, issues: findIssues filePath rules $ parseModule content }
   endNow <- liftEffect now
-  liftEffect $ reporter.report (Instant.diff endNow startNow) files
+  liftEffect $ reporter.report (Instant.diff endNow startNow) $ fileResults <#> \r -> r { filePath = simplifyPath cwd r.filePath }
   where
   findAllFiles :: Aff { warnings :: Array String, filesMap :: Map FilePath ModuleIssueIdentifier }
   findAllFiles = foldM processRuleSet { warnings: [], filesMap: Map.empty } ruleSets
