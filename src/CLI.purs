@@ -15,6 +15,8 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.Bifunctor (lmap)
 import Data.DateTime.Instant as Instant
 import Data.Either (either)
+import Data.Foldable (foldM, foldl)
+import Data.Map (Map)
 import Data.Map as Map
 import Data.Map.Extra as Map.Extra
 import Data.Maybe (Maybe(..))
@@ -41,7 +43,7 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readFile, writeFile)
 import Node.FS.Sync (exists)
 import Node.Glob.Basic (expandGlobsCwd)
-import Node.Path (sep)
+import Node.Path (FilePath, sep)
 import Node.Path as Path
 import Node.Process (cwd)
 import PureScript.CST (RecoveredParserResult(..), parseModule)
@@ -139,25 +141,33 @@ contentsToFilePath { fileName, contents } =
 
 runLinter :: { singleFile' :: Maybe String } -> AppConfigProcessed -> Reporter Effect -> Aff Unit
 runLinter { singleFile' } { ruleSets, projectRoots } reporter = do
+  startNow <- liftEffect now
   liftEffect reporter.indicateStarted
-  for_ ruleSets \ruleSet -> do
-    startNow <- liftEffect now
-    filePathSet <- expandGlobsCwd ruleSet.globs
-    if filePathSet == mempty && Maybe.isNothing singleFile' then
-      liftEffect $ reporter.error $ "No Files found with globs: " <> (intercalate ", " ruleSet.globs)
-    else do
-      files <- for
-        ( Set.toUnfoldable $ singleFile' # Maybe.maybe
-            filePathSet
-            (Set.intersection filePathSet <<< Set.singleton)
-        )
-        \filePath -> do
-          liftEffect reporter.indicateFileProcessed
-          filePathToContents filePath <#> \content ->
-            { filePath, issues: findIssues filePath ruleSet.rules $ parseModule content }
-      endNow <- liftEffect now
-      liftEffect $ reporter.report (Instant.diff endNow startNow) files
+  { warnings, filesMap } <- findAllFiles
+  for_ warnings $ liftEffect <<< reporter.error
+  files <- for (Map.toUnfoldable filesMap) \(Tuple filePath rules) -> do
+    liftEffect reporter.indicateFileProcessed
+    filePathToContents filePath <#> \content ->
+      { filePath, issues: findIssues filePath rules $ parseModule content }
+  endNow <- liftEffect now
+  liftEffect $ reporter.report (Instant.diff endNow startNow) files
   where
+  findAllFiles :: Aff { warnings :: Array String, filesMap :: Map FilePath ModuleIssueIdentifier }
+  findAllFiles = foldM processRuleSet { warnings: [], filesMap: Map.empty } ruleSets
+    where
+    processRuleSet { warnings, filesMap } ruleSet = expandGlobsCwd ruleSet.globs <#> \filePathSet ->
+      if filePathSet == mempty && Maybe.isNothing singleFile' then
+        { filesMap
+        , warnings: Array.snoc warnings $ "No Files found with globs: " <> (intercalate ", " ruleSet.globs)
+        }
+      else
+        { warnings
+        , filesMap: foldl (processFile ruleSet.rules) filesMap $ singleFile' # Maybe.maybe filePathSet (Set.intersection filePathSet <<< Set.singleton)
+        }
+
+    processFile :: ModuleIssueIdentifier -> Map String ModuleIssueIdentifier -> String -> Map String ModuleIssueIdentifier
+    processFile rules map file = Map.insertWith append file rules map
+
   findIssues :: String -> ModuleIssueIdentifier -> RecoveredParserResult CST.Module -> Array Issue
   findIssues filePath producer = case _ of
     ParseSucceeded moduleCst@(Module { header: ModuleHeader { name: moduleName } }) ->
