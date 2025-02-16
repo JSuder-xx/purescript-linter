@@ -3,6 +3,7 @@ module Linter.ModuleRules.Style.UsePunning (rule) where
 import Prelude
 
 import Data.Array as Array
+import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple (snd)
@@ -16,7 +17,7 @@ rule = ModuleRule.mkWithNoConfig
   , description:
       """Punning is easier to read because it reduces the noise of unnecessary repetition. By removing unnecessary repetition, true differences stand out more.
 
-For example, can you spot the difference in `{ alice: alice, bob: bob', cindy: cindy', dave: dave }`?
+For example, can you spot the difference in `{ alice: alice, bob: bob, cindy: cindy', dave: dave }`?
 Now with punning that is `{ alice, bob, cindy: cindy', dave }`.
   """
   , category: Style
@@ -40,6 +41,18 @@ Now with punning that is `{ alice, bob, cindy: cindy', dave }`.
   }
 
 couldBePun :: forall e. RecordLabeled (Expr e) -> Array Issue
-couldBePun (RecordField (Name { name: Label name }) { range } (ExprIdent (QualifiedName { module: Nothing, name: Ident (identifierName) }))) =
-  guard (name == identifierName) $ pure { message: "Use punning", sourceRange: range }
+couldBePun (RecordField (Name { name: Label fieldName }) { range } (ExprIdent (QualifiedName { module: Nothing, name: Ident identifierName }))) =
+  guard (fieldName == identifierName)
+    [ { message: fold
+          [ "Use record field punning to simplify `"
+          , fieldName
+          , ": "
+          , identifierName
+          , "` to just `"
+          , fieldName
+          , "`."
+          ]
+      , sourceRange: range
+      }
+    ]
 couldBePun _ = []
