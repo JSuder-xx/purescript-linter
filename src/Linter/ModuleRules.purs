@@ -43,3 +43,20 @@ allModuleRules =
   , UsePunning.rule
   , WhereClause.whereLeftAligned
   ]
+
+recommendedRules :: Array ModuleRule
+recommendedRules =
+  [ ModuleExports.exportsRequired
+  , ModuleImports.qualification
+  , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
+  , MonoidSimplifications.useFoldForRepeatedMappends
+  , MonoidSimplifications.useGuardOverIfThenElseMEmpty
+  , NoDuplicateTypeclassConstraints.rule
+  , UnnecessaryDo.rule
+  , UnnecessaryParenthesis.rule
+  , UseAnonymous.forOperations
+  , UseAnonymous.forRecordUpdates
+  , UseAnonymous.forRecordCreation
+  , UseForallSymbol.rule
+  , UsePunning.rule
+  ]

@@ -1,8 +1,9 @@
-### NEXT RELEASE
+### 0.2.11 (2024-02-17)
 
 - Changed: Friendlier error messages for config decode error when a rule name is not found.
 - Changed: Improved speed for multiple rule sets with overlapping files by combining in first pass and then loading/parsing each file only once on second pass.
 - Changed: Removed current working directory prefix from emited files errors.
+- Changed: Default initial config to "recommended" rules which excludes formatting and controversial rules.
 
 ### 0.2.9 (2025-02-14)
 

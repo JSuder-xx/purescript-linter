@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
-import Data.Foldable (foldMap)
+import Data.Foldable (fold, foldMap)
 import Data.Map.Extra (keyCountLookup)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
@@ -52,12 +52,14 @@ forOperations = ModuleRule.mkWithNoConfig
                             identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
                             leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
                             rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
+                            checkIdentifier = foldMap \ident ->
+                              guard (ident == firstArgument.name)
+                                [ { message: "Lambda can be re-written using wildcards by replacing '" <> unwrap ident <> "' with _. This may require wrapping the expression in parenthesis.", sourceRange: rangeOf lambda } ]
                           in
-                            guard
-                              ( (identifierCount firstArgument.name) == 1
-                                  && (leftIdent' == Just firstArgument.name || rightIdent' == Just firstArgument.name)
-                              )
-                              [ { message: "Lambda can be replaced with _.", sourceRange: rangeOf lambda } ]
+                            guard ((identifierCount firstArgument.name) == 1) $ fold
+                              [ checkIdentifier leftIdent'
+                              , checkIdentifier rightIdent'
+                              ]
                         _, _ -> []
                     _ -> []
               )

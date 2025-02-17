@@ -60,7 +60,7 @@ useGuardOverIfThenElseMEmpty = ModuleRule.mkWithNoConfig
   { name: "UseGuardOverIfThenElseMEmpty"
   , category: Style
   , description:
-      "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch."
+      "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch. This is similar to using `when EXPR TRUE` rather than `if EXPR then TRUE else pure unit` when working the applicatives."
   , examples:
       { includeModuleHeader: false
       , failingCode:

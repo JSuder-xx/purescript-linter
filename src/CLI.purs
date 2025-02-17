@@ -3,7 +3,7 @@ module CLI where
 import Prelude
 
 import Ansi.Codes (Color(..))
-import Ansi.Output (background, foreground, underline, withGraphics)
+import Ansi.Output (foreground, underline, withGraphics)
 import CLI.AppConfig (AppConfigProcessed, ProjectRoot)
 import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
@@ -37,7 +37,7 @@ import Effect.Console as Console
 import Effect.Now (now)
 import Linter.ModuleRule (Issue, ModuleIssueIdentifier, RuleCategory(..))
 import Linter.ModuleRule as ModuleRule
-import Linter.ModuleRules (allModuleRules)
+import Linter.ModuleRules (allModuleRules, recommendedRules)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readFile, writeFile)
@@ -62,7 +62,7 @@ cli = do
       if fileNameExists then liftEffect $ Console.error $ fileName <> " already exists."
       else contentsToFilePath
         { fileName
-        , contents: stringifyWithIndent 2 $ AppConfig.encodeDefault allModuleRules
+        , contents: stringifyWithIndent 2 $ AppConfig.encodeDefault recommendedRules
         }
     ShowRulesAsMarkdown -> do
       log "# Rules"
@@ -89,7 +89,7 @@ cli = do
         }
       where
       outputStyled indent g s = for_ (String.split (String.Pattern "\n") s) $ \line ->
-        log $ withGraphics (g <> background Black) $ indent <> line
+        log $ withGraphics g $ indent <> line
 
     LintSingleFile fileToLint -> lint cliOptions { singleFile': Just $ NonEmptyString.toString fileToLint }
     LintAllFiles -> lint cliOptions { singleFile': Nothing }
