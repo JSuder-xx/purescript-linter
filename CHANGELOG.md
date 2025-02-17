@@ -1,3 +1,5 @@
+### NEXT RELEASE
+
 ### 0.2.11 (2024-02-17)
 
 - Changed: Friendlier error messages for config decode error when a rule name is not found.
