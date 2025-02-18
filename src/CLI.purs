@@ -91,7 +91,7 @@ cli = do
       outputStyled indent g s = for_ (String.split (String.Pattern "\n") s) $ \line ->
         log $ withGraphics g $ indent <> line
 
-    LintSingleFile fileToLint -> lint cliOptions { singleFile': Just $ NonEmptyString.toString fileToLint }
+    LintSingleFile fileToLint -> lint cliOptions { singleFile': Just $ Path.normalize $ NonEmptyString.toString fileToLint }
     LintAllFiles -> lint cliOptions { singleFile': Nothing }
   where
   log = liftEffect <<< Console.log
