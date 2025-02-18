@@ -1,3 +1,5 @@
+### NEXT RELEASE
+
 ### 0.2.12 (2024-02-018)
 
 - Fixed: Single file reporting
