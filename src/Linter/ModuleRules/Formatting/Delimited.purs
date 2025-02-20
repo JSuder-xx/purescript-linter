@@ -24,7 +24,12 @@ lint
   -> Delimited inner
   -> Array Issue
 lint { name, openToken, closeToken } (Wrapped { open: { range: openRange }, close: { range: closeRange }, value: Nothing }) =
-  guard ((closeRange.start `columnDifference` openRange.start) > 1) $ pure { message: "An empty " <> name <> " should be " <> openToken <> closeToken, sourceRange: openRange }
+  guard ((closeRange.start `columnDifference` openRange.start) > 1)
+    $
+      [ { message: fold [ "An empty ", name, " should be '", openToken, closeToken, "'." ]
+        , sourceRange: openRange
+        }
+      ]
 lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapped { open: { range: openRange }, close: { range: closeRange }, value: Just (Separated { head, tail }) }) =
   if openRange.start.line == closeRange.start.line then
     checkSingleLine unit
@@ -36,7 +41,7 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
   checkSingleLine _ =
     case Array.unsnoc tail of
       Nothing ->
-        guard (not $ (openRange `spaceBetween` rangeHead) && (rangeHead `spaceBetween` closeRange)) [ { message: "Missing space between surrounding " <> openToken <> closeToken <> " and contents.", sourceRange: openRange } ]
+        guard (not $ (openRange `spaceBetween` rangeHead) && (rangeHead `spaceBetween` closeRange)) [ { message: "Expecting exactly one space between surrounding '" <> openToken <> closeToken <> "' and contents.", sourceRange: openRange } ]
           <> (validateInner head # fromMaybe [])
       Just { last: Tuple _ lastExpr } ->
         let
@@ -45,8 +50,8 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
         in
           fold
             [ guard (not $ (openRange `spaceBetween` rangeHead))
-                [ { message: "Missing space between " <> openToken <> " and " <> itemName, sourceRange: openRange } ]
-            , guard (not (rangeLast `spaceBetween` closeRange)) [ { message: "Missing space between last " <> itemName <> " and " <> closeToken, sourceRange: closeRange } ]
+                [ { message: "Expecting exactly one space between '" <> openToken <> "' and the first " <> itemName, sourceRange: openRange } ]
+            , guard (not (rangeLast `spaceBetween` closeRange)) [ { message: "Expecting exactly one space space between last " <> itemName <> " and '" <> closeToken <> "'.", sourceRange: closeRange } ]
             , (Array.findMap validateInner allLabeledRecords # fromMaybe [])
             , let
                 step :: { failed :: Array SourceRange, lastExprRange :: SourceRange } -> Tuple SourceToken inner -> { failed :: Array SourceRange, lastExprRange :: SourceRange }
@@ -64,7 +69,6 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
               in
                 (Array.foldl step { failed: [], lastExprRange: rangeHead } tail).failed <#> { message: "Incorrect spacing between the comma and preceding " <> itemName, sourceRange: _ }
             ]
-
     where
     rangeHead = innerRange head
 
@@ -72,8 +76,8 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
   checkMultiLine _ =
     case Array.unsnoc tail of
       Nothing ->
-        guard (not $ (openRange `spaceBetween` rangeHead)) [ { message: "Missing space between " <> openToken <> " and the first " <> itemName, sourceRange: rangeHead } ]
-          <> guard (not $ (openRange `leftAligned` closeRange)) [ { message: "The closing " <> closeToken <> " should align with the opening " <> openToken, sourceRange: closeRange } ]
+        guard (not $ (openRange `spaceBetween` rangeHead)) [ { message: "Expecting exactly one space between '" <> openToken <> "' and the first " <> itemName <> ".", sourceRange: rangeHead } ]
+          <> guard (not $ (openRange `leftAligned` closeRange)) [ { message: "The closing '" <> closeToken <> "' should column align with the opening '" <> openToken <> "'.", sourceRange: closeRange } ]
           <> (validateInner head # fromMaybe [])
       Just { last: Tuple _ lastExpr } ->
         let
@@ -82,9 +86,9 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
         in
           fold
             [ guard (not $ (openRange `spaceBetween` rangeHead))
-                [ { message: "Missing space between { first field.", sourceRange: openRange } ]
+                [ { message: "Expecting exactly one space between '" <> openToken <> "' and the first " <> itemName, sourceRange: openRange } ]
             , guard (rangeLast.start.line >= closeRange.start.line || closeRange.start.column /= openRange.start.column)
-                [ { message: "Closing } should be on a new line", sourceRange: closeRange } ]
+                [ { message: "Closing '" <> closeToken <> "' should be on a new line", sourceRange: closeRange } ]
             , (Array.findMap validateInner allLabeledRecords # fromMaybe [])
             , ( tail >>= \(Tuple { range } expr) ->
                   guard (range.start.column /= openRange.start.column) [ { message: "With multiline " <> name <> ", the ',' must align with the " <> openToken, sourceRange: range } ]
@@ -92,7 +96,7 @@ lint { name, itemName, openToken, closeToken, innerRange, validateInner } (Wrapp
                       ( let
                           exprRange = innerRange expr
                         in
-                          guard (not $ range `spaceBetween` exprRange) [ { message: "With multiline " <> name <> ", there should be a space between the leading `,` and the " <> itemName, sourceRange: exprRange } ]
+                          guard (not $ range `spaceBetween` exprRange) [ { message: "With multiline " <> name <> ", there should be a single space between the leading `,` and the " <> itemName, sourceRange: exprRange } ]
                       )
               )
             ]

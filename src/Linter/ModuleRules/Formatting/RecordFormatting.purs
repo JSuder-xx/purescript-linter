@@ -28,7 +28,7 @@ rule = ModuleRule.mkWithNoConfig
   where
   config identSpaces =
     { name: "Record"
-    , itemName: "Field"
+    , itemName: "fieldName: Expression"
     , openToken: "{"
     , closeToken: "}"
     , innerRange: rangeOfRecordLabeled

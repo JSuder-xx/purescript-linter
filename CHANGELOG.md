@@ -1,6 +1,7 @@
-### NEXT RELEASE
+### 0.2.13 (2024-02-20)
 
 - Added: Checking for unnecessary parenthesis in type declarations.
+- Fixed: Imprecise error messages for delimited formatting.
 
 ### 0.2.12 (2024-02-018)
 
