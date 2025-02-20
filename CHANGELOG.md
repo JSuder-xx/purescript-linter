@@ -1,3 +1,5 @@
+### NEXT RELEASE
+
 ### 0.2.13 (2024-02-20)
 
 - Added: Checking for unnecessary parenthesis in type declarations.
