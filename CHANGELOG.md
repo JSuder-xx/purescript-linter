@@ -1,5 +1,7 @@
 ### NEXT RELEASE
 
+- Fixed: Monoid simplification rules recommending `guard` applied to situations where `guard` could have been slow and therefore not desirable.
+
 ### 0.2.13 (2024-02-20)
 
 - Added: Checking for unnecessary parenthesis in type declarations.

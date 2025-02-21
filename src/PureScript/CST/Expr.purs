@@ -8,6 +8,8 @@ import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (un)
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Tuple (Tuple(..), fst, snd)
 import PureScript.CST.Debug (Label, debugStr)
 import PureScript.CST.QualifiedName as QualifiedName
@@ -26,6 +28,79 @@ isTerminal = case _ of
   ExprInt _ _ -> true
   ExprNumber _ _ -> true
   _ -> false
+
+relationalOperators :: Set Operator
+relationalOperators =
+  Set.fromFoldable $
+    [ "=="
+    , "/="
+    , "<"
+    , "<="
+    , ">"
+    , ">="
+    ]
+      <#> Operator
+
+fastOperators :: Set Operator
+fastOperators =
+  Set.union relationalOperators
+    $ Set.singleton
+    $ Operator "<>"
+
+-- | A fast expression is one that can provably complete quickly
+-- | - Terminates (no infinite recursion)
+-- | - Therefore does not make a function call or use an operator
+-- |   - Which may traverse a large structure inside
+-- |   - or recurse
+isFast ∷ forall e. Expr e → Boolean
+isFast = case _ of
+  ExprIdent _ -> true
+  ExprConstructor _ -> true -- ??? Uh Oh!!! Assumed
+  ExprBoolean _ _ -> true
+  ExprChar _ _ -> true
+  ExprString _ _ -> true
+  ExprInt _ _ -> true
+  ExprNumber _ _ -> true
+  ExprSection _ -> true
+
+  ExprNegate _ e -> isFast e
+  ExprParens (Wrapped { value }) -> isFast value
+  ExprTyped e _ _ -> isFast e
+  ExprRecordAccessor ({ expr }) -> isFast expr
+  ExprArray (Wrapped { value: Nothing }) -> true
+  ExprArray (Wrapped { value: Just exprs }) -> Array.all isFast $ Separated.values exprs
+  ExprRecord (Wrapped { value: Nothing }) -> true
+  ExprRecord (Wrapped { value: Just exprs }) ->
+    Array.all isFast
+      $ Array.mapMaybe
+          case _ of
+            RecordField _ _ expr -> Just expr
+            _ -> Nothing
+      $ Separated.values exprs
+  ExprIf x -> isFast x.cond && isFast x.true && isFast x.false
+  ExprRecordUpdate expr (Wrapped { value: updates }) ->
+    isFast expr && (Array.all isFast $ recordUpdateExprs =<< Separated.values updates)
+  ExprApp (ExprConstructor _) appSpineNES -> Array.all isFast $ mapMaybe appTerm $ NonEmptyArray.toArray appSpineNES
+  ExprApp _ _ -> false -- all other function calls are considered probably slow
+  ExprOp exprX operatorExprNES ->
+    if not isFast exprX then false
+    else
+      case NonEmptyArray.toArray operatorExprNES of
+        [ Tuple (QualifiedName { name: operatorName }) exprY ] ->
+          (Set.member operatorName fastOperators) && isFast exprY
+        _ -> false
+
+  ExprHole _ -> false
+  ExprInfix _ _ -> false
+  ExprOpName _ -> false
+  ExprLambda _ -> false
+  ExprDo _ -> false
+  ExprAdo _ -> false
+  ExprError _ -> false
+
+  -- TODO: Both Case and Let could possibly be fast. Just not bothering to check yet.
+  ExprCase _ -> false
+  ExprLet _ -> false
 
 exprIdent :: forall e13. Expr e13 -> Maybe (QualifiedName Ident)
 exprIdent = case _ of
@@ -58,7 +133,7 @@ allParenthesis = case _ of
   ExprParens x -> [ x ]
   expr -> label expr # _.childKinds >>= snd >>= allParenthesis
 
-appTerm ∷ AppSpine Expr Void → Maybe (Expr Void)
+appTerm ∷ forall e. AppSpine Expr e → Maybe (Expr e)
 appTerm = case _ of
   AppType _ _ -> Nothing
   AppTerm expr -> Just expr
@@ -84,7 +159,7 @@ whereExprs (Where { expr: expr', bindings }) = [ expr' ] <> (letBindingExprs =<<
 patternGuardExprs :: PatternGuard Void -> Array (Expr Void)
 patternGuardExprs (PatternGuard { expr: expr' }) = [ expr' ]
 
-recordUpdateExprs :: RecordUpdate Void -> Array (Expr Void)
+recordUpdateExprs :: forall e. RecordUpdate e -> Array (Expr e)
 recordUpdateExprs = case _ of
   RecordUpdateLeaf _ _ expr' -> [ expr' ]
   RecordUpdateBranch _ (Wrapped { value }) ->

@@ -60,24 +60,39 @@ useGuardOverIfThenElseMEmpty = ModuleRule.mkWithNoConfig
   { name: "UseGuardOverIfThenElseMEmpty"
   , category: Style
   , description:
-      "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch. This is similar to using `when EXPR TRUE` rather than `if EXPR then TRUE else pure unit` when working the applicatives."
+      """Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch.
+
+This rule ONLY applies when the TRUE branch is considered a quickly executing expression. Expressions are considered quickly executing if they do not make function calls.
+The reason expressions must be quickly executing is that the TRUE branch always evaluates when using `guard` and if that is slow you are better off using `if/then/else` which
+delays execution until necessary.
+
+This is similar to using `when EXPR TRUE` rather than `if EXPR then TRUE else pure unit` when working the applicatives.
+"""
   , examples:
       { includeModuleHeader: false
       , failingCode:
           [ "x = if 1 == 2 then [ 1, 2, 3 ] else mempty"
           , "x = if 1 == 2 then [ 1, 2, 3 ] else []"
           , "x = if 1 == 2 then \"Hello\" else \"\""
+          , "x = if 1 == 2 then [ { x: 10 } ] else []"
+          , "x = if 1 == 2 then [ { x: [ 10 ] } ] else []"
+          , "x = if 1 == 2 then [ { x: Apples 10 } ] else []"
+          , "x = if 1 == 2 then f <> g else []"
           ]
       , passingCode:
           [ "x = guard (1 == 2) [ 1, 2, 3 ]"
           , "x = guard (1 == 2) \"Hello\""
           , "x = if 1 == 2 then [ 1, 2, 3 ] else [ 4, 5 ]"
           , "x = if 1 == 2 then [ 1, 2, 3 ] else f 10"
+          , "x = if 1 == 2 then f 10 else []"
+          , "x = if 1 == 2 then [ { x: Apples $ f 10 } ] else [] -- function call to `f` makes this slow so guard is not recommended"
+          , "x = if 1 == 2 then [ { x: Apples 10 $ f 10 } ] else [] -- function call to `f` makes this slow so guard is not recommended"
+          , "x = if 1 == 2 then f <> g 10 else [] -- function call to `g` makes this slow so guard is not recommended"
           ]
       }
   , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
-      ExprIf { keyword: { range: sourceRange }, false: elseExpr } ->
-        guard (isMempty elseExpr)
+      ExprIf { keyword: { range: sourceRange }, true: trueExpr, false: elseExpr } ->
+        guard ((isMempty elseExpr) && Expr.isFast trueExpr)
           [ { message: "Use `guard` when there is a `mempty` in the `else` expression.", sourceRange } ]
       _ -> []
   }
@@ -87,7 +102,12 @@ useGuardOverIfThenMemptyElse = ModuleRule.mkWithNoConfig
   { name: "UseGuardOverIfThenMEmptyElse"
   , category: Style
   , description:
-      "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial."
+      """Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial.
+
+This rule ONLY applies when the FALSE branch is considered a "quickly executing expression". Expressions are considered quickly executing if they do not make function calls.
+The reason expressions must be quickly executing is that the expression always evaluates when using `guard` and if that is slow you are better off using `if/then/else` which
+delays execution until necessary.
+      """
   , examples:
       { includeModuleHeader: false
       , failingCode:
@@ -103,8 +123,8 @@ useGuardOverIfThenMemptyElse = ModuleRule.mkWithNoConfig
           ]
       }
   , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
-      ExprIf { keyword: { range: sourceRange }, true: thenExpr } ->
-        guard (isMempty thenExpr)
+      ExprIf { keyword: { range: sourceRange }, false: falseExpr, true: trueExpr } ->
+        guard ((isMempty trueExpr) && Expr.isFast falseExpr)
           [ { message: "Invert the condition (not) and use `guard` when there is a `mempty` in the `then` expression.", sourceRange } ]
       _ -> []
   }
