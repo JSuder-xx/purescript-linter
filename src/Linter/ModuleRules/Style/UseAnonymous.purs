@@ -18,12 +18,16 @@ import PureScript.CST.Expr as Expr
 import PureScript.CST.QualifiedName as QualifiedName
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
-import PureScript.CST.Types (Expr(..), Ident(..), Name(..), QualifiedName, RecordLabeled(..), RecordUpdate(..), Wrapped(..))
+import PureScript.CST.Types (Expr(..), Ident(..), Name(..), Operator(..), QualifiedName(..), RecordLabeled(..), RecordUpdate(..), Wrapped(..))
 
 forOperations :: ModuleRule.ModuleRule
-forOperations = ModuleRule.mkWithNoConfig
+forOperations = ModuleRule.mkModuleRule
   { name: "UseAnonymous-ForOperations"
-  , description: "It is easier to read a wildcard operations than a lambda."
+  , description:
+      """It can be easier to read a wildcard operation than a lambda when the lambda body consists of a single binary operation.
+
+With the default configuration this rule only applies to relational operations such as `<`, `<=`, `>`, `>=`.
+"""
   , category: Style
   , examples:
       { includeModuleHeader: false
@@ -34,11 +38,13 @@ forOperations = ModuleRule.mkWithNoConfig
       , passingCode:
           [ "x = (_ < 10)"
           , "x = \\s -> M.s < 10"
+          , "x = \\s -> s <???> 10 -- the <???> operator is not a known relational operator"
           , "x = filter (_ < 10) [ 1, 2, 3 ]"
           , "x = \\a' -> guard (a' `op` to) $> a'"
           ]
       }
-  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
+  , defaultConfig: [ "<", "<=", ">", ">=" ]
+  , moduleIssueIdentifier: \operatorNames _ -> expressionIssueIdentifier $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
           # Binder.lastVariables'
@@ -47,19 +53,21 @@ forOperations = ModuleRule.mkWithNoConfig
                   case body of
                     ExprOp leftExpr opExpresions ->
                       case restArguments, NonEmptyArray.toArray opExpresions of
-                        [], [ Tuple _ rightExpr ] ->
-                          let
-                            identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
-                            leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
-                            rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
-                            checkIdentifier = foldMap \ident ->
-                              guard (ident == firstArgument.name)
-                                [ { message: "Lambda can be re-written using wildcards by replacing '" <> unwrap ident <> "' with _. This may require wrapping the expression in parenthesis.", sourceRange: rangeOf lambda } ]
-                          in
-                            guard ((identifierCount firstArgument.name) == 1) $ fold
-                              [ checkIdentifier leftIdent'
-                              , checkIdentifier rightIdent'
-                              ]
+                        [], [ Tuple (QualifiedName { name: Operator operatorName }) rightExpr ] ->
+                          if not Array.elem operatorName operatorNames then []
+                          else
+                            let
+                              identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
+                              leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
+                              rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
+                              checkIdentifier = foldMap \ident ->
+                                guard (ident == firstArgument.name)
+                                  [ { message: "Lambda with binary operation '" <> operatorName <> "' in the body can be re-written using wildcards by replacing '" <> unwrap ident <> "' with _. This may require wrapping the expression in parenthesis.", sourceRange: rangeOf lambda } ]
+                            in
+                              guard ((identifierCount firstArgument.name) == 1) $ fold
+                                [ checkIdentifier leftIdent'
+                                , checkIdentifier rightIdent'
+                                ]
                         _, _ -> []
                     _ -> []
               )

@@ -54,9 +54,7 @@ recommendedRules =
   , NoDuplicateTypeclassConstraints.rule
   , UnnecessaryDo.rule
   , UnnecessaryParenthesis.rule
-  , UseAnonymous.forOperations
   , UseAnonymous.forRecordUpdates
   , UseAnonymous.forRecordCreation
-  , UseForallSymbol.rule
   , UsePunning.rule
   ]
