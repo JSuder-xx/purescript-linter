@@ -1,3 +1,5 @@
+### NEXT RELEASE
+
 ### 0.2.14 (2024-02-21)
 
 - Fixed: Monoid simplification rules recommending `guard` applied to situations where `guard` could have been slow and therefore not desirable.
