@@ -18,12 +18,9 @@ import PureScript.CST.Types (Expr(..), Ident(..), Operator(..), QualifiedName(..
 
 replaceMaybeMemptyWithFoldMap :: ModuleRule.ModuleRule
 replaceMaybeMemptyWithFoldMap = ModuleRule.mkWithNoConfig
-  { name: "ReplaceMaybeMemptyWithFoldMap"
+  { name: "Monoid.ReplaceMaybeMemptyWithFoldMap"
   , category: Style
-  , description:
-      """
-Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention.
-  """
+  , description: "Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention."
   , examples:
       { includeModuleHeader: false
       , failingCode:
@@ -57,7 +54,7 @@ Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly 
 
 useGuardOverIfThenElseMEmpty :: ModuleRule.ModuleRule
 useGuardOverIfThenElseMEmpty = ModuleRule.mkWithNoConfig
-  { name: "UseGuardOverIfThenElseMEmpty"
+  { name: "Monoid.ReplaceIfThenElseMEmptyWithGuard"
   , category: Style
   , description:
       """Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \"interested\" in the false branch.
@@ -66,8 +63,7 @@ This rule ONLY applies when the TRUE branch is considered a quickly executing ex
 The reason expressions must be quickly executing is that the TRUE branch always evaluates when using `guard` and if that is slow you are better off using `if/then/else` which
 delays execution until necessary.
 
-This is similar to using `when EXPR TRUE` rather than `if EXPR then TRUE else pure unit` when working the applicatives.
-"""
+This is similar to using `when EXPR TRUE` rather than `if EXPR then TRUE else pure unit` when working the applicatives."""
   , examples:
       { includeModuleHeader: false
       , failingCode:
@@ -99,15 +95,14 @@ This is similar to using `when EXPR TRUE` rather than `if EXPR then TRUE else pu
 
 useGuardOverIfThenMemptyElse :: ModuleRule.ModuleRule
 useGuardOverIfThenMemptyElse = ModuleRule.mkWithNoConfig
-  { name: "UseGuardOverIfThenMEmptyElse"
+  { name: "Monoid.ReplaceIfthenMEmptyElseWithGuard"
   , category: Style
   , description:
       """Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial.
 
 This rule ONLY applies when the FALSE branch is considered a "quickly executing expression". Expressions are considered quickly executing if they do not make function calls.
 The reason expressions must be quickly executing is that the expression always evaluates when using `guard` and if that is slow you are better off using `if/then/else` which
-delays execution until necessary.
-      """
+delays execution until necessary."""
   , examples:
       { includeModuleHeader: false
       , failingCode:
@@ -131,14 +126,12 @@ delays execution until necessary.
 
 useFoldForRepeatedMappends :: ModuleRule.ModuleRule
 useFoldForRepeatedMappends = ModuleRule.mkWithNoConfig
-  { name: "UseFoldForRepeatedMappends"
+  { name: "Monoid.ReplaceRepeatedMappendsWithFold"
   , category: Style
   , description:
-      """
-Using `fold`
+      """Using `fold`
 1. Removes the need for parenthesis which reduces lexical noise.
-2. Is more succinct, in terms of characters, when there are 8 or more mappends.
-  """
+2. Is more succinct, in terms of characters, when there are 8 or more mappends."""
   , examples:
       { includeModuleHeader: false
       , failingCode:

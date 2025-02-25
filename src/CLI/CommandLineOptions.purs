@@ -23,6 +23,7 @@ data RunMode
   = InitConfig
   | ShowRulesAsAnsi
   | ShowRulesAsMarkdown
+  | GenerateRuleJsonSchema
   | LintAllFiles
   | LintSingleFile NonEmptyString
 
@@ -42,7 +43,7 @@ commandLineOptionsParser = ado
     [ long "config"
     , short 'c'
     , help "Path to the configuration file. This can be used to override the config file. If excluded then the default 'lint.config.json' is used."
-    , value $ NonEmptyString "lint.config.json"
+    , value $ NonEmptyString "purs-lint.json"
     ]
   runMode <- runModeParser
   in { runMode, configFile }
@@ -57,6 +58,12 @@ runModeParser =
           ]
       )
   )
+    <|>
+      ( flag' GenerateRuleJsonSchema $ fold
+          [ long "rule-json-schema"
+          , help "INTERNAL USE: This emits the json schema for the `rules` property."
+          ]
+      )
     <|>
       ( flag' ShowRulesAsAnsi $ fold
           [ long "show"

@@ -18,8 +18,7 @@ rule = ModuleRule.mkWithNoConfig
 
 This rule identifies
 - Unnecessary parenthesis in type declarations.
-- SOME of the cases of unnecessary parenthesis in expressions. It is nowhere near as robust as hlint.
-"""
+- SOME of the cases of unnecessary parenthesis in expressions. It is nowhere near as robust as hlint."""
   , category: Style
   , examples:
       { includeModuleHeader: false

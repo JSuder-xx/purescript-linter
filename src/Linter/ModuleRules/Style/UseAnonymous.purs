@@ -2,6 +2,8 @@ module Linter.ModuleRules.Style.UseAnonymous (forOperations, forRecordUpdates, f
 
 import Prelude
 
+import Data.Argonaut (encodeJson)
+import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (fold, foldMap)
@@ -10,6 +12,7 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Newtype (un, unwrap)
 import Data.Tuple (Tuple(..))
+import Foreign.Object as Object
 import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Binder as Binder
@@ -22,11 +25,11 @@ import PureScript.CST.Types (Expr(..), Ident(..), Name(..), Operator(..), Qualif
 
 forOperations :: ModuleRule.ModuleRule
 forOperations = ModuleRule.mkModuleRule
-  { name: "UseAnonymous-ForOperations"
+  { name: "UseAnonymous.BinaryOperations"
   , description:
       """It can be easier to read a wildcard operation than a lambda when the lambda body consists of a single binary operation.
 
-With the default configuration this rule only applies to relational operations such as `<`, `<=`, `>`, `>=`.
+With the default configuration this rule only applies to relational operations such as `<`, `<=`, `>`, `>=`, and `<>`.
 """
   , category: Style
   , examples:
@@ -43,7 +46,11 @@ With the default configuration this rule only applies to relational operations s
           , "x = \\a' -> guard (a' `op` to) $> a'"
           ]
       }
-  , defaultConfig: [ "<", "<=", ">", ">=" ]
+  , defaultConfig: [ "<", "<=", ">", ">=", "<>" ]
+  , configJsonSchema: Object.fromHomogeneous
+      { type: encodeString "array"
+      , items: encodeJson { "type": "string", "description": "A binary operator that should be recommended for wildcard usage." }
+      }
   , moduleIssueIdentifier: \operatorNames _ -> expressionIssueIdentifier $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders
@@ -77,7 +84,7 @@ With the default configuration this rule only applies to relational operations s
 
 forRecordUpdates :: ModuleRule.ModuleRule
 forRecordUpdates = ModuleRule.mkWithNoConfig
-  { name: "UseAnonymous-ForRecordUpdates"
+  { name: "UseAnonymous.RecordUpdates"
   , category: Style
   , description: "It is easier to read a wildcard record update than a lambda."
   , examples:
@@ -136,8 +143,11 @@ forRecordUpdates = ModuleRule.mkWithNoConfig
 
 forRecordCreation :: ModuleRule.ModuleRule
 forRecordCreation = ModuleRule.mkWithNoConfig
-  { name: "UseAnonymous-ForRecordCreation"
-  , description: "It is easier to read a wildcard record creation than to visually tie the arguments to the fields where they are used."
+  { name: "UseAnonymous.RecordCreation"
+  , description:
+      """It can be easier to read a wildcard record creation than to visually tie the arguments to the fields where they are used.
+
+For example `\firstName lastName -> { firstName, middleInitial: "", lastName, suffix: "" }` could be re-written `{ firstName: _, middleInitial: "", lastName: _, suffix: "" }`."""
   , category: Style
   , examples:
       { includeModuleHeader: false

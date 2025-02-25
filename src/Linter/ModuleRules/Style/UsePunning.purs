@@ -18,8 +18,7 @@ rule = ModuleRule.mkWithNoConfig
       """Punning is easier to read because it reduces the noise of unnecessary repetition. By removing unnecessary repetition, true differences stand out more.
 
 For example, can you spot the difference in `{ alice: alice, bob: bob, cindy: cindy', dave: dave }`?
-Now with punning that is `{ alice, bob, cindy: cindy', dave }`.
-  """
+Now with punning that is `{ alice, bob, cindy: cindy', dave }`."""
   , category: Style
   , examples:
       { includeModuleHeader: false

@@ -14,8 +14,7 @@ rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "RecordFormatting"
   , category: Formatting
-  , description:
-      "Ensures consistent spacing when declaring a record literal."
+  , description: "Ensures consistent spacing when declaring a record literal."
   , examples:
       { includeModuleHeader: false
       , failingCode

@@ -9,7 +9,7 @@ import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
 import CLI.Reporter (Reporter)
 import CLI.Reporter.Console as Reporter.Console
-import Data.Argonaut (parseJson, printJsonDecodeError, stringifyWithIndent)
+import Data.Argonaut (encodeJson, parseJson, printJsonDecodeError, stringify, stringifyWithIndent)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Bifunctor (lmap)
@@ -62,8 +62,9 @@ cli = do
       if fileNameExists then liftEffect $ Console.error $ fileName <> " already exists."
       else contentsToFilePath
         { fileName
-        , contents: stringifyWithIndent 2 $ AppConfig.encodeDefault recommendedRules
+        , contents: stringifyWithIndent 2 $ encodeJson $ AppConfig.defaultAppConfg recommendedRules
         }
+    GenerateRuleJsonSchema -> log $ stringify $ AppConfig.rulesSchema allModuleRules
     ShowRulesAsMarkdown -> do
       log "# Rules"
       showRules
@@ -129,7 +130,7 @@ Use these rules when unable to use a formatter in your codebase. For example, pe
       # (parseJson >>> lmap printJsonDecodeError >=> (AppConfig.decode >>> lmap printJsonDecodeError) >=> AppConfig.rawToProcessed allModuleRules)
       # either
           (liftEffect <<< Console.error <<< \decodeError -> "Error decoding '" <> configFilename <> "'\n" <> decodeError)
-          \appConfig -> runLinter { cwd } files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { hideSuccess: appConfig.hideSuccess }
+          \appConfig -> runLinter { cwd } files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { verbosity: appConfig.verbosity }
 
 simplifyPath :: String -> String -> String
 simplifyPath cwd filePath = filePath # String.stripPrefix (Pattern cwd) # maybe filePath ("." <> _)
@@ -149,9 +150,10 @@ runLinter { cwd } { singleFile' } { ruleSets, projectRoots } reporter = do
   { warnings, filesMap } <- findAllFiles
   for_ warnings $ liftEffect <<< reporter.error
   fileResults <- for (Map.toUnfoldable filesMap) \(Tuple filePath rules) -> do
-    liftEffect reporter.indicateFileProcessed
-    filePathToContents filePath <#> \content ->
+    results <- filePathToContents filePath <#> \content ->
       { filePath, issues: findIssues filePath rules $ parseModule content }
+    liftEffect $ reporter.indicateFileProcessed results
+    pure results
   endNow <- liftEffect now
   liftEffect $ reporter.report (Instant.diff endNow startNow) $ fileResults <#> \r -> r { filePath = simplifyPath cwd r.filePath }
   where

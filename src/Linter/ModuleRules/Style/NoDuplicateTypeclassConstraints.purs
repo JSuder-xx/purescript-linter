@@ -21,8 +21,7 @@ rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "NoDuplicateTypeclassConstraints"
   , category: Style
-  , description:
-      "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."
+  , description: "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."
   , examples:
       { includeModuleHeader: false
       , failingCode:

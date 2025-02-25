@@ -1,5 +1,6 @@
 {
-  "hideSuccess": true,
+  "$schema": "purs-lint.schema.json",
+  "verbosity": "Brief",
   "indentSpaces": 2,
   "projectRoots": [
     {
@@ -17,8 +18,8 @@
         "Application.InArray.IndentArguments": null,
         "Application.InRecord.IndentArguments": null,
         "ArrayFormatting": null,
-        "IfThenElseLeftAligned": null,
-        "ModuleImportQualification": [
+        "IfThenElse.LeftAligned": null,
+        "ModuleImports.RequireQualification": [
           {
             "import": "fromFoldable|toUnfoldable|fromString|singleton|member|over|set|get",
             "module": "Data.Array.NonEmpty",
@@ -34,18 +35,19 @@
         "NoUnnecessaryDo": null,
         "NoUnnecessaryParenthesis": null,
         "RecordFormatting": null,
-        "ReplaceMaybeMemptyWithFoldMap": null,
-        "UseAnonymous-ForOperations": [
+        "Monoid.ReplaceMaybeMemptyWithFoldMap": null,
+        "UseAnonymous.BinaryOperations": [
           ">",
           ">=",
           "<",
-          "<="
+          "<=",
+          "<>"
         ],
-        "UseAnonymous-ForRecordCreation": null,
-        "UseAnonymous-ForRecordUpdates": null,
-        "UseFoldForRepeatedMappends": null,
-        "UseGuardOverIfThenElseMEmpty": null,
-        "UseGuardOverIfThenMEmptyElse": null,
+        "UseAnonymous.RecordCreation": null,
+        "UseAnonymous.RecordUpdates": null,
+        "Monoid.ReplaceRepeatedMappendsWithFold": null,
+        "Monoid.ReplaceIfThenElseMEmptyWithGuard": null,
+        "Monoid.ReplaceIfthenMEmptyElseWithGuard": null,
         "UsePunning": null
       }
     }

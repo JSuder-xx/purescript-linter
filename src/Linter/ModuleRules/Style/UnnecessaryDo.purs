@@ -16,11 +16,9 @@ rule = ModuleRule.mkWithNoConfig
   { name: "NoUnnecessaryDo"
   , category: Style
   , description:
-      """
-A Monadic bind followed by a pure is actually a Functor map. It is more truthful to represent this as a narrower Functor map.
+      """A Monadic bind followed by a pure is actually a Functor map. It is more truthful to represent this as a narrower Functor map.
 
-A `do` with no binds and no let declarations is unnecessary. Readers should expect a sequence of monadic binds when they see the `do` keyword.
-  """
+A `do` with no binds and no let declarations is unnecessary. Readers should expect a sequence of monadic binds when they see the `do` keyword."""
   , examples:
       { includeModuleHeader: false
       , failingCode:

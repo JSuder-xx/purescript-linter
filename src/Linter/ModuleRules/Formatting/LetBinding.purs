@@ -12,12 +12,9 @@ import PureScript.CST.Types (DoStatement(..), Expr(..))
 
 compact :: ModuleRule.ModuleRule
 compact = ModuleRule.mkWithNoConfig
-  { name: "LetBinding-VerticalCompact"
+  { name: "LetBinding.VerticalCompact"
   , category: Formatting
-  , description:
-      """
-This let formatting rule prioritizes conservation of vertical space.
-  """
+  , description: "This let formatting rule prioritizes conservation of vertical space."
   , examples:
       { includeModuleHeader: false
       , failingCode:

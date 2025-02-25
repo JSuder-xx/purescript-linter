@@ -1,5 +1,8 @@
 ### NEXT RELEASE
 
+- Added verbosity level to reporting.
+- Chose less ambiguous filename for config, added JSON Schema for `purs-lint.json`, and normalized rule names (BREAKING CHANGE).
+
 ### 0.2.14 (2024-02-21)
 
 - Fixed: Monoid simplification rules recommending `guard` applied to situations where `guard` could have been slow and therefore not desirable.

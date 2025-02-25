@@ -2,6 +2,8 @@ module Linter.ModuleRules.Style.ModuleImports where
 
 import Prelude
 
+import Data.Argonaut (encodeJson)
+import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array as Array
 import Data.Foldable (fold, foldMap)
 import Data.Maybe (maybe')
@@ -11,6 +13,7 @@ import Data.String.Regex (Regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
 import Data.Tuple (Tuple(..))
+import Foreign.Object as Object
 import Linter.ModuleRule (ModuleRule, RuleCategory(..), mkModuleRule, moduleIssueIdentifier)
 import PureScript.CST.Import as Import
 import PureScript.CST.Range (rangeOf)
@@ -20,7 +23,7 @@ import PureScript.CST.Types as CST
 
 qualification :: ModuleRule
 qualification = mkModuleRule
-  { name: "ModuleImportQualification"
+  { name: "ModuleImports.RequireQualification"
   , description:
       """Use this rule to ensure that developers
 - Are not importing functions, values, and types with ambiguous names ex. `fromFoldable` is available for many container types such that a lack of qualification is confusing.
@@ -47,6 +50,28 @@ qualification = mkModuleRule
             , "import Data.Array (fromFoldable) as Arr" -- qualified but with the wrong qualification name
             , "import Data.List.Lazy (fromFoldable) as List" -- qualified but with the wrong qualification name
             ]
+      }
+  , configJsonSchema: Object.fromHomogeneous
+      { "type": encodeString "array"
+      , "items": encodeJson
+          { type: "object"
+          , additionalProperties: false
+          , required: [ "module", "import", "qualifyAs" ]
+          , properties:
+              { module:
+                  { type: "string"
+                  , description: "A Regular Expression used to match on the module."
+                  }
+              , import:
+                  { type: "string"
+                  , description: "A Regular Expression that matches on things imported."
+                  }
+              , qualifyAs:
+                  { type: "string"
+                  , description: "Determines the expected qualification for any matched modules. NOTE: You can use RegEx replacement variables for anything captured by the `module` RegEx."
+                  }
+              }
+          }
       }
   , defaultConfig:
       [ { module: exampleRegex $ fold

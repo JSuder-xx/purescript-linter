@@ -9,6 +9,7 @@ module Linter.ModuleRule
   , RuleCategory(..)
   , SystemConfig
   , category
+  , configJsonSchema
   , declarationIssueIdentifierInModule
   , decodeMkModuleIssueIdentifier
   , defaultConfigJson
@@ -27,9 +28,12 @@ module Linter.ModuleRule
 import Prelude
 
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, JsonDecodeError, decodeJson, encodeJson)
+import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either)
+import Foreign.Object (Object)
+import Foreign.Object as Object
 import PureScript.CST.Expr as Expr
 import PureScript.CST.Fold (OnModule, OnPureScript)
 import PureScript.CST.Traversal (foldMapModule)
@@ -47,6 +51,7 @@ type ModuleRule' ruleConfig =
   , description :: String
   , category :: RuleCategory
   , examples :: Examples
+  , configJsonSchema :: Object Json
   , defaultConfig :: ruleConfig
   , moduleIssueIdentifier :: ruleConfig -> MkModuleIssueIdentifier
   }
@@ -80,7 +85,9 @@ type Examples =
 
 -- | Make a rule that features a custom configuration.
 mkModuleRule :: forall ruleConfig. EncodeJson ruleConfig => DecodeJson ruleConfig => ModuleRule' ruleConfig -> ModuleRule
-mkModuleRule rule = ModuleRule \extract -> extract rule
+mkModuleRule r = ModuleRule \extract -> extract rule
+  where
+  rule = r { configJsonSchema = Object.insert "description" (encodeString r.description) r.configJsonSchema }
 
 -- | Make a rule that does not store any custom configuration. The rule is still be given the system-wide configuration.
 mkWithNoConfig
@@ -97,6 +104,10 @@ mkWithNoConfig s =
     , examples: s.examples
     , category: s.category
     , description: s.description
+    , configJsonSchema: Object.fromHomogeneous
+        { type: encodeString "null"
+        , description: encodeString s.description
+        }
     , defaultConfig: unit
     , moduleIssueIdentifier: const s.moduleIssueIdentifier
     }
@@ -106,6 +117,9 @@ unModuleRule f (ModuleRule rule) = rule f
 
 name :: ModuleRule -> String
 name = unModuleRule _.name
+
+configJsonSchema :: ModuleRule -> Object Json
+configJsonSchema = unModuleRule _.configJsonSchema
 
 description :: ModuleRule -> String
 description = unModuleRule _.description

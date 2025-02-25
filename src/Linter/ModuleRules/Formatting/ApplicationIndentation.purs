@@ -17,11 +17,9 @@ inArray = ModuleRule.mkWithNoConfig
   { name: "Application.InArray.IndentArguments"
   , category: Formatting
   , description:
-      """
-This very limited rule ensures proper function call argument indentation when the function call is made inside an array.
+      """This very limited rule ensures proper function call argument indentation when the function call is made inside an array.
 
-While limited, this rule helps with the formatting of function calls in render functions.
-  """
+While limited, this rule helps with the formatting of function calls in render functions."""
   , examples:
       { includeModuleHeader: false
       , failingCode:
@@ -107,10 +105,7 @@ inRecord :: ModuleRule
 inRecord = ModuleRule.mkWithNoConfig
   { name: "Application.InRecord.IndentArguments"
   , category: Formatting
-  , description:
-      """
-This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal.
-  """
+  , description: "This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal."
   , examples:
       { includeModuleHeader: false
       , failingCode:

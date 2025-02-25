@@ -9,7 +9,7 @@ import PureScript.CST.Types (Expr(..))
 
 ifThenElseLeftAligned :: ModuleRule.ModuleRule
 ifThenElseLeftAligned = ModuleRule.mkWithNoConfig
-  { name: "IfThenElseLeftAligned"
+  { name: "IfThenElse.LeftAligned"
   , category: Formatting
   , description: "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."
   , examples:

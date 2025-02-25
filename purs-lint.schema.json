@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "verbosity": {
+      "type": "string",
+      "enum": [
+        "Quiet",
+        "Brief",
+        "Verbose"
+      ],
+      "default": "Quiet",
+      "description": "Quiet - Only errors are shown.\nBrief - Abbreviated progress, errors, and a summary.\nVerbose - Detailed progress, errors, and a summary."
+    },
+    "indentSpaces": {
+      "type": "integer",
+      "default": 2,
+      "description": "The amount of indentation to expect. This is mostly used by formatting rules."
+    },
+    "projectRoots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/projectRoot"
+      },
+      "description": "A list of directories and their module prefix which is used to verify that Module names are consistent with their File Path."
+    },
+    "ruleSets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ruleSet"
+      },
+      "minItems": 1,
+      "description": "An array of Rule Sets where a Rule Set consistens of file path matching globs and the set of rules that will be run against those files."
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "ruleSets"
+  ],
+  "definitions": {
+    "ruleSet": {
+      "type": "object",
+      "properties": {
+        "globs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": "./src/**/*.purs"
+          },
+          "minItems": 1,
+          "description": "Identify the files to which these rules will apply via an array of globs."
+        },
+        "rules": {
+          "$ref": "#/definitions/rules"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "globs",
+        "rules"
+      ]
+    },
+    "projectRoot": {
+      "type": "object",
+      "properties": {
+        "pathPrefix": {
+          "type": "string",
+          "default": "src",
+          "description": "This is a file path off the current working directory in which to verify Modules names match their file path."
+        },
+        "modulePrefix": {
+          "type": "string",
+          "default": "",
+          "description": "The Module prefix that should be expected for all modules under the path prefix. For example, if `Foo` and the `pathPrefix` is `src` then the filepath at `src/Main.purs` should have a module name of `Foo.Main`."
+        }
+      },
+      "required": [
+        "pathPrefix",
+        "modulePrefix"
+      ],
+      "additionalProperties": false
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "AlignedParenthesis": {
+          "type": "null",
+          "description": "Aligning Parentheses helps the reader visually parse the two tokens."
+        },
+        "Application.InArray.IndentArguments": {
+          "type": "null",
+          "description": "This very limited rule ensures proper function call argument indentation when the function call is made inside an array.\n\nWhile limited, this rule helps with the formatting of function calls in render functions."
+        },
+        "Application.InRecord.IndentArguments": {
+          "type": "null",
+          "description": "This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal."
+        },
+        "ArrayFormatting": {
+          "type": "null",
+          "description": "Ensures consistent spacing when declaring an array literal."
+        },
+        "IfThenElse.LeftAligned": {
+          "type": "null",
+          "description": "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."
+        },
+        "LetBinding.VerticalCompact": {
+          "type": "null",
+          "description": "This let formatting rule prioritizes conservation of vertical space."
+        },
+        "ModuleExports.Required": {
+          "type": "null",
+          "description": "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
+        },
+        "ModuleImports.RequireQualification": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "module",
+              "import",
+              "qualifyAs"
+            ],
+            "properties": {
+              "qualifyAs": {
+                "type": "string",
+                "description": "Determines the expected qualification for any matched modules. NOTE: You can use RegEx replacement variables for anything captured by the `module` RegEx."
+              },
+              "module": {
+                "type": "string",
+                "description": "A Regular Expression used to match on the module."
+              },
+              "import": {
+                "type": "string",
+                "description": "A Regular Expression that matches on things imported."
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "Use this rule to ensure that developers\n- Are not importing functions, values, and types with ambiguous names ex. `fromFoldable` is available for many container types such that a lack of qualification is confusing.\n- Are qualifying modules consistently.\n  "
+        },
+        "Monoid.ReplaceMaybeMemptyWithFoldMap": {
+          "type": "null",
+          "description": "Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention."
+        },
+        "Monoid.ReplaceRepeatedMappendsWithFold": {
+          "type": "null",
+          "description": "Using `fold`\n1. Removes the need for parenthesis which reduces lexical noise.\n2. Is more succinct, in terms of characters, when there are 8 or more mappends."
+        },
+        "Monoid.ReplaceIfThenElseMEmptyWithGuard": {
+          "type": "null",
+          "description": "Replacing `if EXPR then TRUE else mempty` with `guard EXPR TRUE` reduces cognitive overhead because the reader should not be \\\"interested\\\" in the false branch.\n\nThis rule ONLY applies when the TRUE branch is considered a quickly executing expression. Expressions are considered quickly executing if they do not make function calls.\nThe reason expressions must be quickly executing is that the TRUE branch always evaluates when using `guard` and if that is slow you are better off using `if/then/else` which\ndelays execution until necessary.\n\nThis is similar to using `when EXPR TRUE` rather than `if EXPR then TRUE else pure unit` when working the applicatives."
+        },
+        "Monoid.ReplaceIfthenMEmptyElseWithGuard": {
+          "type": "null",
+          "description": "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial.\n\nThis rule ONLY applies when the FALSE branch is considered a \"quickly executing expression\". Expressions are considered quickly executing if they do not make function calls.\nThe reason expressions must be quickly executing is that the expression always evaluates when using `guard` and if that is slow you are better off using `if/then/else` which\ndelays execution until necessary."
+        },
+        "NoDuplicateTypeclassConstraints": {
+          "type": "null",
+          "description": "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."
+        },
+        "RecordFormatting": {
+          "type": "null",
+          "description": "Ensures consistent spacing when declaring a record literal."
+        },
+        "NoUnnecessaryDo": {
+          "type": "null",
+          "description": "A Monadic bind followed by a pure is actually a Functor map. It is more truthful to represent this as a narrower Functor map.\n\nA `do` with no binds and no let declarations is unnecessary. Readers should expect a sequence of monadic binds when they see the `do` keyword."
+        },
+        "NoUnnecessaryParenthesis": {
+          "type": "null",
+          "description": "Using parenthesis when unnecessary harms readability with unnecessary noise.\n\nThis rule identifies\n- Unnecessary parenthesis in type declarations.\n- SOME of the cases of unnecessary parenthesis in expressions. It is nowhere near as robust as hlint."
+        },
+        "UseAnonymous.BinaryOperations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "A binary operator that should be recommended for wildcard usage."
+          },
+          "description": "It can be easier to read a wildcard operation than a lambda when the lambda body consists of a single binary operation.\n\nWith the default configuration this rule only applies to relational operations such as `<`, `<=`, `>`, `>=`, and `<>`.\n"
+        },
+        "UseAnonymous.RecordUpdates": {
+          "type": "null",
+          "description": "It is easier to read a wildcard record update than a lambda."
+        },
+        "UseAnonymous.RecordCreation": {
+          "type": "null",
+          "description": "It can be easier to read a wildcard record creation than to visually tie the arguments to the fields where they are used.\n\nFor example `\\firstName lastName -> { firstName, middleInitial: \"\", lastName, suffix: \"\" }` could be re-written `{ firstName: _, middleInitial: \"\", lastName: _, suffix: \"\" }`."
+        },
+        "UseForallSymbol": {
+          "type": "null",
+          "description": "Some projects prefer using the ΓêÇ symbol rather than 'forall' to improve type signature readability and require less typing."
+        },
+        "UsePunning": {
+          "type": "null",
+          "description": "Punning is easier to read because it reduces the noise of unnecessary repetition. By removing unnecessary repetition, true differences stand out more.\n\nFor example, can you spot the difference in `{ alice: alice, bob: bob, cindy: cindy', dave: dave }`?\nNow with punning that is `{ alice, bob, cindy: cindy', dave }`."
+        },
+        "WhereClause.LeftAligned": {
+          "type": "null",
+          "description": "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."
+        }
+      },
+      "description": "An object where the keys are the rule names and the values are the configuration",
+      "additionalProperties": false
+    }
+  }
+}

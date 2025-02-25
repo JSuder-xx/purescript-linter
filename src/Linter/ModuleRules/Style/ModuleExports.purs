@@ -10,7 +10,7 @@ import PureScript.CST.Types as CST
 
 exportsRequired :: ModuleRule.ModuleRule
 exportsRequired = ModuleRule.mkWithNoConfig
-  { name: "ModuleExportsRequired"
+  { name: "ModuleExports.Required"
   , category: Style
   , description:
       "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."

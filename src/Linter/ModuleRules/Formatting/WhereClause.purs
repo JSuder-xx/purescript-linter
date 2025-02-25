@@ -16,7 +16,7 @@ import PureScript.CST.Types (Declaration(..), Guarded(..), Where(..))
 
 whereLeftAligned :: ModuleRule.ModuleRule
 whereLeftAligned = ModuleRule.mkWithNoConfig
-  { name: "WhereClauseLeftAligned"
+  { name: "WhereClause.LeftAligned"
   , category: Formatting
   , description:
       "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."

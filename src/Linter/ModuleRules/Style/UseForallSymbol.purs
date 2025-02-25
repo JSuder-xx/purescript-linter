@@ -11,8 +11,7 @@ rule :: ModuleRule.ModuleRule
 rule = ModuleRule.mkWithNoConfig
   { name: "UseForallSymbol"
   , category: Style
-  , description:
-      "Some projects prefer using the ∀ symbol rather than 'forall' to improve type signature readability and require less typing."
+  , description: "Some projects prefer using the ∀ symbol rather than 'forall' to improve type signature readability and require less typing."
   , examples:
       { includeModuleHeader: false
       , failingCode:
