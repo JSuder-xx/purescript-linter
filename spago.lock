@@ -15,6 +15,7 @@ workspace:
         - prelude
       test_dependencies:
         - spec
+        - spec-node
       build_plan:
         - aff
         - ansi
@@ -80,11 +81,11 @@ workspace:
         - prelude
         - profunctor
         - profunctor-lenses
-        - psci-support
         - record
         - refs
         - safe-coerce
         - spec
+        - spec-node
         - st
         - strings
         - tailrec
@@ -96,13 +97,13 @@ workspace:
         - unsafe-coerce
   package_set:
     address:
-      registry: 53.2.0
+      registry: 63.3.0
     compiler: ">=0.15.15 <0.16.0"
     content:
       abc-parser: 2.0.1
       ace: 9.1.0
       address-rfc2821: 0.1.1
-      aff: 7.1.0
+      aff: 8.0.0
       aff-bus: 6.0.0
       aff-coroutines: 9.0.0
       aff-promise: 4.0.0
@@ -131,7 +132,7 @@ workspace:
       ask: 1.0.0
       assert: 6.0.0
       assert-multiple: 0.4.0
-      avar: 5.0.0
+      avar: 5.0.1
       b64: 0.0.8
       barbies: 1.0.1
       barlow-lens: 0.9.0
@@ -153,7 +154,7 @@ workspace:
       chameleon-transformers: 1.0.0
       channel: 1.0.0
       checked-exceptions: 3.1.1
-      choku: 1.0.1
+      choku: 1.0.2
       classless: 0.1.1
       classless-arbitrary: 0.1.1
       classless-decode-json: 0.1.1
@@ -161,7 +162,7 @@ workspace:
       classnames: 2.0.0
       codec: 6.1.0
       codec-argonaut: 10.0.0
-      codec-json: 1.2.0
+      codec-json: 2.0.0
       colors: 7.0.1
       concur-core: 0.5.0
       concur-react: 0.5.0
@@ -173,6 +174,7 @@ workspace:
       convertable-options: 1.0.0
       coroutines: 7.0.0
       css: 6.0.0
+      css-class-name-extractor: 0.0.4
       css-frameworks: 1.0.1
       csv-stream: 2.3.0
       data-mvc: 0.0.2
@@ -186,21 +188,22 @@ workspace:
       deno: 0.0.5
       dissect: 1.0.0
       distributive: 6.0.0
+      dodo-printer: 2.2.3
       dom-filereader: 7.0.0
       dom-indexed: 12.0.0
       dom-simple: 0.4.0
       dotenv: 4.0.3
       droplet: 0.6.0
       dts: 1.0.0
-      dual-numbers: 1.0.2
+      dual-numbers: 1.0.3
       dynamic-buffer: 3.0.1
       echarts-simple: 0.0.1
       effect: 4.0.0
       either: 6.1.0
-      elmish: 0.11.3
+      elmish: 0.13.0
       elmish-enzyme: 0.1.1
-      elmish-hooks: 0.10.0
-      elmish-html: 0.8.3
+      elmish-hooks: 0.10.3
+      elmish-html: 0.9.0
       elmish-testing-library: 0.3.2
       email-validate: 7.0.0
       encoding: 0.0.9
@@ -212,7 +215,7 @@ workspace:
       exists: 6.0.0
       exitcodes: 4.0.0
       expect-inferred: 3.0.0
-      ezfetch: 1.0.0
+      ezfetch: 1.1.0
       fahrtwind: 2.0.0
       fallback: 0.1.0
       fast-vect: 1.2.0
@@ -251,7 +254,7 @@ workspace:
       generate-values: 1.0.1
       generic-router: 0.0.1
       geojson: 0.0.5
-      geometry-plane: 1.0.3
+      geometria: 2.2.0
       gojs: 0.1.1
       grain: 3.0.0
       grain-router: 3.0.0
@@ -264,7 +267,7 @@ workspace:
       halogen-css: 10.0.0
       halogen-echarts-simple: 0.0.4
       halogen-formless: 4.0.3
-      halogen-helix: 1.0.0
+      halogen-helix: 1.0.1
       halogen-hooks: 0.6.3
       halogen-hooks-extra: 0.9.0
       halogen-infinite-scroll: 1.1.0
@@ -303,19 +306,20 @@ workspace:
       js-date: 8.0.0
       js-fetch: 0.2.1
       js-fileio: 3.0.0
-      js-intl: 1.0.4
+      js-intl: 1.1.4
       js-iterators: 0.1.1
       js-maps: 0.1.2
       js-promise: 1.0.0
       js-promise-aff: 1.0.0
       js-timers: 6.1.0
       js-uri: 3.1.0
+      jsdom: 1.0.0
       json: 1.1.0
       json-codecs: 5.0.0
       justifill: 0.5.0
       jwt: 0.0.9
       labeled-data: 0.2.0
-      language-cst-parser: 0.14.0
+      language-cst-parser: 0.14.1
       lazy: 6.0.0
       lazy-joe: 1.0.0
       lcg: 4.0.0
@@ -366,34 +370,40 @@ workspace:
       node-event-emitter: 3.0.0
       node-execa: 5.0.0
       node-fs: 9.2.0
-      node-glob-basic: 1.3.0
+      node-glob-basic: 2.0.0
       node-http: 9.1.0
       node-http2: 1.1.1
       node-human-signals: 1.0.0
       node-net: 5.1.0
       node-os: 5.1.0
-      node-path: 5.0.0
+      node-path: 5.0.1
       node-process: 11.2.0
       node-readline: 8.1.1
       node-sqlite3: 8.0.0
-      node-stream-pipes: 2.1.4
-      node-streams: 9.0.0
+      node-stream-pipes: 2.1.6
+      node-streams: 9.0.1
       node-tls: 0.3.1
       node-url: 7.0.1
+      node-workerbees: 0.3.1
       node-zlib: 0.4.0
       nonempty: 7.0.0
       now: 6.0.0
       npm-package-json: 2.0.0
       nullable: 6.0.0
-      numberfield: 0.1.0
+      numberfield: 0.2.2
       numbers: 9.0.1
       oak: 3.1.1
       oak-debug: 1.2.2
       object-maps: 0.3.0
       ocarina: 1.5.4
-      open-folds: 6.3.0
-      open-memoize: 6.1.0
-      open-pairing: 6.1.0
+      oooooooooorrrrrrrmm-lib: 0.0.1
+      open-colors-scales-and-schemes: 1.0.0
+      open-folds: 6.4.0
+      open-foreign-generic: 11.0.3
+      open-memoize: 6.2.0
+      open-mkdirp-aff: 1.2.0
+      open-pairing: 6.2.0
+      open-smolder: 12.0.2
       options: 7.0.0
       optparse: 5.0.1
       ordered-collections: 3.2.0
@@ -416,14 +426,16 @@ workspace:
       pointed-list: 0.5.1
       polymorphic-vectors: 4.0.0
       posix-types: 6.0.0
-      postgresql: 2.0.17
+      postgresql: 2.0.20
       precise: 6.0.0
       precise-datetime: 7.0.0
-      prelude: 6.0.1
+      prelude: 6.0.2
       prettier-printer: 3.0.0
+      printf: 0.1.0
+      priority-queue: 0.1.2
       profunctor: 6.0.1
       profunctor-lenses: 8.0.0
-      protobuf: 4.3.0
+      protobuf: 4.4.0
       psa-utils: 8.0.0
       psci-support: 6.0.0
       punycode: 1.0.0
@@ -441,7 +453,8 @@ workspace:
       react-basic: 17.0.0
       react-basic-classic: 3.0.0
       react-basic-dnd: 10.1.0
-      react-basic-dom: 6.1.0
+      react-basic-dom: 7.0.0
+      react-basic-dom-beta: 0.1.1
       react-basic-emotion: 7.1.0
       react-basic-hooks: 8.2.0
       react-basic-storybook: 2.0.0
@@ -479,6 +492,7 @@ workspace:
       selection-foldable: 0.2.0
       selective-functors: 1.0.1
       semirings: 7.0.0
+      shuffle: 1.1.0
       signal: 13.0.0
       simple-emitter: 3.0.1
       simple-i18n: 2.0.1
@@ -487,14 +501,17 @@ workspace:
       simple-ulid: 3.0.0
       sized-matrices: 1.0.0
       sized-vectors: 5.0.2
-      slug: 3.0.8
+      slug: 3.1.0
       small-ffi: 4.0.1
       soundfonts: 4.1.0
-      sparse-matrices: 1.3.0
-      sparse-polynomials: 2.0.5
-      spec: 7.6.0
-      spec-mocha: 5.1.0
-      spec-quickcheck: 5.0.0
+      sparse-matrices: 2.0.1
+      sparse-polynomials: 3.0.1
+      spec: 8.1.1
+      spec-discovery: 8.4.0
+      spec-mocha: 5.1.1
+      spec-node: 0.0.3
+      spec-quickcheck: 5.0.2
+      spec-reporter-xunit: 0.7.1
       splitmix: 2.1.0
       ssrs: 1.0.0
       st: 6.2.0
@@ -510,16 +527,22 @@ workspace:
       systemd-journald: 0.3.0
       tagged: 4.0.2
       tailrec: 6.1.0
+      tanstack-query: 2.0.0
       tecton: 0.2.1
       tecton-halogen: 0.2.0
       test-unit: 17.0.0
       thermite: 6.3.1
       thermite-dom: 0.3.1
       these: 6.0.0
+      threading: 0.0.3
+      tidy: 0.11.1
+      tidy-codegen: 4.0.1
+      tldr: 0.0.0
       toestand: 0.9.0
       transformation-matrix: 1.0.1
       transformers: 6.1.0
       tree-rose: 4.0.2
+      trivial-unfold: 0.1.1
       ts-bridge: 4.0.0
       tuples: 7.0.0
       two-or-more: 1.0.0
@@ -557,7 +580,8 @@ workspace:
       vectors: 2.1.0
       versions: 7.0.0
       visx: 0.0.2
-      web-clipboard: 5.0.0
+      vitest: 1.0.0
+      web-clipboard: 6.0.0
       web-cssom: 2.0.0
       web-cssom-view: 0.1.0
       web-dom: 6.0.0
@@ -585,11 +609,14 @@ workspace:
       webextension-polyfill: 0.1.0
       webgpu: 0.0.1
       which: 2.0.0
+      whine-core: 0.0.28
       xterm: 1.0.0
       yoga-fetch: 1.0.1
       yoga-json: 5.1.0
       yoga-om: 0.1.0
       yoga-postgres: 6.0.0
+      yoga-react-dom: 1.0.1
+      yoga-subtlecrypto: 0.1.0
       yoga-tree: 1.0.0
       z3: 0.0.2
       zipperarray: 2.0.0
@@ -597,10 +624,9 @@ workspace:
 packages:
   aff:
     type: registry
-    version: 7.1.0
-    integrity: sha256-7hOC6uQO9XBAI5FD8F33ChLjFAiZVfd4BJMqlMh7TNU=
+    version: 8.0.0
+    integrity: sha256-5MmdI4+0RHBtSBy+YlU3/Cq4R5W2ih3OaRedJIrVHdk=
     dependencies:
-      - arrays
       - bifunctors
       - control
       - datetime
@@ -699,8 +725,8 @@ packages:
       - unsafe-coerce
   avar:
     type: registry
-    version: 5.0.0
-    integrity: sha256-e7hf0x4hEpcygXP0LtvfvAQ49Bbj2aWtZT3gqM///0A=
+    version: 5.0.1
+    integrity: sha256-f+bRR3qQPa/GVe4UbLQiJBy7+PzJkUCwT6qNn0UlkMY=
     dependencies:
       - aff
       - effect
@@ -999,8 +1025,8 @@ packages:
       - now
   language-cst-parser:
     type: registry
-    version: 0.14.0
-    integrity: sha256-GB5HkoWkgsb1xtdchaq7+CerQTVyene5+aR6RsEZv2w=
+    version: 0.14.1
+    integrity: sha256-LJzh1ZTaKjcrHx95ZfO2La3w6Xb/IZQT3m2Nuj4n1dM=
     dependencies:
       - arrays
       - const
@@ -1126,8 +1152,8 @@ packages:
       - unsafe-coerce
   node-glob-basic:
     type: registry
-    version: 1.3.0
-    integrity: sha256-FxkCAquut+6As+HZp2QWjuWVVMpHDGceJdcSRfqWb3s=
+    version: 2.0.0
+    integrity: sha256-COPsHFpqwFGOBbo3DZ4yQLp5UTNshLcINIV2P3h8g6o=
     dependencies:
       - aff
       - effect
@@ -1146,8 +1172,8 @@ packages:
       - tuples
   node-path:
     type: registry
-    version: 5.0.0
-    integrity: sha256-pd82nQ+2l5UThzaxPdKttgDt7xlsgIDLpPG0yxDEdyE=
+    version: 5.0.1
+    integrity: sha256-ePOElFamHkffhwJcS0Ozq4A14rflnkasFU6X2B8/yXs=
     dependencies:
       - effect
   node-process:
@@ -1166,17 +1192,23 @@ packages:
       - unsafe-coerce
   node-streams:
     type: registry
-    version: 9.0.0
-    integrity: sha256-2n6dq7YWleTDmD1Kur/ul7Cn08IvWrScgPf+0PgX2TQ=
+    version: 9.0.1
+    integrity: sha256-7RJ6RqjOlhW+QlDFQNUHlkCG/CuYTTLT8yary5jhhsU=
     dependencies:
       - aff
+      - arrays
       - effect
       - either
       - exceptions
+      - maybe
       - node-buffer
       - node-event-emitter
       - nullable
       - prelude
+      - refs
+      - st
+      - tailrec
+      - unsafe-coerce
   nonempty:
     type: registry
     version: 7.0.0
@@ -1212,11 +1244,9 @@ packages:
       - maybe
   open-memoize:
     type: registry
-    version: 6.1.0
-    integrity: sha256-ws/Cix/wgUKvrbPPxTqDSGCPpkTIvP1adTYLHAquBC4=
+    version: 6.2.0
+    integrity: sha256-p1m7wF3aHQ80yUvqMs20OTMl496WS6YpKlmI2Nkg9j0=
     dependencies:
-      - console
-      - effect
       - either
       - integers
       - lazy
@@ -1224,7 +1254,6 @@ packages:
       - maybe
       - partial
       - prelude
-      - psci-support
       - strings
       - tuples
   optparse:
@@ -1327,8 +1356,8 @@ packages:
       - prelude
   prelude:
     type: registry
-    version: 6.0.1
-    integrity: sha256-o8p6SLYmVPqzXZhQFd2hGAWEwBoXl1swxLG/scpJ0V0=
+    version: 6.0.2
+    integrity: sha256-kiAPZxihtAel8uRiTNdccf4qylp/9J3jNkEHNAD0MsE=
     dependencies: []
   profunctor:
     type: registry
@@ -1368,14 +1397,6 @@ packages:
       - record
       - transformers
       - tuples
-  psci-support:
-    type: registry
-    version: 6.0.0
-    integrity: sha256-C6ql4P9TEP06hft/1Z5QumPA4yARR4VIxDdhmL1EO+Y=
-    dependencies:
-      - console
-      - effect
-      - prelude
   record:
     type: registry
     version: 4.0.0
@@ -1399,8 +1420,8 @@ packages:
       - unsafe-coerce
   spec:
     type: registry
-    version: 7.6.0
-    integrity: sha256-+merGdQbL9zWONbnt8S8J9afGJ59MQqGtS0qSd3yu4I=
+    version: 8.1.1
+    integrity: sha256-EM7UfQIaSgiw13LJ4ZASkfYmmRDKIlec3nYbGKFqGhk=
     dependencies:
       - aff
       - ansi
@@ -1428,6 +1449,36 @@ packages:
       - strings
       - tailrec
       - transformers
+      - tuples
+  spec-node:
+    type: registry
+    version: 0.0.3
+    integrity: sha256-Bjzg6l4uOfMN/FV0SKuT1Mm8eMP9sloLGVcY/0MeMnI=
+    dependencies:
+      - aff
+      - argonaut-codecs
+      - argonaut-core
+      - arrays
+      - control
+      - datetime
+      - effect
+      - either
+      - foldable-traversable
+      - identity
+      - integers
+      - maybe
+      - newtype
+      - node-buffer
+      - node-fs
+      - node-process
+      - now
+      - numbers
+      - optparse
+      - ordered-collections
+      - partial
+      - prelude
+      - spec
+      - strings
       - tuples
   st:
     type: registry

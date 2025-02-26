@@ -15,7 +15,8 @@ package:
     main: Test.Main
     dependencies:
       - spec
+      - spec-node
 workspace:
   packageSet:
-    registry: 53.2.0
+    registry: 63.3.0
   extraPackages: {}

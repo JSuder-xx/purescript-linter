@@ -29,15 +29,11 @@ import Prelude
 
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, JsonDecodeError, decodeJson, encodeJson)
 import Data.Argonaut.Encode.Encoders (encodeString)
-import Data.Array as Array
-import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either)
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import PureScript.CST.Expr as Expr
 import PureScript.CST.Fold (OnModule, OnPureScript)
 import PureScript.CST.Traversal (foldMapModule)
-import PureScript.CST.Types (Expr(..))
 import PureScript.CST.Types as CST
 
 -- | A Module Rule identifies a specific set of problems / issues with code _inside_ a module.
@@ -144,11 +140,7 @@ identifyModuleIssues { onModule, onPureScript } = onModule <> foldMapModule onPu
 
 -- | Traverses every single expression, traversing into Application to get more expressions.
 expressionIssueIdentifier :: IssueIdentifierIn CST.Expr -> ModuleIssueIdentifier
-expressionIssueIdentifier onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript (Array Issue)) { onExpr = recurse } }
-  where
-  recurse = case _ of
-    appExpr@(ExprApp expr nes) -> onExpr appExpr <> onExpr expr <> (NonEmptyArray.toArray nes # Array.mapMaybe Expr.appTerm >>= recurse)
-    expr -> onExpr expr
+expressionIssueIdentifier onExpr = { onModule: mempty, onPureScript: (mempty :: OnPureScript (Array Issue)) { onExpr = onExpr } }
 
 declarationIssueIdentifierInModule :: IssueIdentifierIn CST.Declaration -> ModuleIssueIdentifier
 declarationIssueIdentifierInModule onDecl = { onModule: mempty, onPureScript: (mempty :: OnPureScript (Array Issue)) { onDecl = onDecl } }
