@@ -44,7 +44,7 @@ reporter { verbosity } =
           log $ "Successful: " <> (show $ Array.length successful)
           log $ "Failed: " <> (show $ Array.length failed)
         log $ "Lint Time: " <> (show $ un Seconds duration) <> " seconds"
-        when (not Array.null failed) $ setExitCode 1
+        unless (Array.null failed) $ setExitCode 1
   }
   where
   emitIssues { filePath, issues } = do

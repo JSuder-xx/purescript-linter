@@ -8,6 +8,7 @@ import Linter.ModuleRules.Formatting.IfThenElse as IfThenElse
 import Linter.ModuleRules.Formatting.LetBinding as LetBinding
 import Linter.ModuleRules.Formatting.RecordFormatting as RecordFormatting
 import Linter.ModuleRules.Formatting.WhereClause as WhereClause
+import Linter.ModuleRules.Style.ApplicativeSimplifications as ApplicativeSimplifications
 import Linter.ModuleRules.Style.ModuleExports as ModuleExports
 import Linter.ModuleRules.Style.ModuleImports as ModuleImports
 import Linter.ModuleRules.Style.MonoidSimplifications as MonoidSimplifications
@@ -23,6 +24,7 @@ allModuleRules =
   [ AlignedParenthesis.rule
   , ApplicationIndentation.inArray
   , ApplicationIndentation.inRecord
+  , ApplicativeSimplifications.unlessAndWhen
   , ArrayFormatting.rule
   , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
@@ -46,7 +48,8 @@ allModuleRules =
 
 recommendedRules :: Array ModuleRule
 recommendedRules =
-  [ ModuleExports.exportsRequired
+  [ ApplicativeSimplifications.unlessAndWhen
+  , ModuleExports.exportsRequired
   , ModuleImports.qualification
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
   , MonoidSimplifications.useFoldForRepeatedMappends

@@ -92,10 +92,8 @@ x =
       exprRange = rangeOf expr
     in
       fold
-        [ -- the where token needs to be on the next line under the
-          guard (not $ exprRange `isAbove` whereTokenRange) [ { message: "The `where` needs to be below the expression", sourceRange: whereTokenRange } ]
-        , -- all the bindings need to left align under the where token
-          bindings # NonEmptyArray.toArray >>= checkBinding whereTokenRange
+        [ guard (not $ exprRange `isAbove` whereTokenRange) [ { message: "The `where` needs to be below the expression", sourceRange: whereTokenRange } ]
+        , bindings # NonEmptyArray.toArray >>= checkBinding whereTokenRange
         ]
 
   checkBinding :: SourceRange -> LetBinding Void -> Array Issue

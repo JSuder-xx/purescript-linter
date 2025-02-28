@@ -17,6 +17,7 @@
         "AlignedParenthesis": null,
         "Application.InArray.IndentArguments": null,
         "Application.InRecord.IndentArguments": null,
+        "Applicative.UnlessAndWhen": null,
         "ArrayFormatting": null,
         "IfThenElse.LeftAligned": null,
         "ModuleImports.RequireQualification": [

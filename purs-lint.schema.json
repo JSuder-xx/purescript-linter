@@ -97,6 +97,10 @@
           "type": "null",
           "description": "This rule has a very limited scope: It ensures proper function call argument indentation when the function call is made while declaring a record literal."
         },
+        "Applicative.UnlessAndWhen": {
+          "type": "null",
+          "description": "This rule asks that developers replace\n- `when (not EXPR)` with `unless EXPR`\n- `unless (not EXPR)` with `when EXPR`\n\nIn order to remove negation. Human beings read positive statements more easily."
+        },
         "ArrayFormatting": {
           "type": "null",
           "description": "Ensures consistent spacing when declaring an array literal."
