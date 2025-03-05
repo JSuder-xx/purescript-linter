@@ -5,6 +5,7 @@
 - Added AvoidSameComparison
 - Chose less ambiguous filename for config, added JSON Schema for `purs-lint.json`, and normalized rule names (BREAKING CHANGE).
 - Fixed: WhereClause.LeftAligned was failing to recurse.
+- Changed: Running Quiet on Single File linting.
 
 ### 0.2.14 (2024-02-21)
 

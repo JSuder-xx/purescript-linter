@@ -4,7 +4,7 @@ import Prelude
 
 import Ansi.Codes (Color(..))
 import Ansi.Output (foreground, underline, withGraphics)
-import CLI.AppConfig (AppConfigProcessed, ProjectRoot)
+import CLI.AppConfig (AppConfigProcessed, ProjectRoot, Verbosity(..))
 import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
 import CLI.Reporter (Reporter)
@@ -19,7 +19,7 @@ import Data.Foldable (foldM, foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Map.Extra as Map.Extra
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..), isNothing, maybe)
 import Data.Maybe as Maybe
 import Data.Maybe.Extra as Maybe.Extra
 import Data.Monoid (guard)
@@ -130,7 +130,7 @@ Use these rules when unable to use a formatter in your codebase. For example, pe
       # (parseJson >>> lmap printJsonDecodeError >=> (AppConfig.decode >>> lmap printJsonDecodeError) >=> AppConfig.rawToProcessed allModuleRules)
       # either
           (liftEffect <<< Console.error <<< \decodeError -> "Error decoding '" <> configFilename <> "'\n" <> decodeError)
-          \appConfig -> runLinter { cwd } files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { verbosity: appConfig.verbosity }
+          \appConfig -> runLinter { cwd } files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { verbosity: if isNothing files.singleFile' then appConfig.verbosity else Quiet }
 
 simplifyPath :: String -> String -> String
 simplifyPath cwd filePath = filePath # String.stripPrefix (Pattern cwd) # maybe filePath ("." <> _)
