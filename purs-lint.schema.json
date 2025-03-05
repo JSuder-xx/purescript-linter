@@ -105,6 +105,10 @@
           "type": "null",
           "description": "Ensures consistent spacing when declaring an array literal."
         },
+        "AvoidSameComparison": {
+          "type": "null",
+          "description": "This rule forbids comparing two equivalent expressions because this will always return either true or false.\n- `a == a`\n- `a /= a`\n- `a > a`\n- `a >= a`\n- etc.."
+        },
         "IfThenElse.LeftAligned": {
           "type": "null",
           "description": "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."

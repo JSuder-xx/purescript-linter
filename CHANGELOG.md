@@ -2,6 +2,7 @@
 
 - Added verbosity level to reporting.
 - Added Applicative.UnlessAndWhen
+- Added AvoidSameComparison
 - Chose less ambiguous filename for config, added JSON Schema for `purs-lint.json`, and normalized rule names (BREAKING CHANGE).
 - Fixed: WhereClause.LeftAligned was failing to recurse.
 

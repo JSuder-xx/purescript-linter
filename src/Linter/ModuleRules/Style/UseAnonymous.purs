@@ -11,7 +11,6 @@ import Data.Map.Extra (keyCountLookup)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Newtype (un, unwrap)
-import Data.Tuple (Tuple(..))
 import Foreign.Object as Object
 import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
@@ -40,6 +39,7 @@ With the default configuration this rule only applies to relational operations s
           ]
       , passingCode:
           [ "x = (_ < 10)"
+          , "x = \\s a -> s < a"
           , "x = \\s -> M.s < 10"
           , "x = \\s -> s <???> 10 -- the <???> operator is not a known relational operator"
           , "x = filter (_ < 10) [ 1, 2, 3 ]"
@@ -57,26 +57,23 @@ With the default configuration this rule only applies to relational operations s
           # Binder.lastVariables'
           # foldMap
               ( NonEmptyArray.reverse >>> map unwrap >>> NonEmptyArray.uncons >>> \{ head: firstArgument, tail: restArguments } ->
-                  case body of
-                    ExprOp leftExpr opExpresions ->
-                      case restArguments, NonEmptyArray.toArray opExpresions of
-                        [], [ Tuple (QualifiedName { name: Operator operatorName }) rightExpr ] ->
-                          if not Array.elem operatorName operatorNames then []
-                          else
-                            let
-                              identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
-                              leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
-                              rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
-                              checkIdentifier = foldMap \ident ->
-                                guard (ident == firstArgument.name)
-                                  [ { message: "Lambda with binary operation '" <> operatorName <> "' in the body can be re-written using wildcards by replacing '" <> unwrap ident <> "' with _. This may require wrapping the expression in parenthesis.", sourceRange: rangeOf lambda } ]
-                            in
-                              guard ((identifierCount firstArgument.name) == 1) $ fold
-                                [ checkIdentifier leftIdent'
-                                , checkIdentifier rightIdent'
-                                ]
-                        _, _ -> []
-                    _ -> []
+                  if not Array.null restArguments then []
+                  else Expr.binaryOperation body
+                    # foldMap \{ leftExpr, rightExpr, qualifiedOperatorName: QualifiedName { name: Operator operatorName } } ->
+                        if not Array.elem operatorName operatorNames then []
+                        else
+                          let
+                            identifierCount = keyCountLookup $ Expr.allUnqualifiedIdentifiers body
+                            leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
+                            rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
+                            checkIdentifier = foldMap \ident ->
+                              guard (ident == firstArgument.name)
+                                [ { message: "Lambda with binary operation '" <> operatorName <> "' in the body can be re-written using wildcards by replacing '" <> unwrap ident <> "' with _. This may require wrapping the expression in parenthesis.", sourceRange: rangeOf lambda } ]
+                          in
+                            guard ((identifierCount firstArgument.name) == 1) $ fold
+                              [ checkIdentifier leftIdent'
+                              , checkIdentifier rightIdent'
+                              ]
               )
 
       _ -> []

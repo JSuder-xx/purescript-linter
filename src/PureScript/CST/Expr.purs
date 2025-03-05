@@ -173,6 +173,21 @@ letBindingExprs =
     LetBindingPattern _ _ where' -> whereExprs where'
     LetBindingError _ -> []
 
+binaryOperation
+  :: forall e
+   . Expr e
+  -> Maybe
+       { leftExpr :: Expr e
+       , qualifiedOperatorName :: QualifiedName Operator
+       , rightExpr :: Expr e
+       }
+binaryOperation = case _ of
+  ExprOp leftExpr opExpresions ->
+    case NonEmptyArray.toArray opExpresions of
+      [ Tuple qualifiedOperatorName rightExpr ] -> Just { leftExpr, rightExpr, qualifiedOperatorName }
+      _ -> Nothing
+  _ -> Nothing
+
 type ExprLabel e = Label (Expr e)
 
 label :: Expr Void -> ExprLabel Void

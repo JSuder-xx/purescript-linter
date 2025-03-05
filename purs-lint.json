@@ -19,6 +19,7 @@
         "Application.InRecord.IndentArguments": null,
         "Applicative.UnlessAndWhen": null,
         "ArrayFormatting": null,
+        "AvoidSameComparison": null,
         "IfThenElse.LeftAligned": null,
         "ModuleImports.RequireQualification": [
           {
