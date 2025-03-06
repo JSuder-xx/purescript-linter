@@ -1,4 +1,4 @@
-### NEXT RELEASE
+### 1.0.0 (2025-03-06)
 
 - Added verbosity level to reporting.
 - Added rule `Applicative.UnlessAndWhen`
@@ -8,22 +8,23 @@
 - Changed: Running Quiet on Single File linting.
 - Added configuration for `Monoid.ReplaceRepeatedMappendsWithFold`
 - Added rule `ModuleImports.Forbid`
+- Switching to semantic versioning. All versions from here will follow major breaking, minor enhancement/addition, and release for bug fixes.
 
-### 0.2.14 (2024-02-21)
+### 0.2.14 (2025-02-21)
 
 - Fixed: Monoid simplification rules recommending `guard` applied to situations where `guard` could have been slow and therefore not desirable.
 - Changed: Made the `UseAnonymous-ForOperations` configurable and defaulted to only applying relational operators.
 
-### 0.2.13 (2024-02-20)
+### 0.2.13 (2025-02-20)
 
 - Added: Checking for unnecessary parenthesis in type declarations.
 - Fixed: Imprecise error messages for delimited formatting.
 
-### 0.2.12 (2024-02-018)
+### 0.2.12 (2025-02-018)
 
 - Fixed: Single file reporting
 
-### 0.2.11 (2024-02-17)
+### 0.2.11 (2025-02-17)
 
 - Changed: Friendlier error messages for config decode error when a rule name is not found.
 - Changed: Improved speed for multiple rule sets with overlapping files by combining in first pass and then loading/parsing each file only once on second pass.
