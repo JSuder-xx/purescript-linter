@@ -121,6 +121,14 @@
           "type": "null",
           "description": "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
         },
+        "ModuleImports.Forbid": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "A regular expression defining the pattern for a forbidden module import."
+          },
+          "description": "Use this rule to ensure modules do not import other modules. This can be used as a cheap way to enforce decoupling between namespaces."
+        },
         "ModuleImports.RequireQualification": {
           "type": "array",
           "items": {

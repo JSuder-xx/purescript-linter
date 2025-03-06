@@ -31,6 +31,7 @@ allModuleRules =
   , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
   , ModuleExports.exportsRequired
+  , ModuleImports.forbid
   , ModuleImports.qualification
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
   , MonoidSimplifications.useFoldForRepeatedMappends
@@ -53,6 +54,7 @@ recommendedRules =
   [ ApplicativeSimplifications.unlessAndWhen
   , AvoidSameComparison.avoidSameComparison
   , ModuleExports.exportsRequired
+  , ModuleImports.forbid
   , ModuleImports.qualification
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
   , MonoidSimplifications.useFoldForRepeatedMappends

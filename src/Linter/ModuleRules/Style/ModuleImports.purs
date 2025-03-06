@@ -8,6 +8,7 @@ import Data.Array as Array
 import Data.Foldable (fold, foldMap)
 import Data.Maybe (maybe')
 import Data.Monoid (guard)
+import Data.Newtype (un)
 import Data.String as String
 import Data.String.Regex (Regex)
 import Data.String.Regex as Regex
@@ -153,3 +154,53 @@ type ImportMatch =
 fromJson :: ImportMatchRuleJson -> ImportMatch
 fromJson { qualifyAs, module: RegexJson moduleRegex, import: RegexJson importRegex } =
   { qualifyAs, module: moduleRegex, import: importRegex }
+
+forbid :: ModuleRule
+forbid = mkModuleRule
+  { name: "ModuleImports.Forbid"
+  , description:
+      """Use this rule to ensure modules do not import other modules. This can be used as a cheap way to enforce decoupling between namespaces."""
+  , category: Style
+  , examples:
+      { includeModuleHeader: true
+      , passingCode:
+          includeModuleName <$>
+            [ "import Data.Good"
+            , "import Data.Good (blurble)"
+            , "import Data.Good as Good"
+            , "import Data.Good (blurble) as G"
+            ]
+      , failingCode:
+          includeModuleName <$>
+            [ "import Unsafe.Coerce"
+            , "import Unsafe.Coerce.Refined"
+            , "import Unsafe.Coerce (blurble)"
+            , "import Unsafe.Coerce as Bad"
+            , "import Unsafe.Coerce (blurble) as B"
+            ]
+      }
+  , configJsonSchema: Object.fromHomogeneous
+      { "type": encodeString "array"
+      , "items": encodeJson
+          { type: "string"
+          , description: "A regular expression defining the pattern for a forbidden module import."
+          }
+      }
+  , defaultConfig:
+      [ exampleRegex "^Unsafe.Coerce(.*)$"
+      ] :: Array RegexJson
+  , moduleIssueIdentifier: \importRegexJsons _systemConfig ->
+      let
+        importRegexs = importRegexJsons <#> un RegexJson
+      in
+        moduleIssueIdentifier $ \(CST.Module { header: CST.ModuleHeader { imports } }) ->
+          verifyImportDeclaration importRegexs =<< imports
+  }
+  where
+  includeModuleName s = "module Test where\n" <> s
+
+  verifyImportDeclaration importRegexs (ImportDecl { keyword: { range }, module: Name { name: ModuleName moduleName } }) =
+    foldMap applyRule firstMatchingRule'
+    where
+    firstMatchingRule' = Array.find (flip Regex.test moduleName) importRegexs
+    applyRule _ = [ { message: "Import is forbidden.", sourceRange: range } ]

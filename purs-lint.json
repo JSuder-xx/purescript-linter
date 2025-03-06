@@ -21,6 +21,9 @@
         "ArrayFormatting": null,
         "AvoidSameComparison": null,
         "IfThenElse.LeftAligned": null,
+        "ModuleImports.Forbid": [
+          "^Unsafe.Coerce(.*)$"
+        ],
         "ModuleImports.RequireQualification": [
           {
             "import": "fromFoldable|toUnfoldable|fromString|singleton|member|over|set|get",
