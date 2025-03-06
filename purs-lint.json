@@ -47,7 +47,10 @@
         ],
         "UseAnonymous.RecordCreation": null,
         "UseAnonymous.RecordUpdates": null,
-        "Monoid.ReplaceRepeatedMappendsWithFold": null,
+        "Monoid.ReplaceRepeatedMappendsWithFold": {
+          "maxAppends": 4,
+          "maxAppendsWithParenthesis": 2
+        },
         "Monoid.ReplaceIfThenElseMEmptyWithGuard": null,
         "Monoid.ReplaceIfthenMEmptyElseWithGuard": null,
         "UsePunning": null

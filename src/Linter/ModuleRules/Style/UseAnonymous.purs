@@ -67,8 +67,8 @@ With the default configuration this rule only applies to relational operations s
                             leftIdent' = QualifiedName.name <$> Expr.exprIdent leftExpr
                             rightIdent' = QualifiedName.name <$> Expr.exprIdent rightExpr
                             checkIdentifier = foldMap \ident ->
-                              guard (ident == firstArgument.name)
-                                [ { message: "Lambda with binary operation '" <> operatorName <> "' in the body can be re-written using wildcards by replacing '" <> unwrap ident <> "' with _. This may require wrapping the expression in parenthesis.", sourceRange: rangeOf lambda } ]
+                              if (ident /= firstArgument.name) then []
+                              else [ { message: "Lambda with binary operation '" <> operatorName <> "' in the body can be re-written using wildcards by replacing '" <> unwrap ident <> "' with _. This may require wrapping the expression in parenthesis.", sourceRange: rangeOf lambda } ]
                           in
                             guard ((identifierCount firstArgument.name) == 1) $ fold
                               [ checkIdentifier leftIdent'

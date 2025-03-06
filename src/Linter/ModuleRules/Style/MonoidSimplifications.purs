@@ -2,6 +2,9 @@ module Linter.ModuleRules.Style.MonoidSimplifications where
 
 import Prelude
 
+import Control.Alt ((<|>))
+import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson)
+import Data.Argonaut.Encode.Encoders (encodeArray, encodeBoolean, encodeString)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..))
@@ -9,6 +12,7 @@ import Data.Maybe as Maybe
 import Data.Monoid (guard)
 import Data.Newtype as Newtype
 import Data.Tuple (Tuple, fst, snd)
+import Foreign.Object as Object
 import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Expr as Expr
@@ -124,8 +128,24 @@ delays execution until necessary."""
       _ -> []
   }
 
+newtype FoldConfig = FoldConfig
+  { maxAppends :: Int
+  , maxAppendsWithParenthesis :: Int
+  }
+
+instance EncodeJson FoldConfig where
+  encodeJson (FoldConfig r) = encodeJson r
+
+instance DecodeJson FoldConfig where
+  decodeJson json =
+    (FoldConfig <$> decodeJson json)
+      <|> (pure defaultFoldConfig)
+
+defaultFoldConfig :: FoldConfig
+defaultFoldConfig = FoldConfig { maxAppends: 5, maxAppendsWithParenthesis: 2 }
+
 useFoldForRepeatedMappends :: ModuleRule.ModuleRule
-useFoldForRepeatedMappends = ModuleRule.mkWithNoConfig
+useFoldForRepeatedMappends = ModuleRule.mkModuleRule
   { name: "Monoid.ReplaceRepeatedMappendsWithFold"
   , category: Style
   , description:
@@ -147,9 +167,10 @@ x =
   "Hi!"
   <> a
   <> b
-  <> c
+  <> "Blah blah"
   <> d
   <> e
+  <> f
           """
           ]
       , passingCode:
@@ -174,16 +195,39 @@ x =
           """
           ]
       }
-  , moduleIssueIdentifier: const $ expressionIssueIdentifier $ case _ of
+  , defaultConfig: defaultFoldConfig
+  , configJsonSchema:
+      let
+        FoldConfig { maxAppends, maxAppendsWithParenthesis } = defaultFoldConfig
+      in
+        Object.fromHomogeneous
+          { type: encodeString "object"
+          , additionalProperties: encodeBoolean false
+          , required: encodeArray encodeString [ "maxAppends", "maxAppendsWithParenthesis" ]
+          , properties: encodeJson
+              { maxAppends:
+                  { type: "integer"
+                  , description: "The maximum number of <> operators that are allowed. Any more than this requires the use of `fold`."
+                  , default: maxAppends
+                  }
+              , maxAppendsWithParenthesis:
+                  { type: "integer"
+                  , description: "The maximum number of <> operators that are allowed when any of the expressions requires parentheses. Any more than this requires the use of `fold`."
+                  , default: maxAppendsWithParenthesis
+                  }
+              }
+          }
+
+  , moduleIssueIdentifier: \(FoldConfig { maxAppends, maxAppendsWithParenthesis }) _ -> expressionIssueIdentifier $ case _ of
       expr@(ExprOp _ neOperators) ->
         guard (NonEmptyArray.all isMappend neOperators)
           let
-            numOperators = NonEmptyArray.length neOperators
+            numAppends = NonEmptyArray.length neOperators
           in
-            if (numOperators >= 5) then
-              [ { message: "Use fold when there are five or more <> operators", sourceRange: rangeOf expr } ]
-            else guard (numOperators >= 3 && NonEmptyArray.any hasParenthesis neOperators)
-              [ { message: "Use fold when there are three or more <> operators and any expressions require parenthesis ", sourceRange: rangeOf expr } ]
+            if (numAppends > maxAppends) then
+              [ { message: "Use fold when there are more than " <> show maxAppends <> " <> operators.", sourceRange: rangeOf expr } ]
+            else guard (numAppends > maxAppendsWithParenthesis && NonEmptyArray.any hasParenthesis neOperators)
+              [ { message: "Use fold when there are more than " <> show maxAppendsWithParenthesis <> " <> operators and any expressions require parenthesis ", sourceRange: rangeOf expr } ]
       _ -> []
   }
 

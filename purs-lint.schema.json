@@ -153,7 +153,24 @@
           "description": "Replacing `maybe mempty` with `foldMap` is a bit more succinct and more clearly expresses the intention."
         },
         "Monoid.ReplaceRepeatedMappendsWithFold": {
-          "type": "null",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maxAppends",
+            "maxAppendsWithParenthesis"
+          ],
+          "properties": {
+            "maxAppendsWithParenthesis": {
+              "type": "integer",
+              "description": "The maximum number of <> operators that are allowed when any of the expressions requires parentheses. Any more than this requires the use of `fold`.",
+              "default": 2
+            },
+            "maxAppends": {
+              "type": "integer",
+              "description": "The maximum number of <> operators that are allowed. Any more than this requires the use of `fold`.",
+              "default": 5
+            }
+          },
           "description": "Using `fold`\n1. Removes the need for parenthesis which reduces lexical noise.\n2. Is more succinct, in terms of characters, when there are 8 or more mappends."
         },
         "Monoid.ReplaceIfThenElseMEmptyWithGuard": {
