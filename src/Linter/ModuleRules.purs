@@ -31,6 +31,7 @@ allModuleRules =
   , IfThenElse.ifThenElseLeftAligned
   , LetBinding.compact
   , ModuleExports.exportsRequired
+  , ModuleExports.requireDocumentation
   , ModuleImports.forbid
   , ModuleImports.qualification
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap

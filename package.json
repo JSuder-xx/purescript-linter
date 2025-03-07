@@ -11,6 +11,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx spago test",
+    "test-failures": "npx spago test -- --only-failures",
     "build": "npm run compile",
     "compile": "spago bundle --outfile dist/index.js --minify --bundle-type module --platform node",
     "lint-project": "node index.js",

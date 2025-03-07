@@ -1,5 +1,7 @@
 ### NEXT RELEASE
 
+- Added rule `ModuleExports.RequireDocumentation`
+
 ### 1.0.0 (2025-03-06)
 
 - Added verbosity level to reporting.
