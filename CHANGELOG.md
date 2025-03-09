@@ -1,3 +1,5 @@
+### NEXT RELEASE
+
 ### 1.1.0 (2025-03-10)
 
 - Added rule `ModuleExports.RequireDocumentation`
