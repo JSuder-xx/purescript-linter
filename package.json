@@ -1,8 +1,8 @@
 {
   "name": "purescript-linter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
-  "description": "A Linter for the PureScript language.",
+  "description": "A Linter for the PureScript language with 26 formatting and style rules.",
   "keywords": [
     "purescript",
     "linter",

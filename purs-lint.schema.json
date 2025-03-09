@@ -121,6 +121,10 @@
           "type": "null",
           "description": "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
         },
+        "ModuleExports.RequireDocumentation": {
+          "type": "null",
+          "description": "Require code documentation `-- |` of anything exported by a module to help developers understand usage."
+        },
         "ModuleImports.Forbid": {
           "type": "array",
           "items": {

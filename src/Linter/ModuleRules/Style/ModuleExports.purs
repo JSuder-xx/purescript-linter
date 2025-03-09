@@ -50,7 +50,7 @@ requireDocumentation = ModuleRule.mkWithNoConfig
   { name: "ModuleExports.RequireDocumentation"
   , category: Style
   , description:
-      "Require documentation of anything exported."
+      "Require code documentation `-- |` of anything exported by a module to help developers understand usage."
   , examples:
       { includeModuleHeader: true
       , failingCode:

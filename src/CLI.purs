@@ -66,12 +66,12 @@ cli = do
         }
     GenerateRuleJsonSchema -> log $ stringify $ AppConfig.rulesSchema allModuleRules
     ShowRulesAsMarkdown -> do
-      log "# Rules"
+      log "## Rules"
       showRules
-        { categoryHeader: log <<< ("## " <> _)
+        { categoryHeader: log <<< ("### " <> _)
         , categoryDescription: log
         , ruleHeader: \s -> do
-            log $ "### " <> s
+            log $ "#### " <> s
             log ""
         , ruleDescription: \s -> do
             log s
