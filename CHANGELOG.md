@@ -1,4 +1,4 @@
-### 1.1.3 (2025-03-10)
+### 1.1.4 (2025-03-10)
 
 - Reverted inclusion of rules in README.md due to npm markdown rendering issues.
 
