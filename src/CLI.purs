@@ -66,12 +66,12 @@ cli = do
         }
     GenerateRuleJsonSchema -> log $ stringify $ AppConfig.rulesSchema allModuleRules
     ShowRulesAsMarkdown -> do
-      log "## Rules"
+      log "# Rules"
       showRules
-        { categoryHeader: log <<< ("### " <> _)
+        { categoryHeader: log <<< ("## " <> _)
         , categoryDescription: log
         , ruleHeader: \s -> do
-            log $ "#### " <> s
+            log $ "### " <> s
             log ""
         , ruleDescription: \s -> do
             log s
@@ -113,7 +113,8 @@ cli = do
                 """Formatting rules cover lexical formatting concerns that might overwise be handled by a formatter/pretty printer.
 Use these rules when unable to use a formatter in your codebase. For example, perhaps a formatter does not conform to prescribed rules."""
             }
-      categoryHeader header
+      let rulesArray = NonEmpty.fromNonEmpty Array.cons rules
+      categoryHeader $ header <> " (" <> (show $ Array.length rulesArray) <> ")"
       categoryDescription description
       log ""
 

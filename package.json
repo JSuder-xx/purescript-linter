@@ -1,12 +1,13 @@
 {
   "name": "purescript-linter",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "type": "module",
-  "description": "A Linter for the PureScript language with 26 formatting and style rules.",
+  "description": "A Linter for the PureScript language with 8 formatting and 18 style rules.",
   "keywords": [
     "purescript",
     "linter",
-    "static analysis"
+    "style",
+    "formatting"
   ],
   "main": "index.js",
   "scripts": {

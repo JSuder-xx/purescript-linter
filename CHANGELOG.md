@@ -1,6 +1,8 @@
-### NEXT RELEASE
+### 1.1.2 (2025-03-10)
 
-### 1.1.0 (2025-03-10)
+- Reverted inclusion of rules in README.md due to npm markdown rendering issues.
+
+### 1.1.0 (2025-03-09)
 
 - Added rule `ModuleExports.RequireDocumentation`
 - Enhanced the README.md a bit.
