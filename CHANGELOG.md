@@ -1,3 +1,5 @@
+### Next Release
+
 ### 1.1.6 (2025-03-12)
 
 - Fixed Silent mode not throwing exit code.
