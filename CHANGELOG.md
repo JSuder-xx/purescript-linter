@@ -1,3 +1,7 @@
+### 1.1.6 (2025-03-12)
+
+- Fixed Silent mode not throwing exit code.
+
 ### 1.1.5 (2025-03-10)
 
 - Reverted inclusion of rules in README.md due to npm markdown rendering issues.
