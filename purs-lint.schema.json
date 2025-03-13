@@ -122,8 +122,17 @@
           "description": "Requiring explicit exports ensures that developers are thinking about encapsulation and avoids missing opportunities to minimize the public surface area."
         },
         "ModuleExports.RequireDocumentation": {
-          "type": "null",
-          "description": "Require code documentation `-- |` of anything exported by a module to help developers understand usage."
+          "anyOf": [
+            {
+              "type": "null",
+              "description": "When null then all exported types/values require documentation."
+            },
+            {
+              "type": "string",
+              "description": "Regex of exported names that do NOT require documentation."
+            }
+          ],
+          "description": "Require code documentation `-- |` of anything exported by a module to help developers understand usage. This can be configured with a regex pattern of types/type classes/values to exclude from this requirement."
         },
         "ModuleImports.Forbid": {
           "type": "array",

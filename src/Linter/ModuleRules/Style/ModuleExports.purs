@@ -2,11 +2,17 @@ module Linter.ModuleRules.Style.ModuleExports (exportsRequired, requireDocumenta
 
 import Prelude
 
+import Data.Argonaut (encodeJson)
 import Data.Array (mapMaybe)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
+import Data.Newtype (un)
 import Data.Set as Set
 import Data.String (Pattern(..))
+import Data.String.Regex (Regex)
+import Data.String.Regex as Regex
+import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
+import Foreign.Object as Object
 import Linter.ModuleRule (Issue, RuleCategory(..), moduleIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import Options.Applicative.Internal.Utils as String
@@ -46,11 +52,22 @@ x = 1
   }
 
 requireDocumentation :: ModuleRule.ModuleRule
-requireDocumentation = ModuleRule.mkWithNoConfig
+requireDocumentation = ModuleRule.mkModuleRule
   { name: "ModuleExports.RequireDocumentation"
   , category: Style
   , description:
-      "Require code documentation `-- |` of anything exported by a module to help developers understand usage."
+      "Require code documentation `-- |` of anything exported by a module to help developers understand usage. This can be configured with a regex pattern of types/type classes/values to exclude from this requirement."
+  , configJsonSchema: Object.fromHomogeneous
+      { anyOf: encodeJson
+          [ { "type": "null"
+            , description: "When null then all exported types/values require documentation."
+            }
+          , { "type": "string"
+            , description: "Regex of exported names that do NOT require documentation."
+            }
+          ]
+      }
+  , defaultConfig: Just $ exampleRegex "^component$"
   , examples:
       { includeModuleHeader: true
       , failingCode:
@@ -112,15 +129,21 @@ class Foo a
           [ """
 module FlimFlam where
 
--- | This is an x.
+-- | This is a value.
 x :: Int
 x = 1
           """
           , """
 module FlimFlam where
 
--- | Fruit is tasty.
+-- | This is a type.
 data Fruit = Apple | Banana | Cherry
+          """
+          , """
+module FlimFlam where
+
+component :: Int
+component = 10
           """
           , """
 module FlimFlam (y) where
@@ -174,8 +197,8 @@ class Foo a
           """
           ]
       }
-  , moduleIssueIdentifier: const $ moduleIssueIdentifier \(CST.Module { body: ModuleBody { decls }, header: ModuleHeader { exports } }) ->
-      decls >>= checkDeclaration (exports # maybe (const true) exportsToSet) -- [ { message: "Module should have explicit exports.", sourceRange } ]
+  , moduleIssueIdentifier: \ignoreRegexJson' _ -> moduleIssueIdentifier \(CST.Module { body: ModuleBody { decls }, header: ModuleHeader { exports } }) ->
+      decls >>= checkDeclaration { isExported: exports # maybe (const true) exportsToSet, ignoreRegex': un RegexJson <$> ignoreRegexJson' }
   }
   where
   exportsToSet :: forall e. DelimitedNonEmpty (Export e) -> (String -> Boolean)
@@ -200,8 +223,8 @@ class Foo a
 
   tokenHasDocumentation = Array.any isDocumentationComment <<< _.leadingComments
 
-  checkDeclaration :: forall e. (String -> Boolean) -> Declaration e -> Array Issue
-  checkDeclaration isExported = case _ of
+  checkDeclaration :: forall e. { isExported :: String -> Boolean, ignoreRegex' :: Maybe Regex } -> Declaration e -> Array Issue
+  checkDeclaration { isExported, ignoreRegex' } = case _ of
     DeclData dataHead _ctors' -> checkDataHead dataHead
     DeclType dataHead _ _type -> checkDataHead dataHead
     DeclNewtype dataHead _ _name _type -> checkDataHead dataHead
@@ -226,8 +249,9 @@ class Foo a
     DeclRole _ _ _ _ -> []
     DeclError _ -> []
     where
+    shouldIgnore = ignoreRegex' # maybe (const false) Regex.test
     check token name =
-      if isExported name && not tokenHasDocumentation token then [ { message: "Exported '" <> name <> "' should be documented.", sourceRange: token.range } ]
+      if isExported name && not shouldIgnore name && not tokenHasDocumentation token then [ { message: "Exported '" <> name <> "' should be documented.", sourceRange: token.range } ]
       else []
 
     checkDataHead :: forall r. { keyword :: SourceToken, name :: Name Proper | r } -> Array Issue
