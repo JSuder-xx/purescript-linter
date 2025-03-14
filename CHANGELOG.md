@@ -1,6 +1,7 @@
 ### Next Release
 
 - Changed `ModuleExports.RequireDocumentation` to have an optional regex for ignoring things that do not require documentation.
+- Added rule `ModuleImports.AvoidMultipleAliasesOfSameModule`
 
 ### 1.1.6 (2025-03-12)
 

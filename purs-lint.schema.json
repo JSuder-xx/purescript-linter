@@ -134,6 +134,10 @@
           ],
           "description": "Require code documentation `-- |` of anything exported by a module to help developers understand usage. This can be configured with a regex pattern of types/type classes/values to exclude from this requirement."
         },
+        "ModuleImports.AvoidMultipleAliasesOfSameModule": {
+          "type": "null",
+          "description": "Use this rule to ensure that a module is not imported under multiple aliases. The only exception is that one duplicate alias is allowed if it is used as a module re-export."
+        },
         "ModuleImports.Forbid": {
           "type": "array",
           "items": {

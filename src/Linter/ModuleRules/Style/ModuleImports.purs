@@ -2,24 +2,31 @@ module Linter.ModuleRules.Style.ModuleImports where
 
 import Prelude
 
+import Control.Bind (bindFlipped)
 import Data.Argonaut (encodeJson)
 import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array as Array
 import Data.Foldable (fold, foldMap)
-import Data.Maybe (maybe')
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), maybe')
 import Data.Monoid (guard)
 import Data.Newtype (un)
+import Data.NonEmpty (NonEmpty, fromNonEmpty)
+import Data.NonEmpty as NonEmpty
+import Data.Set (Set)
+import Data.Set as Set
 import Data.String as String
 import Data.String.Regex (Regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
 import Data.Tuple (Tuple(..))
 import Foreign.Object as Object
-import Linter.ModuleRule (ModuleRule, RuleCategory(..), mkModuleRule, moduleIssueIdentifier)
+import Linter.ModuleRule (Issue, ModuleRule, RuleCategory(..), mkModuleRule, mkWithNoConfig, moduleIssueIdentifier)
 import PureScript.CST.Import as Import
 import PureScript.CST.Range (rangeOf)
 import PureScript.CST.Separated as Separated
-import PureScript.CST.Types (ImportDecl(..), ModuleName(..), Name(..), Wrapped(..))
+import PureScript.CST.Types (Export(..), ImportDecl(..), ModuleName(..), Name(..), Separated, Wrapped(..))
 import PureScript.CST.Types as CST
 
 qualification :: ModuleRule
@@ -204,3 +211,84 @@ forbid = mkModuleRule
     where
     firstMatchingRule' = Array.find (flip Regex.test moduleName) importRegexs
     applyRule _ = [ { message: "Import is forbidden.", sourceRange: range } ]
+
+--------------------------
+----------------------
+-----------------------
+avoidMultipleAliasesOfSameModule :: ModuleRule
+avoidMultipleAliasesOfSameModule = mkWithNoConfig
+  { name: "ModuleImports.AvoidMultipleAliasesOfSameModule"
+  , description: """Use this rule to ensure that a module is not imported under multiple aliases. The only exception is that one duplicate alias is allowed if it is used as a module re-export."""
+  , category: Style
+  , examples:
+      { includeModuleHeader: true
+      , passingCode:
+
+          [ """
+module Test where
+
+import Data.Array
+import Data.Array as Array
+import Data.Map as Map
+"""
+          , """
+module Test (module A) where
+
+-- duplicate alias but one of them is a module export and so disregarded
+import Data.Array
+import Data.Array as Array
+import Data.Array as A
+import Data.Map as Map
+"""
+          , """
+module Test (module A) where
+
+-- duplicate alias but one of them is a module export and so disregarded
+import Data.Array
+import Data.Array as A
+import Data.Array as Array
+import Data.Map as Map
+"""
+          ]
+      , failingCode:
+
+          [ """
+module Test where
+
+import Data.Array
+import Data.Array as Array
+import Data.Map as Map
+import Data.Array as A
+"""
+          ]
+      }
+  , moduleIssueIdentifier: \_systemConfig ->
+      moduleIssueIdentifier $ \(CST.Module { header: CST.ModuleHeader { exports, imports } }) ->
+        imports
+          # toModuleNameAliasesMap { exportAliases: foldMap reExportAliases exports }
+          # Map.toUnfoldable
+          # (map @Array (map @(Tuple _) (fromNonEmpty Array.cons >>> Array.sortWith (\(Name { token }) -> token.range.start.line) >>> Array.drop 1)))
+          >>= reportDuplicateAliases
+  }
+  where
+  reExportAliases :: Wrapped (Separated (Export Void)) -> Set ModuleName
+  reExportAliases = un Wrapped >>> _.value >>> Separated.values >>> map @Array exportModuleName' >>> Array.catMaybes >>> Set.fromFoldable
+    where
+    exportModuleName' :: Export Void -> Maybe ModuleName
+    exportModuleName' = case _ of
+      ExportModule _ (Name { name: moduleName }) -> Just moduleName
+      _ -> Nothing
+
+  toModuleNameAliasesMap :: { exportAliases :: Set ModuleName } -> Array (ImportDecl Void) -> Map ModuleName (NonEmpty Array (Name ModuleName))
+  toModuleNameAliasesMap { exportAliases } = bindFlipped importDeclarationToAlias >>> Map.fromFoldableWith (<>)
+    where
+    importDeclarationToAlias :: ImportDecl Void -> Array (Tuple ModuleName (NonEmpty Array (Name ModuleName)))
+    importDeclarationToAlias (ImportDecl { module: (Name { name: moduleName }), qualified }) =
+      qualified
+        # foldMap \(Tuple _token alias@(Name { name: aliasModuleName })) -> if Set.member aliasModuleName exportAliases then [] else [ Tuple moduleName $ NonEmpty.singleton alias ]
+
+  reportDuplicateAliases :: Tuple ModuleName (Array (Name ModuleName)) -> Array Issue
+  reportDuplicateAliases (Tuple (ModuleName moduleName) aliases) = aliases <#> reportAlias
+    where
+    reportAlias :: Name ModuleName -> Issue
+    reportAlias (Name { name: ModuleName alias, token: { range } }) = { message: "Module '" <> moduleName <> "' has a redundant alias '" <> alias <> "'.", sourceRange: range }

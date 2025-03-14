@@ -20,9 +20,9 @@ This creates a configuration file which determines which rules apply to specifie
 
 ## Rules Overview
 
-There are 26 total [Rules](Rules.md) in two categories
+There are 27 total [Rules](Rules.md) in two categories
 
 - Formatting (8 total) Rules assert how code should be formatted. This can be useful if you cannot, for company policy reasons, or do not wish to use a code formatter such as the excellent `purs-tidy`.
-- Style (18 total) Rules enforce coding style such as requiring code documentation for exports, asking developers to use record field punning when available, etc..
+- Style (19 total) Rules enforce coding style such as requiring code documentation for exports, asking developers to use record field punning when available, etc..
 
 See the repository for more on the rules.

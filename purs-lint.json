@@ -24,6 +24,7 @@
         "ModuleImports.Forbid": [
           "^Unsafe.Coerce(.*)$"
         ],
+        "ModuleImports.AvoidMultipleAliasesOfSameModule": null,
         "ModuleImports.RequireQualification": [
           {
             "import": "fromFoldable|toUnfoldable|fromString|singleton|member|over|set|get",

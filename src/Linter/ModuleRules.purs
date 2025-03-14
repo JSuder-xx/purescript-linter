@@ -32,6 +32,7 @@ allModuleRules =
   , LetBinding.compact
   , ModuleExports.exportsRequired
   , ModuleExports.requireDocumentation
+  , ModuleImports.avoidMultipleAliasesOfSameModule
   , ModuleImports.forbid
   , ModuleImports.qualification
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
@@ -55,6 +56,7 @@ recommendedRules =
   [ ApplicativeSimplifications.unlessAndWhen
   , AvoidSameComparison.avoidSameComparison
   , ModuleExports.exportsRequired
+  , ModuleImports.avoidMultipleAliasesOfSameModule
   , ModuleImports.forbid
   , ModuleImports.qualification
   , MonoidSimplifications.replaceMaybeMemptyWithFoldMap
