@@ -1,3 +1,5 @@
+### Next Release
+
 ### 1.2.0 (2025-03-14)
 
 - Changed `ModuleExports.RequireDocumentation` to have an optional regex for ignoring things that do not require documentation.
