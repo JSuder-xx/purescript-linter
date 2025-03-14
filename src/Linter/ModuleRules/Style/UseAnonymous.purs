@@ -181,7 +181,7 @@ For example `\firstName lastName -> { firstName, middleInitial: "", lastName, su
                           # Array.reverse
                           # Array.takeWhile (\arg -> ((identifierCount arg) <= 1) && (identifierCountInCreate arg) == 1)
                           # Array.uncons
-                          # foldMap \{ head, tail } -> [ { message: "The last arguments to the lambda " <> (Array.intercalate ", " $ (un Ident <$> Array.cons head tail)) <> " occur exactly once in a record creation.", sourceRange: rangeOf lambda } ]
+                          # foldMap \{ head, tail } -> [ { message: "The last arguments to the lambda [" <> (Array.intercalate ", " $ (un Ident <$> Array.cons head tail)) <> "] occur exactly once in a record creation so the record can be created with wildcard syntax ex. `{ someConstant: 10, someFieldAssignedArgument: _ }`.", sourceRange: rangeOf lambda } ]
 
                     _ -> []
               )
