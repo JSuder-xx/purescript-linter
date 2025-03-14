@@ -206,6 +206,16 @@
           "type": "null",
           "description": "Replacing `if EXPR then mempty else FALSE` with `guard (not EXPR) FALSE` _may_ reduce cognitive overhead. However, this case is a little more controversial.\n\nThis rule ONLY applies when the FALSE branch is considered a \"quickly executing expression\". Expressions are considered quickly executing if they do not make function calls.\nThe reason expressions must be quickly executing is that the expression always evaluates when using `guard` and if that is slow you are better off using `if/then/else` which\ndelays execution until necessary."
         },
+        "NamingPatterns.Fields.OfContainerTypes": {
+          "type": "object",
+          "patternProperties": {
+            "(.*)": {
+              "type": "string",
+              "description": "A regular expression that the field name should match."
+            }
+          },
+          "description": "Enforces that names of record fields of \"container\" types follow a given naming pattern.\n\nFor example, some engineers like to prefix or suffix `Maybe` values to differentiate between values that must be unwrapped.\n\nLenses are often prefixed with an `_` when declared at a top level ex. `_Just`, `_Newtype` but you may also want to follow that convention if putting an optic into a record or row (using the A/An version to avoid issues of impredicativity).\n"
+        },
         "NoDuplicateTypeclassConstraints": {
           "type": "null",
           "description": "The compiler does not complain about repeated type class constraints on a function, but it is unnecessary noise. This can happen during source control merges."

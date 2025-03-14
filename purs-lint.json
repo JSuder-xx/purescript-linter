@@ -37,6 +37,9 @@
             "qualifyAs": "$1"
           }
         ],
+        "NamingPatterns.Fields.OfContainerTypes": {
+          "Maybe": "(.*)'"
+        },
         "NoDuplicateTypeclassConstraints": null,
         "NoUnnecessaryDo": null,
         "NoUnnecessaryParenthesis": null,

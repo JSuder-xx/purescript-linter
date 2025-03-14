@@ -13,6 +13,7 @@ import Linter.ModuleRules.Style.AvoidSameComparison as AvoidSameComparison
 import Linter.ModuleRules.Style.ModuleExports as ModuleExports
 import Linter.ModuleRules.Style.ModuleImports as ModuleImports
 import Linter.ModuleRules.Style.MonoidSimplifications as MonoidSimplifications
+import Linter.ModuleRules.Style.NamingPatterns as NamingPatterns
 import Linter.ModuleRules.Style.NoDuplicateTypeclassConstraints as NoDuplicateTypeclassConstraints
 import Linter.ModuleRules.Style.UnnecessaryDo as UnnecessaryDo
 import Linter.ModuleRules.Style.UnnecessaryParenthesis as UnnecessaryParenthesis
@@ -39,6 +40,7 @@ allModuleRules =
   , MonoidSimplifications.useFoldForRepeatedMappends
   , MonoidSimplifications.useGuardOverIfThenElseMEmpty
   , MonoidSimplifications.useGuardOverIfThenMemptyElse
+  , NamingPatterns.fieldsOfContainerTypes
   , NoDuplicateTypeclassConstraints.rule
   , RecordFormatting.rule
   , UnnecessaryDo.rule
