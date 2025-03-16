@@ -261,8 +261,8 @@
           "description": "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."
         }
       },
-      "description": "An object where the keys are the rule names and the values are the configuration",
-      "additionalProperties": false
+      "description": "An object where the keys are the rule names and the values at each key hold the configuration for the given rule. Most rules do not have configuration so that the configuration value is `null`.",
+      "additionalProperties": true
     }
   }
 }
