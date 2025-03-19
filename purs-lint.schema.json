@@ -47,10 +47,20 @@
           "type": "array",
           "items": {
             "type": "string",
-            "default": "./src/**/*.purs"
+            "default": "./src/**/*.purs",
+            "description": "A filepath glob used to include files to be linted."
           },
           "minItems": 1,
           "description": "Identify the files to which these rules will apply via an array of globs."
+        },
+        "ignoreGlobs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "A filepath glob used to subtract files from the `globs`."
+          },
+          "minItems": 0,
+          "description": "After files are identified for inclusion by `globs` the `ignoreGlobs` is used to remove files from that set."
         },
         "rules": {
           "$ref": "#/definitions/rules"

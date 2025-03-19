@@ -27,7 +27,18 @@ The linter can then be run from the root of your project with
 npx purescript-linter
 ```
 
-The linter does not _currently_ support any direct IDE integration but the linter can be run for a single file with the `-f` command line flag.
+The linter does not _currently_ support any direct IDE integration but the linter can be run for a single file with the `-f` command line flag. It is possible to install a Run On Save plugin for your IDE. For example, in VS Code one can install Run on Save and then configure the following in `settings.json`
+
+```JSON
+  "runOnSave.commands": [
+    {
+      "match": ".*\\.purs$",
+      "clearOutput": false,
+      "command": "clear; npx purescript-linter -f ${file}",
+      "runIn": "terminal",
+    }
+  ]
+```
 
 ## Rules Overview
 
@@ -35,6 +46,8 @@ There are 28 total [Rules](Rules.md) in two categories
 
 - Formatting (8 total) Rules assert how code should be formatted. This can be useful if you cannot, for company policy reasons, or do not wish to use a code formatter such as the excellent `purs-tidy`.
 - Style (20 total) Rules enforce coding style such as requiring code documentation for exports, asking developers to use record field punning when available, etc..
+
+There is also a hardcoded rule that verifies that files namespace matches their filepath. This applies to all files matching the `pathPrefix` in a roots specified `projectRoots` of the `purs-lint.json` file.
 
 ## Configuration
 

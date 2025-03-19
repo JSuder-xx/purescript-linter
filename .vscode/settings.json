@@ -1,5 +1,13 @@
 {
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "runOnSave.commands": [
+    {
+      "match": ".*\\.purs$",
+      "clearOutput": false,
+      "command": "clear; npx purescript-linter -f ${file}",
+      "runIn": "terminal",
+    }
+  ]
 }

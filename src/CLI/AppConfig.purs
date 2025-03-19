@@ -42,6 +42,7 @@ type ProjectRoot =
 
 type RuleSet rules =
   { globs :: Array String
+  , ignoreGlobs :: Array String
   , rules :: rules
   }
 
@@ -92,6 +93,7 @@ defaultAppConfg allModuleRules =
       ]
   , ruleSets:
       [ { globs: [ "./src/**/*.purs" ]
+        , ignoreGlobs: []
         , rules: Object.fromFoldable $ Array.sortWith fst $ allModuleRules <#> lift2 Tuple ModuleRule.name ModuleRule.defaultConfigJson
         }
       ]
@@ -120,8 +122,9 @@ decode = decodeJObject >=> \object -> do
   decodeRuleSet :: Object Json -> Either JsonDecodeError (RuleSet (Object Json))
   decodeRuleSet object = do
     globs <- object .: "globs"
+    ignoreGlobs <- fromMaybe [] <$> object .:! "ignoreGlobs"
     rules <- object .: "rules"
-    pure { globs, rules }
+    pure { globs, ignoreGlobs, rules }
 
 rawToProcessed :: Array ModuleRule -> AppConfigRaw -> Either String AppConfigProcessed
 rawToProcessed allModuleRules raw = traverse processRuleSet raw.ruleSets
@@ -143,7 +146,7 @@ rawToProcessed allModuleRules raw = traverse processRuleSet raw.ruleSets
 
   processRuleSet :: RuleSet (Object Json) -> Either String (RuleSet ModuleIssueIdentifier)
   processRuleSet ruleSet = Object.foldM foldRule mempty ruleSet.rules
-    <#> { globs: ruleSet.globs, rules: _ }
+    <#> { globs: ruleSet.globs, ignoreGlobs: ruleSet.ignoreGlobs, rules: _ }
 
   foldRule :: ModuleIssueIdentifier -> String -> Json -> Either String ModuleIssueIdentifier
   foldRule accProducer ruleName ruleConfigJson = do

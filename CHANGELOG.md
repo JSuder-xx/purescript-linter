@@ -1,4 +1,7 @@
-### Next Release
+### 1.2.1 (2025-03-18)
+
+- Added `ignoreGlobs` to AppConfig.
+- Add filepath drive letter normalization.
 
 ### 1.2.0 (2025-03-14)
 

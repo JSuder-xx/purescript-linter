@@ -9,6 +9,7 @@ import CLI.AppConfig as AppConfig
 import CLI.CommandLineOptions (RunMode(..), commandLineOptions)
 import CLI.Reporter (Reporter)
 import CLI.Reporter.Console as Reporter.Console
+import Control.Apply (lift2)
 import Data.Argonaut (encodeJson, parseJson, printJsonDecodeError, stringify, stringifyWithIndent)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
@@ -16,6 +17,7 @@ import Data.Bifunctor (lmap)
 import Data.DateTime.Instant as Instant
 import Data.Either (either)
 import Data.Foldable (foldM, foldl)
+import Data.Function (on)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Map.Extra as Map.Extra
@@ -92,7 +94,7 @@ cli = do
       outputStyled indent g s = for_ (String.split (String.Pattern "\n") s) $ \line ->
         log $ withGraphics g $ indent <> line
 
-    LintSingleFile fileToLint -> lint cliOptions { singleFile': Just $ Path.normalize $ NonEmptyString.toString fileToLint }
+    LintSingleFile fileToLint -> lint cliOptions { singleFile': Just $ normalizePath $ NonEmptyString.toString fileToLint }
     LintAllFiles -> lint cliOptions { singleFile': Nothing }
   where
   log = liftEffect <<< Console.log
@@ -131,7 +133,13 @@ Use these rules when unable to use a formatter in your codebase. For example, pe
       # (parseJson >>> lmap printJsonDecodeError >=> (AppConfig.decode >>> lmap printJsonDecodeError) >=> AppConfig.rawToProcessed allModuleRules)
       # either
           (liftEffect <<< Console.error <<< \decodeError -> "Error decoding '" <> configFilename <> "'\n" <> decodeError)
-          \appConfig -> runLinter { cwd } files (AppConfig.withCwd (Path.normalize cwd) appConfig) $ Reporter.Console.reporter { verbosity: if isNothing files.singleFile' then appConfig.verbosity else Quiet }
+          \appConfig -> runLinter { cwd } files (AppConfig.withCwd (normalizePath cwd) appConfig)
+            $ Reporter.Console.reporter { verbosity: if isNothing files.singleFile' then appConfig.verbosity else Quiet }
+
+normalizePath :: FilePath -> FilePath
+normalizePath = Path.normalize >>> normalizeDriveLetter
+
+foreign import normalizeDriveLetter :: String -> String
 
 simplifyPath :: String -> String -> String
 simplifyPath cwd filePath = filePath # String.stripPrefix (Pattern cwd) # maybe filePath ("." <> _)
@@ -161,10 +169,10 @@ runLinter { cwd } { singleFile' } { ruleSets, projectRoots } reporter = do
   findAllFiles :: Aff { warnings :: Array String, filesMap :: Map FilePath ModuleIssueIdentifier }
   findAllFiles = foldM processRuleSet { warnings: [], filesMap: Map.empty } ruleSets
     where
-    processRuleSet { warnings, filesMap } ruleSet = expandGlobsCwd ruleSet.globs <#> \filePathSet ->
+    processRuleSet { warnings, filesMap } ruleSet = lift2 (on Set.difference (Set.map normalizePath)) (expandGlobsCwd ruleSet.globs) (expandGlobsCwd ruleSet.ignoreGlobs) <#> \filePathSet ->
       if filePathSet == mempty && Maybe.isNothing singleFile' then
         { filesMap
-        , warnings: Array.snoc warnings $ "No Files found with globs: " <> (intercalate ", " ruleSet.globs)
+        , warnings: Array.snoc warnings $ "\nNo Files found with globs: " <> (intercalate ", " ruleSet.globs) <> " and ignoring globs " <> (intercalate ", " ruleSet.globs)
         }
       else
         { warnings
