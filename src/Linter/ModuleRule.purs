@@ -16,6 +16,7 @@ module Linter.ModuleRule
   , defaultModuleIssueIdentifier
   , description
   , examples
+  , exportedDeclarationIssueIdentifier
   , expressionIssueIdentifier
   , mkModuleRule
   , mkWithNoConfig
@@ -29,11 +30,14 @@ import Prelude
 
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, JsonDecodeError, decodeJson, encodeJson)
 import Data.Argonaut.Encode.Encoders (encodeString)
+import Data.Array as Array
 import Data.Either (Either)
 import Foreign.Object (Object)
 import Foreign.Object as Object
 import PureScript.CST.Fold (OnModule, OnPureScript)
+import PureScript.CST.ModuleHeader as ModuleHeader
 import PureScript.CST.Traversal (foldMapModule)
+import PureScript.CST.Types (ModuleBody(..))
 import PureScript.CST.Types as CST
 
 -- | A Module Rule identifies a specific set of problems / issues with code _inside_ a module.
@@ -150,3 +154,8 @@ moduleIssueIdentifier onModule = { onModule, onPureScript: (mempty :: OnPureScri
 
 typeIssueIdentifier :: IssueIdentifierIn CST.Type -> ModuleIssueIdentifier
 typeIssueIdentifier onType = { onModule: mempty, onPureScript: (mempty :: OnPureScript (Array Issue)) { onType = onType } }
+
+-- | Identify issues in declarations BUT only if exported from the module.
+exportedDeclarationIssueIdentifier :: IssueIdentifierIn CST.Declaration -> ModuleIssueIdentifier
+exportedDeclarationIssueIdentifier declarationIdentifier = moduleIssueIdentifier \(CST.Module { body: ModuleBody { decls }, header }) ->
+  decls # Array.filter (ModuleHeader.isDeclarationExported header) >>= declarationIdentifier

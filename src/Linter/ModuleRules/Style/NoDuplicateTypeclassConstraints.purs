@@ -63,9 +63,9 @@ rule = ModuleRule.mkWithNoConfig
       _ -> []
   }
 
-type ClassConstraints = Array { typeConstructorRange :: CST.SourceRange, typeConstructorName :: String, typeDescriptions :: Array String }
+type ClassConstraint = { typeConstructorRange :: CST.SourceRange, typeConstructorName :: String, typeDescriptions :: Array String }
 
-type TypeClassConstraintMapping = OnPureScript ClassConstraints
+type TypeClassConstraintMapping = OnPureScript (Array ClassConstraint)
 
 constraints :: TypeClassConstraintMapping
 constraints = (mempty :: TypeClassConstraintMapping)

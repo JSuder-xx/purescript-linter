@@ -1,3 +1,7 @@
+### NEXT RELEASE
+
+- Added `AvoidTypeAliases` rules `OfOtherTypesDirectly` and `WithAnonymousRecordsInContainerTypes`.
+
 ### 1.2.1 (2025-03-18)
 
 - Added `ignoreGlobs` to AppConfig.

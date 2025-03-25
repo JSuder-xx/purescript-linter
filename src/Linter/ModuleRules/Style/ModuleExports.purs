@@ -3,21 +3,18 @@ module Linter.ModuleRules.Style.ModuleExports (exportsRequired, requireDocumenta
 import Prelude
 
 import Data.Argonaut (encodeJson)
-import Data.Array (mapMaybe)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (un)
-import Data.Set as Set
 import Data.String (Pattern(..))
 import Data.String.Regex (Regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
 import Foreign.Object as Object
-import Linter.ModuleRule (Issue, RuleCategory(..), moduleIssueIdentifier)
+import Linter.ModuleRule (Issue, RuleCategory(..), exportedDeclarationIssueIdentifier, moduleIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import Options.Applicative.Internal.Utils as String
-import PureScript.CST.Separated as Separated
-import PureScript.CST.Types (Comment(..), Declaration(..), DelimitedNonEmpty, Export(..), Foreign(..), Ident(..), Labeled(..), ModuleBody(..), ModuleHeader(..), ModuleName(..), Name(..), Operator(..), Proper(..), SourceToken, Wrapped(..))
+import PureScript.CST.Types (Comment(..), Declaration(..), Foreign(..), Ident(..), Labeled(..), ModuleHeader(..), Name(..), Proper(..), SourceToken)
 import PureScript.CST.Types as CST
 
 exportsRequired :: ModuleRule.ModuleRule
@@ -197,25 +194,9 @@ class Foo a
           """
           ]
       }
-  , moduleIssueIdentifier: \ignoreRegexJson' _ -> moduleIssueIdentifier \(CST.Module { body: ModuleBody { decls }, header: ModuleHeader { exports } }) ->
-      decls >>= checkDeclaration { isExported: exports # maybe (const true) exportsToSet, ignoreRegex': un RegexJson <$> ignoreRegexJson' }
+  , moduleIssueIdentifier: \ignoreRegexJson' _ -> exportedDeclarationIssueIdentifier $ checkDeclaration { ignoreRegex': un RegexJson <$> ignoreRegexJson' }
   }
   where
-  exportsToSet :: forall e. DelimitedNonEmpty (Export e) -> (String -> Boolean)
-  exportsToSet (Wrapped { value }) = flip Set.member $ Set.fromFoldable $ mapMaybe exportToString $ Separated.values value
-
-  classPrefix s = "class" <> s
-
-  exportToString :: forall e. Export e -> Maybe String
-  exportToString = case _ of
-    ExportValue (Name { name: Ident name }) -> Just name
-    ExportOp (Name { name: Operator name }) -> Just name
-    ExportType (Name { name: Proper name }) _ -> Just name
-    ExportTypeOp _ (Name { name: Operator name }) -> Just name
-    ExportClass _ (Name { name: Proper name }) -> Just $ classPrefix name
-    ExportModule _ (Name { name: ModuleName name }) -> Just name
-    ExportError _ -> Nothing
-
   isDocumentationComment = case _ of
     Comment s -> String.startsWith (Pattern "-- |") s
     Space _ -> false
@@ -223,12 +204,12 @@ class Foo a
 
   tokenHasDocumentation = Array.any isDocumentationComment <<< _.leadingComments
 
-  checkDeclaration :: forall e. { isExported :: String -> Boolean, ignoreRegex' :: Maybe Regex } -> Declaration e -> Array Issue
-  checkDeclaration { isExported, ignoreRegex' } = case _ of
+  checkDeclaration :: forall e. { ignoreRegex' :: Maybe Regex } -> Declaration e -> Array Issue
+  checkDeclaration { ignoreRegex' } = case _ of
     DeclData dataHead _ctors' -> checkDataHead dataHead
     DeclType dataHead _ _type -> checkDataHead dataHead
     DeclNewtype dataHead _ _name _type -> checkDataHead dataHead
-    DeclClass { keyword, name: Name { name: Proper name } } _namedTypes' -> check keyword $ classPrefix name
+    DeclClass { keyword, name: Name { name: Proper name } } _namedTypes' -> check keyword name
     DeclSignature (Labeled { label: Name { token, name: Ident name } }) -> check token name
     DeclForeign _token1 _token2 (ForeignData _sourceToken (Labeled { label: Name { token, name: Proper name } })) -> check token name
     DeclForeign _token1 _token2 (ForeignValue (Labeled { label: Name { token, name: Ident name } })) -> check token name
@@ -251,7 +232,7 @@ class Foo a
     where
     shouldIgnore = ignoreRegex' # maybe (const false) Regex.test
     check token name =
-      if isExported name && not shouldIgnore name && not tokenHasDocumentation token then [ { message: "Exported '" <> name <> "' should be documented.", sourceRange: token.range } ]
+      if not shouldIgnore name && not tokenHasDocumentation token then [ { message: "Exported '" <> name <> "' should be documented.", sourceRange: token.range } ]
       else []
 
     checkDataHead :: forall r. { keyword :: SourceToken, name :: Name Proper | r } -> Array Issue

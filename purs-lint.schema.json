@@ -119,6 +119,36 @@
           "type": "null",
           "description": "This rule forbids comparing two equivalent expressions because this will always return either true or false.\n- `a == a`\n- `a /= a`\n- `a > a`\n- `a >= a`\n- etc.."
         },
+        "AvoidTypeAliases.OfOtherTypesDirectly": {
+          "type": "object",
+          "properties": {
+            "onlyExported": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "onlyExported"
+          ],
+          "description": "This is a very opinionated rule that forbids using a type alias for direct and simple aliasing of other types such as `type X = String` because they provide neither type safety nor code savings.\n\nInstead of a type alias one might\n- Author an actual `newtype` wrapping the other type. This provides safety and documentation.\n- Place values of this kind into a record as a named field. This provides documentation and greatly reduces the chances a value will be used incorrectly in a context.\n\nType aliases of this kind are often used as a stepping stone to developing a full type and certainly have a place in the development process. Only apply this rule\n- To areas of the codebase that require the highest quality and have the most re-use such as library code, Domain or Entity models, etc..\n- When code is completely finished and ready to be merged. It might not be a good idea to fail the normal CI build for a feature branch as this would flag work in-progress. To do this author one config file with active development rules and another with final merge rules and run the CI pipeline accordingly.\n"
+        },
+        "AvoidTypeAliases.WithAnonymousRecordsInContainerTypes": {
+          "type": "object",
+          "properties": {
+            "onlyExported": {
+              "type": "boolean"
+            },
+            "containers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "onlyExported"
+          ],
+          "description": "This is a VERY opinionated rule that forbids defining an alias that consists of some container **OF** an anonymous record ex. `type X = Array { name :: String, isCool :: Boolean }`.\n\nInstead one might consider type aliasing the contained type. For example, in `type Points = Array { x :: Number, y :: Number }` the single point record should be aliased `type Point = { x :: Number, y :: Number }.`\n"
+        },
         "IfThenElse.LeftAligned": {
           "type": "null",
           "description": "Aligning if/then/else tokens consistently helps readability. Left aligning is simply one aesthetic choice."
@@ -271,8 +301,8 @@
           "description": "Consistent formatting of the where clause helps readability. Left aligning the where keyword with the bindings is simply one choice."
         }
       },
-      "description": "An object where the keys are the rule names and the values at each key hold the configuration for the given rule. Most rules do not have configuration so that the configuration value is `null`.",
-      "additionalProperties": true
+      "description": "An object where the keys are the rule names and the values are the configuration",
+      "additionalProperties": false
     }
   }
 }

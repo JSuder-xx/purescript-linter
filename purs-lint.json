@@ -20,6 +20,17 @@
         "Applicative.UnlessAndWhen": null,
         "ArrayFormatting": null,
         "AvoidSameComparison": null,
+        "AvoidTypeAliases.OfOtherTypesDirectly": {
+          "onlyExported": false
+        },
+        "AvoidTypeAliases.WithAnonymousRecordsInContainerTypes": {
+          "onlyExported": false,
+          "containers": [
+            "Maybe",
+            "Array",
+            "Set"
+          ]
+        },
         "IfThenElse.LeftAligned": null,
         "ModuleImports.Forbid": [
           "^Unsafe.Coerce(.*)$"

@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (foldMap, intercalate)
+import Data.Maybe (Maybe(..), isJust)
 import Data.Newtype (unwrap)
 import Data.String as String
 import Data.Tuple (Tuple(..), snd)
@@ -19,6 +20,14 @@ typeVariableName (TypeVarName (Prefixed { value: Name { name: Ident name } })) =
 typeVariableName (TypeVarKinded (Wrapped { value: (Labeled { label: Prefixed { value: Name { name: Ident name } } }) })) = name
 
 type TypeLabel e = Label (Types.Type e)
+
+typeVariable' :: forall e. Types.Type e -> Maybe (Name Ident)
+typeVariable' = case _ of
+  TypeVar a -> Just a
+  _ -> Nothing
+
+isTypeVariable :: forall e. Types.Type e -> Boolean
+isTypeVariable = typeVariable' >>> isJust
 
 label :: forall e. Types.Type e -> TypeLabel e
 label = case _ of
