@@ -4,14 +4,16 @@ import Prelude
 
 import Control.Apply (lift2)
 import Control.Monad.Error.Class (throwError)
-import Data.Argonaut (class DecodeJson, class EncodeJson, Json, JsonDecodeError(..), encodeJson, printJsonDecodeError, (.:))
+import Data.Argonaut (class DecodeJson, class EncodeJson, Json, JsonDecodeError(..), printJsonDecodeError, (.:))
 import Data.Argonaut.Decode (JsonDecodeError)
 import Data.Argonaut.Decode.Combinators ((.:!))
 import Data.Argonaut.Decode.Decoders (decodeJObject, decodeString)
-import Data.Argonaut.Encode.Encoders (encodeForeignObject, encodeString)
+import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array as Array
 import Data.Bifunctor (lmap)
 import Data.Either (Either, note')
+import Data.JsonSchema (JsonSchema)
+import Data.JsonSchema as JsonSchema
 import Data.Map as Map
 import Data.Maybe (fromMaybe)
 import Data.Monoid (guard)
@@ -99,16 +101,15 @@ defaultAppConfg allModuleRules =
       ]
   }
 
-rulesSchema :: Array ModuleRule -> Json
-rulesSchema rules = encodeJson
-  { type: "object"
-  , additionalProperties: false
-  , properties: Object.fromFoldable $ ruleTuple <$> rules
-  , description: "An object where the keys are the rule names and the values are the configuration"
-  }
+rulesSchema :: Array ModuleRule -> JsonSchema
+rulesSchema rules = JsonSchema.object' { allRequired: false } propertiesObject
+  # JsonSchema.addDescription "An object where the keys are the rule names and the values are the configuration"
   where
-  ruleTuple :: ModuleRule -> Tuple String Json
-  ruleTuple = lift2 Tuple ModuleRule.name $ encodeForeignObject identity <<< ModuleRule.configJsonSchema
+  propertiesObject :: Object JsonSchema
+  propertiesObject = Object.fromFoldable $ rules
+    <#> lift2 Tuple
+      ModuleRule.name
+      ModuleRule.configJsonSchema
 
 decode :: Json -> Either JsonDecodeError AppConfigRaw
 decode = decodeJObject >=> \object -> do

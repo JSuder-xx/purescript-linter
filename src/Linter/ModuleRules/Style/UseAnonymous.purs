@@ -2,16 +2,14 @@ module Linter.ModuleRules.Style.UseAnonymous (forOperations, forRecordUpdates, f
 
 import Prelude
 
-import Data.Argonaut (encodeJson)
-import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array as Array
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (fold, foldMap)
+import Data.JsonSchema as JsonSchema
 import Data.Map.Extra (keyCountLookup)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Newtype (un, unwrap)
-import Foreign.Object as Object
 import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Binder as Binder
@@ -47,10 +45,7 @@ With the default configuration this rule only applies to relational operations s
           ]
       }
   , defaultConfig: [ "<", "<=", ">", ">=", "<>" ]
-  , configJsonSchema: Object.fromHomogeneous
-      { type: encodeString "array"
-      , items: encodeJson { "type": "string", "description": "A binary operator that should be recommended for wildcard usage." }
-      }
+  , configJsonSchema: JsonSchema.arrayOf $ JsonSchema.addDescription "A binary operator that should be recommended for wildcard usage." JsonSchema.string
   , moduleIssueIdentifier: \operatorNames _ -> expressionIssueIdentifier $ case _ of
       lambda@(ExprLambda { binders, body }) ->
         binders

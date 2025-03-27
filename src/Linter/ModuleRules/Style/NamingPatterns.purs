@@ -2,16 +2,14 @@ module Linter.ModuleRules.Style.NamingPatterns where
 
 import Prelude
 
-import Data.Argonaut (Json, encodeJson)
-import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Foldable (foldMap)
+import Data.JsonSchema as JsonSchema
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.String.Regex as Regex
 import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
 import Data.Tuple (Tuple(..))
-import Foreign.Object (Object)
 import Foreign.Object as Object
 import Linter.ModuleRule (ModuleRule, RuleCategory(..), mkModuleRule, typeIssueIdentifier)
 import PureScript.CST.Separated as Separated
@@ -51,7 +49,9 @@ Lenses are often prefixed with an `_` when declared at a top level ex. `_Just`, 
           , "data Fruit = Apple | Banana { alpha :: Maybe Int }"
           ]
       }
-  , configJsonSchema: containerToPatternMapJsonSchema
+  , configJsonSchema: JsonSchema.patternPropertiesObject
+      { "(.*)": JsonSchema.addDescription "A regular expression that the field name should match." JsonSchema.string
+      }
   , defaultConfig:
       Object.fromFoldable
         [ Tuple "Maybe" $ exampleRegex "(.*)'"
@@ -85,14 +85,3 @@ Lenses are often prefixed with an `_` when declared at a top level ex. `_Just`, 
             # foldMap \(RegexJson regex) -> guard (not Regex.test regex fieldName)
                 [ { message: "Field with container type `" <> container <> "' does not match the naming convention `" <> show regex <> "`", sourceRange: range } ]
         _ -> []
-
-containerToPatternMapJsonSchema :: Object Json
-containerToPatternMapJsonSchema = Object.fromHomogeneous
-  { "type": encodeString "object"
-  , "patternProperties": encodeJson
-      { "(.*)":
-          { "type": "string"
-          , description: "A regular expression that the field name should match."
-          }
-      }
-  }

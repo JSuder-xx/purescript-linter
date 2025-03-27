@@ -4,15 +4,14 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson)
-import Data.Argonaut.Encode.Encoders (encodeArray, encodeBoolean, encodeString)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Foldable (foldMap)
+import Data.JsonSchema as JsonSchema
 import Data.Maybe (Maybe(..))
 import Data.Maybe as Maybe
 import Data.Monoid (guard)
 import Data.Newtype as Newtype
 import Data.Tuple (Tuple, fst, snd)
-import Foreign.Object as Object
 import Linter.ModuleRule (RuleCategory(..), expressionIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import PureScript.CST.Expr as Expr
@@ -197,27 +196,12 @@ x =
       }
   , defaultConfig: defaultFoldConfig
   , configJsonSchema:
-      let
-        FoldConfig { maxAppends, maxAppendsWithParenthesis } = defaultFoldConfig
-      in
-        Object.fromHomogeneous
-          { type: encodeString "object"
-          , additionalProperties: encodeBoolean false
-          , required: encodeArray encodeString [ "maxAppends", "maxAppendsWithParenthesis" ]
-          , properties: encodeJson
-              { maxAppends:
-                  { type: "integer"
-                  , description: "The maximum number of <> operators that are allowed. Any more than this requires the use of `fold`."
-                  , default: maxAppends
-                  }
-              , maxAppendsWithParenthesis:
-                  { type: "integer"
-                  , description: "The maximum number of <> operators that are allowed when any of the expressions requires parentheses. Any more than this requires the use of `fold`."
-                  , default: maxAppendsWithParenthesis
-                  }
-              }
-          }
-
+      JsonSchema.object
+        { maxAppends: JsonSchema.integer
+            # JsonSchema.addDescription "The maximum number of <> operators that are allowed. Any more than this requires the use of `fold`."
+        , maxAppendsWithParenthesis: JsonSchema.integer
+            # JsonSchema.addDescription "The maximum number of <> operators that are allowed when any of the expressions requires parentheses. Any more than this requires the use of `fold`."
+        }
   , moduleIssueIdentifier: \(FoldConfig { maxAppends, maxAppendsWithParenthesis }) _ -> expressionIssueIdentifier $ case _ of
       expr@(ExprOp _ neOperators) ->
         guard (NonEmptyArray.all isMappend neOperators)

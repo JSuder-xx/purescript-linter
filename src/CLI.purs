@@ -18,6 +18,7 @@ import Data.DateTime.Instant as Instant
 import Data.Either (either)
 import Data.Foldable (foldM, foldl)
 import Data.Function (on)
+import Data.JsonSchema as JsonSchema
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Map.Extra as Map.Extra
@@ -66,7 +67,7 @@ cli = do
         { fileName
         , contents: stringifyWithIndent 2 $ encodeJson $ AppConfig.defaultAppConfg recommendedRules
         }
-    GenerateRuleJsonSchema -> log $ stringify $ AppConfig.rulesSchema allModuleRules
+    GenerateRuleJsonSchema -> log $ stringify $ JsonSchema.json $ AppConfig.rulesSchema allModuleRules
     ShowRulesAsMarkdown -> do
       log "# Rules"
       showRules

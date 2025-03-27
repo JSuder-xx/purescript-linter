@@ -2,13 +2,12 @@ module Linter.ModuleRules.Style.AvoidTypeAliases where
 
 import Prelude
 
-import Data.Argonaut (encodeJson)
-import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array.NonEmpty as NonEmptyArray
+import Data.JsonSchema (JsonSchema)
+import Data.JsonSchema as JsonSchema
 import Data.Monoid (guard)
 import Data.Set as Set
 import Data.Tuple (snd)
-import Foreign.Object as Object
 import Linter.CodeExamples (exampleWithExports)
 import Linter.ModuleRule (RuleCategory(..), declarationIssueIdentifierInModule, exportedDeclarationIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
@@ -58,17 +57,8 @@ Type aliases of this kind are often used as a stepping stone to developing a ful
             , "type A = SomeOtherType (Tuple String String)"
             ]
       }
-  , configJsonSchema: Object.fromHomogeneous
-      { "type": encodeString "object"
-      , "properties": encodeJson
-          { onlyExported: { "type": "boolean" }
-          }
-      , "required": encodeJson [ "onlyExported" ]
-      }
-  , defaultConfig:
-      { onlyExported: true
-      }
-
+  , configJsonSchema: JsonSchema.object { onlyExported: onlyExportedSchema }
+  , defaultConfig: { onlyExported: true }
   , moduleIssueIdentifier: \{ onlyExported } _ -> (if onlyExported then exportedDeclarationIssueIdentifier else declarationIssueIdentifierInModule) case _ of
       DeclType { name: Name { token } } _ type_ -> case type_ of
         TypeConstructor _ ->
@@ -84,6 +74,9 @@ Type aliases of this kind are often used as a stepping stone to developing a ful
         _ -> []
       _ -> []
   }
+
+onlyExportedSchema :: JsonSchema
+onlyExportedSchema = JsonSchema.addDescription "When true this rule applies only to exported data types." JsonSchema.boolean
 
 withAnonymousRecordsInContainerTypes :: ModuleRule.ModuleRule
 withAnonymousRecordsInContainerTypes = ModuleRule.mkModuleRule
@@ -112,18 +105,11 @@ Instead one might consider type aliasing the contained type. For example, in `ty
             , "type A = Maybe (Person -> Boolean)"
             ]
       }
-  , configJsonSchema: Object.fromHomogeneous
-      { "type": encodeString "object"
-      , "properties": encodeJson
-          { containers:
-              { "type": "array"
-              , items:
-                  { "type": "string"
-                  }
-              }
-          , onlyExported: { "type": "boolean" }
-          }
-      , "required": encodeJson [ "onlyExported" ]
+  , configJsonSchema: JsonSchema.object
+      { containers: JsonSchema.addDescription "List of container types that will be checked for anonymous records."
+          $ JsonSchema.arrayOf
+          $ JsonSchema.addDescription "Name of a container type such as `Maybe` or `Array`." JsonSchema.string
+      , onlyExported: onlyExportedSchema
       }
   , defaultConfig:
       { onlyExported: true

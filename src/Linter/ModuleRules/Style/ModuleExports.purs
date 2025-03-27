@@ -2,15 +2,14 @@ module Linter.ModuleRules.Style.ModuleExports (exportsRequired, requireDocumenta
 
 import Prelude
 
-import Data.Argonaut (encodeJson)
 import Data.Array as Array
+import Data.JsonSchema as JsonSchema
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (un)
 import Data.String (Pattern(..))
 import Data.String.Regex (Regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
-import Foreign.Object as Object
 import Linter.ModuleRule (Issue, RuleCategory(..), exportedDeclarationIssueIdentifier, moduleIssueIdentifier)
 import Linter.ModuleRule as ModuleRule
 import Options.Applicative.Internal.Utils as String
@@ -54,16 +53,8 @@ requireDocumentation = ModuleRule.mkModuleRule
   , category: Style
   , description:
       "Require code documentation `-- |` of anything exported by a module to help developers understand usage. This can be configured with a regex pattern of types/type classes/values to exclude from this requirement."
-  , configJsonSchema: Object.fromHomogeneous
-      { anyOf: encodeJson
-          [ { "type": "null"
-            , description: "When null then all exported types/values require documentation."
-            }
-          , { "type": "string"
-            , description: "Regex of exported names that do NOT require documentation."
-            }
-          ]
-      }
+  , configJsonSchema: JsonSchema.maybe
+      $ JsonSchema.addDescription "Regex of exported names that do NOT require documentation. When null then all exported types/values require documentation." JsonSchema.string
   , defaultConfig: Just $ exampleRegex "^component$"
   , examples:
       { includeModuleHeader: true

@@ -3,10 +3,9 @@ module Linter.ModuleRules.Style.ModuleImports where
 import Prelude
 
 import Control.Bind (bindFlipped)
-import Data.Argonaut (encodeJson)
-import Data.Argonaut.Encode.Encoders (encodeString)
 import Data.Array as Array
 import Data.Foldable (fold, foldMap)
+import Data.JsonSchema as JsonSchema
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe')
@@ -21,7 +20,6 @@ import Data.String.Regex (Regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Extra (RegexJson(..), exampleRegex)
 import Data.Tuple (Tuple(..))
-import Foreign.Object as Object
 import Linter.ModuleRule (Issue, ModuleRule, RuleCategory(..), mkModuleRule, mkWithNoConfig, moduleIssueIdentifier)
 import PureScript.CST.Import as Import
 import PureScript.CST.Range (rangeOf)
@@ -59,28 +57,12 @@ qualification = mkModuleRule
             , "import Data.List.Lazy (fromFoldable) as List" -- qualified but with the wrong qualification name
             ]
       }
-  , configJsonSchema: Object.fromHomogeneous
-      { "type": encodeString "array"
-      , "items": encodeJson
-          { type: "object"
-          , additionalProperties: false
-          , required: [ "module", "import", "qualifyAs" ]
-          , properties:
-              { module:
-                  { type: "string"
-                  , description: "A Regular Expression used to match on the module."
-                  }
-              , import:
-                  { type: "string"
-                  , description: "A Regular Expression that matches on things imported."
-                  }
-              , qualifyAs:
-                  { type: "string"
-                  , description: "Determines the expected qualification for any matched modules. NOTE: You can use RegEx replacement variables for anything captured by the `module` RegEx."
-                  }
-              }
+  , configJsonSchema: JsonSchema.arrayOf
+      $ JsonSchema.object
+          { module: JsonSchema.addDescription "A Regular Expression used to match on the module." JsonSchema.string
+          , import: JsonSchema.addDescription "A Regular Expression that matches on things imported." JsonSchema.string
+          , qualifyAs: JsonSchema.addDescription "Determines the expected qualification for any matched modules. NOTE: You can use RegEx replacement variables for anything captured by the `module` RegEx." JsonSchema.string
           }
-      }
   , defaultConfig:
       [ { module: exampleRegex $ fold
             [ "^Data."
@@ -186,16 +168,8 @@ forbid = mkModuleRule
             , "import Unsafe.Coerce (blurble) as B"
             ]
       }
-  , configJsonSchema: Object.fromHomogeneous
-      { "type": encodeString "array"
-      , "items": encodeJson
-          { type: "string"
-          , description: "A regular expression defining the pattern for a forbidden module import."
-          }
-      }
-  , defaultConfig:
-      [ exampleRegex "^Unsafe.Coerce(.*)$"
-      ] :: Array RegexJson
+  , configJsonSchema: JsonSchema.arrayOf $ JsonSchema.addDescription "A regular expression defining the pattern for a forbidden module import." JsonSchema.string
+  , defaultConfig: [ exampleRegex "^Unsafe.Coerce(.*)$" ] :: Array RegexJson
   , moduleIssueIdentifier: \importRegexJsons _systemConfig ->
       let
         importRegexs = importRegexJsons <#> un RegexJson
